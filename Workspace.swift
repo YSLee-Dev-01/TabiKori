@@ -17,6 +17,7 @@ let workspace = Workspace(
         "Projects/DesignSystem",
         "Projects/DIContainer",
         "Projects/Presentation",
-        "Projects/Domain"
+        "Projects/Domain",
+        "Projects/Resource"
     ]
 )

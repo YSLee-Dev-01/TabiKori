@@ -17,6 +17,7 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
     case core = "Core"
     case designSystem = "DesignSystem"
     case presentation = "Presentation"
+    case resource = "Resource"
     
     // 외부 (라이브러리)
     case tca = "ComposableArchitecture"
@@ -27,8 +28,9 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
         .domain: [.core],
         .data: [.domain, .core],
         .core: [],
-        .designSystem: [.core],
-        .presentation: [.designSystem, .core, .domain]
+        .designSystem: [.core, .resource],
+        .presentation: [.designSystem, .core, .domain],
+        .resource: []
     ]
     
     static let externalDependencyInfo: [DependencyInformation: [DependencyInformation]] = [
