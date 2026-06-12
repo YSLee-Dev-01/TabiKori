@@ -23,6 +23,7 @@ public enum TypographyStyle {
     case captionMBold
     case captionM
     case captionS
+    case captionXSBold
 
     public var size: CGFloat {
         switch self {
@@ -34,6 +35,7 @@ public enum TypographyStyle {
         case .bodySBold, .bodyS: return 14
         case .captionMBold, .captionM: return 13
         case .captionS: return 12
+        case .captionXSBold: return 11
         }
     }
 
@@ -43,7 +45,7 @@ public enum TypographyStyle {
         case .titleM, .titleS: return .semiBold
         case .bodyLBold, .bodyMBold, .bodySBold: return .bold
         case .bodyL, .bodyM, .bodyS: return .regular
-        case .captionMBold: return .semiBold
+        case .captionMBold, .captionXSBold: return .semiBold
         case .captionM, .captionS: return .regular
         }
     }
