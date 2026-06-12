@@ -39,7 +39,7 @@ public struct TabiButton: View {
     }
 
     private var horizontalPadding: CGFloat {
-        self.style == .ghost ? 16 : 20
+        self.style == .ghost ? .tabiSpace4 : .tabiSpace5
     }
 
     private var typographyStyle: TypographyStyle {
@@ -95,14 +95,14 @@ public struct TabiButton: View {
                 }
             }
             .animation(.tabiStandard, value: self.isLoading)
-            .padding(.vertical, 12)
+            .padding(.vertical, .tabiSpace3)
             .padding(.horizontal, self.horizontalPadding)
             .frame(maxWidth: self.isExpanded ? .infinity : nil)
             .background(self.backgroundColor)
-            .clipShape(.rect(cornerRadius: 12))
+            .clipShape(.rect(cornerRadius: .tabiRadiusSm))
             .overlay {
                 if self.style == .secondary {
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: .tabiRadiusSm)
                         .stroke(Color.tabiPrimary, lineWidth: 1.5)
                 }
             }
