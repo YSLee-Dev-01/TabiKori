@@ -21,15 +21,15 @@ public enum PretendardWeight {
 
     var fontWeight: Font.Weight {
         switch self {
-        case .thin:       return .ultraLight
+        case .thin: return .ultraLight
         case .extraLight: return .thin
-        case .light:      return .light
-        case .regular:    return .regular
-        case .medium:     return .medium
-        case .semiBold:   return .semibold
-        case .bold:       return .bold
+        case .light: return .light
+        case .regular: return .regular
+        case .medium: return .medium
+        case .semiBold: return .semibold
+        case .bold: return .bold
         case .extraBold:  return .heavy
-        case .black:      return .black
+        case .black: return .black
         }
     }
 }
