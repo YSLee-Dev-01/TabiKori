@@ -27,19 +27,21 @@ public struct TabiChip: View {
         Button {
             self.action()
         } label: {
-            Text(self.title)
-                .font(.pretendard(self.isSelected ? .semiBold : .regular, size: TypographyStyle.captionM.size))
-                .foregroundStyle(self.isSelected ? Color.tabiOnColor : Color.tabiTextSecondary)
-                .padding(.vertical, .tabiSpace2)
-                .padding(.horizontal, .tabiSpace4)
-                .background(self.isSelected ? Color.tabiPrimary : Color.tabiSurface)
-                .clipShape(Capsule())
-                .overlay {
-                    if !self.isSelected {
-                        Capsule()
-                            .stroke(Color.tabiBorder, lineWidth: 1)
-                    }
+            TabiLabel(
+                title: self.title,
+                style: self.isSelected ? .captionMBold : .captionM,
+                color: self.isSelected ? .tabiOnColor : .tabiTextSecondary
+            )
+            .padding(.vertical, .tabiSpace2)
+            .padding(.horizontal, .tabiSpace4)
+            .background(self.isSelected ? Color.tabiPrimary : Color.tabiSurface)
+            .clipShape(Capsule())
+            .overlay {
+                if !self.isSelected {
+                    Capsule()
+                        .stroke(Color.tabiBorder, lineWidth: 1)
                 }
+            }
         }
         .buttonStyle(.plain)
         .animation(.tabiFast, value: self.isSelected)
