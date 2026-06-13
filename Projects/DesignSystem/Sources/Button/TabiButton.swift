@@ -100,7 +100,7 @@ public struct TabiButton: View {
             .padding(.vertical, 12)
             .padding(.horizontal, self.horizontalPadding)
             .frame(maxWidth: self.isExpanded ? .infinity : nil)
-            .background(self.backgroundColor ?? .clear)
+            .background(self.backgroundColor ?? .tabiBackground)
             .clipShape(.rect(cornerRadius: .tabiRadiusSm))
             .overlay {
                 if self.style == .secondary {
