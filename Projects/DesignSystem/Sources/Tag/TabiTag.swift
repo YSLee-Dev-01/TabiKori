@@ -7,14 +7,15 @@
 //
 
 import SwiftUI
+import Resource
 
 public struct TabiTag: View {
     private let title: String
-    private let color: Color
+    private let color: TabiColor
 
     public init(
         _ title: String,
-        color: Color
+        color: TabiColor
     ) {
         self.title = title
         self.color = color

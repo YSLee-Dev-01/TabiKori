@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Resource
 
 public struct TabiButton: View {
 
@@ -22,8 +23,8 @@ public struct TabiButton: View {
     private let isExpanded: Bool
     private let isLoading: Bool
     private let action: () -> Void
-    
-    private var foregroundColor: Color {
+
+    private var foregroundColor: TabiColor {
         switch self.style {
         case .primary: return .tabiOnColor
         case .secondary: return .tabiPrimary
@@ -31,10 +32,10 @@ public struct TabiButton: View {
         }
     }
 
-    private var backgroundColor: Color {
+    private var backgroundColor: TabiColor? {
         switch self.style {
         case .primary: return .tabiPrimary
-        case .secondary, .ghost: return .clear
+        case .secondary, .ghost: return nil
         }
     }
 
@@ -99,12 +100,12 @@ public struct TabiButton: View {
             .padding(.vertical, 12)
             .padding(.horizontal, self.horizontalPadding)
             .frame(maxWidth: self.isExpanded ? .infinity : nil)
-            .background(self.backgroundColor)
+            .background(self.backgroundColor ?? .clear)
             .clipShape(.rect(cornerRadius: .tabiRadiusSm))
             .overlay {
                 if self.style == .secondary {
                     RoundedRectangle(cornerRadius: .tabiRadiusSm)
-                        .stroke(Color.tabiPrimary, lineWidth: 1.5)
+                        .stroke(TabiColor.tabiPrimary, lineWidth: 1.5)
                 }
             }
         }

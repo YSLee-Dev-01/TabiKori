@@ -7,19 +7,20 @@
 //
 
 import SwiftUI
+import Resource
 
 public struct TabiLabel: View {
     private let title: String
     private let style: TypographyStyle
-    private let color: Color
+    private let color: TabiColor
     private let alignment: Alignment
     private let isExpanded: Bool
     private let lineLimit: Int?
-    
+
     public init(
         title: String,
         style: TypographyStyle,
-        color: Color,
+        color: TabiColor,
         alignment: Alignment = .leading,
         isExpanded: Bool = false,
         lineLimit: Int? = nil
@@ -31,7 +32,7 @@ public struct TabiLabel: View {
         self.isExpanded = isExpanded
         self.lineLimit = lineLimit
     }
-    
+
     public var body: some View {
         Text(self.title)
             .font(.pretendard(self.style.weight, size: self.style.size))

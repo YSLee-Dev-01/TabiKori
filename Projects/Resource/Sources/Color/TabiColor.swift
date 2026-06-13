@@ -50,8 +50,12 @@ public enum TabiColor: String {
     case categoryFestival
     case categoryShopping
     case categoryNature
+}
 
-    public var color: Color {
-        Color(self.rawValue, bundle: .module)
+// MARK: - ShapeStyle
+
+extension TabiColor: ShapeStyle {
+    public func resolve(in environment: EnvironmentValues) -> Color.Resolved {
+        Color(self.rawValue, bundle: .module).resolve(in: environment)
     }
 }

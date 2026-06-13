@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Resource
 
 public struct TabiChip: View {
     private let title: String
@@ -34,12 +35,12 @@ public struct TabiChip: View {
             )
             .padding(.vertical, 8)
             .padding(.horizontal, 16)
-            .background(self.isSelected ? Color.tabiPrimary : Color.tabiSurface)
+            .background(self.isSelected ? TabiColor.tabiPrimary : TabiColor.tabiSurface)
             .clipShape(Capsule())
             .overlay {
                 if !self.isSelected {
                     Capsule()
-                        .stroke(Color.tabiBorder, lineWidth: 1)
+                        .stroke(TabiColor.tabiBorder, lineWidth: 1)
                 }
             }
         }
