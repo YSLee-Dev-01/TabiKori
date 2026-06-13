@@ -39,7 +39,10 @@ public struct TabiButton: View {
     }
 
     private var horizontalPadding: CGFloat {
-        self.style == .ghost ? .tabiSpace4 : .tabiSpace5
+        switch self.style {
+        case .primary, .secondary: return 20
+        case .ghost: return 16
+        }
     }
 
     private var typographyStyle: TypographyStyle {
@@ -68,9 +71,7 @@ public struct TabiButton: View {
     }
 
     public var body: some View {
-        Button {
-            self.action()
-        } label: {
+        Button(action: self.action) {
             HStack(spacing: 8) {
                 if self.isLoading {
                     ProgressView()
@@ -95,7 +96,7 @@ public struct TabiButton: View {
                 }
             }
             .animation(.tabiStandard, value: self.isLoading)
-            .padding(.vertical, .tabiSpace3)
+            .padding(.vertical, 12)
             .padding(.horizontal, self.horizontalPadding)
             .frame(maxWidth: self.isExpanded ? .infinity : nil)
             .background(self.backgroundColor)
@@ -109,7 +110,7 @@ public struct TabiButton: View {
         }
         .buttonStyle(TabiPressStyle())
         .disabled(self.isLoading)
-        .opacity(self.isEnabled ? 1 : 0.5)
+        .opacity(!self.isEnabled && !self.isLoading ? 0.5 : 1)
     }
 }
 

@@ -27,7 +27,7 @@ public struct TabiTag: View {
             color: self.color
         )
         .padding(.vertical, 4)
-        .padding(.horizontal, .tabiSpace2)
+        .padding(.horizontal, 8)
         .background(self.color.opacity(0.1))
         .clipShape(Capsule())
     }

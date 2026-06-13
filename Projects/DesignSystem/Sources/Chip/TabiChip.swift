@@ -32,8 +32,8 @@ public struct TabiChip: View {
                 style: self.isSelected ? .captionMBold : .captionM,
                 color: self.isSelected ? .tabiOnColor : .tabiTextSecondary
             )
-            .padding(.vertical, .tabiSpace2)
-            .padding(.horizontal, .tabiSpace4)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
             .background(self.isSelected ? Color.tabiPrimary : Color.tabiSurface)
             .clipShape(Capsule())
             .overlay {
