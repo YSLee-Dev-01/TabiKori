@@ -8,11 +8,16 @@
 
 import SwiftUI
 
+import DIContainer
+
 @main
 struct TabiKoriApp: App {
+    
+    private let diContainer =  AppDIContainer()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            self.diContainer.makeHomeView()
         }
     }
 }
