@@ -8,7 +8,7 @@
 
 import Foundation
 
-public protocol OnboardingUseCaseProtocol {
+public protocol OnboardingUseCaseProtocol: Sendable {
     func isCompleted() -> Bool
     func markAsCompleted()
 }
