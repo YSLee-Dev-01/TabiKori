@@ -10,6 +10,8 @@ import Foundation
 
 import ComposableArchitecture
 import Presentation
+import Domain
+import Data
 
 @MainActor
 public final class AppDIContainer {
@@ -27,5 +29,16 @@ public final class AppDIContainer {
     private lazy var homeStore: StoreOf<HomeFeature> = .init(
         initialState: .init(),
         reducer: { HomeFeature() }
+    )
+    
+    // MARK: - Root
+    
+    public func makeRootView() -> HomeView {
+        return HomeView(store: self.homeStore)
+    }
+    
+    private lazy var rootStore: StoreOf<RootFeature> = .init(
+        initialState: .init(),
+        reducer: { RootFeature() }
     )
 }
