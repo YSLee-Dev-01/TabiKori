@@ -11,20 +11,18 @@ import ProjectDescription
 public enum DependencyInformation: String, CaseIterable, Sendable {
     // 내부
     case app = "App"
-    case dicontainer = "DIContainer"
     case domain = "Domain"
     case data = "Data"
     case core = "Core"
     case designSystem = "DesignSystem"
     case presentation = "Presentation"
     case resource = "Resource"
-    
+
     // 외부 (라이브러리)
     case tca = "ComposableArchitecture"
-    
+
     static let internalDependencyInfo: [DependencyInformation: [DependencyInformation]] = [
-        .app: [.dicontainer],
-        .dicontainer: [.domain, .data, .core, .presentation],
+        .app: [.domain, .data, .presentation],
         .domain: [.core],
         .data: [.domain, .core],
         .core: [],
@@ -32,9 +30,11 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
         .presentation: [.designSystem, .core, .domain],
         .resource: []
     ]
-    
+
     static let externalDependencyInfo: [DependencyInformation: [DependencyInformation]] = [
-        .presentation: [.tca]
+        .presentation: [.tca],
+        .domain: [.tca],
+        .app: [.tca]
     ]
 }
 

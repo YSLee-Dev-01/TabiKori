@@ -8,16 +8,17 @@
 
 import SwiftUI
 
-import DIContainer
+import ComposableArchitecture
+import Presentation
 
 @main
 struct TabiKoriApp: App {
-    
-    private let diContainer =  AppDIContainer()
-    
     var body: some Scene {
         WindowGroup {
-            self.diContainer.makeHomeView()
+            RootView(store: Store(
+                initialState: .init(),
+                reducer: { RootFeature() }
+            ))
         }
     }
 }

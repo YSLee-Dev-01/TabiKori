@@ -19,10 +19,17 @@ public struct RootView: View {
     }
     
     public var body: some View {
-        Text(self.store.text)
-            .onAppear {
-                self.store.send(.onAppear)
+        VStack {
+            Text(self.store.isOnboardingCompleted ? "온보딩 완료" : "온보딩 전")
+            Button {
+                self.store.send(.testBtnTapped)
+            } label: {
+                Text("온보딩 완료 버튼")
             }
+        }
+        .onAppear {
+            self.store.send(.onAppear)
+        }
     }
 }
 

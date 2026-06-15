@@ -16,7 +16,6 @@ public struct RootFeature {
     
     @ObservableState
     public struct State: Equatable {
-        var text = "RootView"
         var isOnboardingCompleted: Bool = false
         
         public init() {

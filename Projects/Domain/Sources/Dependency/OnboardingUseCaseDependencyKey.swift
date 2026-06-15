@@ -10,8 +10,8 @@ import Foundation
 
 import ComposableArchitecture
 
-enum OnboardingUseCaseDependencyKey: DependencyKey, Sendable {
-    static var liveValue:  OnboardingUseCaseProtocol {
-        fatalError("withDependencies로 주입")
+public enum OnboardingUseCaseDependencyKey: TestDependencyKey, Sendable {
+    public static var testValue: OnboardingUseCaseProtocol {
+        TestOnboardingUseCase()
     }
 }
