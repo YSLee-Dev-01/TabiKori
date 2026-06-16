@@ -27,7 +27,7 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
         .data: [.domain, .core],
         .core: [],
         .designSystem: [.core, .resource],
-        .presentation: [.designSystem, .core, .domain],
+        .presentation: [.designSystem, .core, .domain, .resource],
         .resource: []
     ]
 

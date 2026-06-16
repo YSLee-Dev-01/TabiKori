@@ -8,12 +8,24 @@
 
 import Foundation
 
+import Resource
+
 public enum AppTab: CaseIterable {
     case home
     case map
     case plan
     case save
     case search
+
+    var title: String {
+        switch self {
+        case .home: return Strings.Tabbar.home
+        case .map: return Strings.Tabbar.map
+        case .plan: return Strings.Tabbar.plan
+        case .save: return Strings.Tabbar.save
+        case .search: return Strings.Tabbar.search
+        }
+    }
 
     var systemImage: String {
         switch self {

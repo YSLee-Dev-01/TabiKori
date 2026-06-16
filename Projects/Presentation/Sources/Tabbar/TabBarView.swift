@@ -26,25 +26,25 @@ public struct TabBarView: View {
                 }
                 .tag(AppTab.home)
 
-            Text("지도")
+            Text(AppTab.map.title)
                 .tabItem {
                     Image(systemName: AppTab.map.systemImage)
                 }
                 .tag(AppTab.map)
 
-            Text("계획")
+            Text(AppTab.plan.title)
                 .tabItem {
                     Image(systemName: AppTab.plan.systemImage)
                 }
                 .tag(AppTab.plan)
 
-            Text("저장")
+            Text(AppTab.save.title)
                 .tabItem {
                     Image(systemName: AppTab.save.systemImage)
                 }
                 .tag(AppTab.save)
 
-            Text("검색")
+            Text(AppTab.search.title)
                 .tabItem {
                     Image(systemName: AppTab.search.systemImage)
                 }
