@@ -19,12 +19,15 @@ public struct RootView: View {
     }
     
     public var body: some View {
-        VStack {
-            Text(self.store.isOnboardingCompleted ? "온보딩 완료" : "온보딩 전")
-            Button {
-                self.store.send(.testBtnTapped)
-            } label: {
-                Text("온보딩 완료 버튼")
+        Group {
+            if let tabBarStore = self.store.scope(state: \.tabBarState, action: \.tabBar) {
+                TabBarView(store: tabBarStore)
+            } else {
+                Button {
+                    self.store.send(.testBtnTapped)
+                } label: {
+                    Text("온보딩 완료 버튼")
+                }
             }
         }
         .onAppear {

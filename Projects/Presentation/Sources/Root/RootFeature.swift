@@ -13,19 +13,19 @@ import Domain
 
 @Reducer
 public struct RootFeature {
-    
+
     @ObservableState
     public struct State: Equatable {
-        var isOnboardingCompleted: Bool = false
-        
-        public init() {
-            
-        }
+        var tabBarState: TabBarFeature.State? = nil
+
+        public init() {}
     }
-    
+
     public enum Action: Equatable {
         case onAppear
+        case onboardingChecking
         case testBtnTapped
+        case tabBar(TabBarFeature.Action)
     }
     
     @Dependency(\.onboardingUseCase) var onboardingUsecase
@@ -36,13 +36,25 @@ public struct RootFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                state.isOnboardingCompleted = onboardingUsecase.isCompleted()
+                guard state.tabBarState == nil else { return .none }
+                return .send(.onboardingChecking)
+
+            case .onboardingChecking:
+                if onboardingUsecase.isCompleted() {
+                    state.tabBarState = .init()
+                }
                 return .none
                 
             case .testBtnTapped:
                 onboardingUsecase.markAsCompleted()
+                return .send(.onboardingChecking)
+
+            case .tabBar:
                 return .none
             }
+        }
+        .ifLet(\.tabBarState, action: \.tabBar) {
+            TabBarFeature()
         }
     }
 }
