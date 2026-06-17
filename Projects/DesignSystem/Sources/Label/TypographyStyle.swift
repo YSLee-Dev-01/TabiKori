@@ -27,7 +27,7 @@ public enum TypographyStyle {
 
     public var size: CGFloat {
         switch self {
-        case .titleL: return 24
+        case .titleL: return 26
         case .titleM: return 20
         case .titleS: return 18
         case .bodyLBold, .bodyL: return 18
