@@ -59,3 +59,11 @@ extension TabiColor: ShapeStyle {
         Color(self.rawValue, bundle: .module).resolve(in: environment)
     }
 }
+
+// MARK: - Extension
+
+extension Color {
+    public static func getTabiColor(_ tabiColor: TabiColor) -> Color {
+        return Color(tabiColor.rawValue, bundle: .module)
+    }
+}
