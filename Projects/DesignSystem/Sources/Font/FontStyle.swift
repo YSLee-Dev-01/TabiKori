@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Resource
 
 public enum PretendardWeight {
     case thin
@@ -19,23 +20,23 @@ public enum PretendardWeight {
     case extraBold
     case black
 
-    var fontWeight: Font.Weight {
+    var resourceFont: ResourceFontConvertible {
         switch self {
-        case .thin: return .ultraLight
-        case .extraLight: return .thin
-        case .light: return .light
-        case .regular: return .regular
-        case .medium: return .medium
-        case .semiBold: return .semibold
-        case .bold: return .bold
-        case .extraBold:  return .heavy
-        case .black: return .black
+        case .thin: return ResourceFontFamily.PretendardJPVariable.thin
+        case .extraLight: return ResourceFontFamily.PretendardJPVariable.extraLight
+        case .light: return ResourceFontFamily.PretendardJPVariable.light
+        case .regular: return ResourceFontFamily.PretendardJPVariable.regular
+        case .medium: return ResourceFontFamily.PretendardJPVariable.medium
+        case .semiBold: return ResourceFontFamily.PretendardJPVariable.semiBold
+        case .bold: return ResourceFontFamily.PretendardJPVariable.bold
+        case .extraBold: return ResourceFontFamily.PretendardJPVariable.extraBold
+        case .black: return ResourceFontFamily.PretendardJPVariable.black
         }
     }
 }
 
 public extension Font {
     static func pretendard(_ weight: PretendardWeight = .regular, size: CGFloat) -> Font {
-        .custom("PretendardJPVariable-Regular", size: size).weight(weight.fontWeight)
+        weight.resourceFont.swiftUIFont(size: size)
     }
 }
