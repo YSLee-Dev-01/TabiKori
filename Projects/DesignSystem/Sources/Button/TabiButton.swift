@@ -15,6 +15,7 @@ public struct TabiButton: View {
         case primary
         case secondary
         case ghost
+        case glass
     }
 
     private let title: String
@@ -29,26 +30,27 @@ public struct TabiButton: View {
         case .primary: return .tabiOnColor
         case .secondary: return .tabiPrimary
         case .ghost: return .tabiTextPrimary
+        case .glass: return .tabiPrimary
         }
     }
 
     private var backgroundColor: TabiColor? {
         switch self.style {
         case .primary: return .tabiPrimary
-        case .secondary, .ghost: return nil
+        case .secondary, .ghost, .glass: return nil
         }
     }
 
     private var horizontalPadding: CGFloat {
         switch self.style {
-        case .primary, .secondary: return 20
+        case .primary, .secondary, .glass: return 20
         case .ghost: return 16
         }
     }
 
     private var typographyStyle: TypographyStyle {
         switch self.style {
-        case .primary, .secondary: return .bodyMBold
+        case .primary, .secondary, .glass: return .bodyMBold
         case .ghost: return .bodyM
         }
     }
@@ -100,18 +102,35 @@ public struct TabiButton: View {
             .padding(.vertical, 12)
             .padding(.horizontal, self.horizontalPadding)
             .frame(maxWidth: self.isExpanded ? .infinity : nil)
-            .background(self.backgroundColor ?? .tabiBackground)
-            .clipShape(.rect(cornerRadius: .tabiRadiusSm))
-            .overlay {
-                if self.style == .secondary {
-                    RoundedRectangle(cornerRadius: .tabiRadiusSm)
-                        .stroke(TabiColor.tabiPrimary, lineWidth: 1.5)
-                }
-            }
+            .modifier(TabiButtonBackground(style: self.style, backgroundColor: self.backgroundColor))
         }
         .buttonStyle(TabiPressStyle())
         .disabled(self.isLoading)
         .opacity(!self.isEnabled && !self.isLoading ? 0.5 : 1)
+    }
+}
+
+// MARK: - _TabiButtonBackground
+
+private struct TabiButtonBackground: ViewModifier {
+    let style: TabiButton.Style
+    let backgroundColor: TabiColor?
+
+    func body(content: Content) -> some View {
+        if self.style == .glass {
+            content
+                .glassEffect(.regular, in: .rect(cornerRadius: .tabiRadiusSm))
+        } else {
+            content
+                .background(self.backgroundColor ?? .tabiBackground)
+                .clipShape(.rect(cornerRadius: .tabiRadiusSm))
+                .overlay {
+                    if self.style == .secondary {
+                        RoundedRectangle(cornerRadius: .tabiRadiusSm)
+                            .stroke(TabiColor.tabiPrimary, lineWidth: 1.5)
+                    }
+                }
+        }
     }
 }
 
@@ -120,8 +139,10 @@ public struct TabiButton: View {
 private struct TabiPressStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.98 : 1)
-            .opacity(configuration.isPressed ? 0.95 : 1)
-            .animation(.tabiFast, value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.92 : 1)
+            .animation(
+                configuration.isPressed ? .none : .spring(response: 0.4, dampingFraction: 0.6),
+                value: configuration.isPressed
+            )
     }
 }
