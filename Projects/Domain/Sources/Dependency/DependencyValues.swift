@@ -15,4 +15,9 @@ extension DependencyValues {
         get {self[OnboardingUseCaseDependencyKey.self]}
         set {self[OnboardingUseCaseDependencyKey.self] = newValue}
     }
+    
+    public var locationUseCase: LocationUseCaseProtocol {
+        get {self[LocationUseCaseDependencyKey.self]}
+        set {self[LocationUseCaseDependencyKey.self] = newValue}
+    }
 }
