@@ -11,7 +11,7 @@ import Foundation
 import Domain
 import CoreLocation
 
-public final class LocationRepository: NSObject, LocationRepositoryProtocol {
+public final class LocationRepository: NSObject, LocationRepositoryProtocol, @unchecked Sendable {
     
     private let locationManager: CLLocationManager
     private var authContinuation: CheckedContinuation<LocationAuthorizationStatus, Never>?
