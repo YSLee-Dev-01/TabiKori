@@ -10,7 +10,7 @@ import Foundation
 
 import ComposableArchitecture
 
-enum LocationUseCaseDependencyKey: TestDependencyKey, Sendable {
+public enum LocationUseCaseDependencyKey: TestDependencyKey, Sendable {
     public static var testValue: LocationUseCaseProtocol {
         TestLocationUseCase()
     }

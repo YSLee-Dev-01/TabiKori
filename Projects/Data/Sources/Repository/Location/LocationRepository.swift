@@ -16,7 +16,7 @@ public final class LocationRepository: NSObject, LocationRepositoryProtocol, @un
     private let locationManager: CLLocationManager
     private var authContinuation: CheckedContinuation<LocationAuthorizationStatus, Never>?
     
-    init(locationManager: CLLocationManager = .init()) {
+    public init(locationManager: CLLocationManager = .init()) {
         self.locationManager = locationManager
     }
     
