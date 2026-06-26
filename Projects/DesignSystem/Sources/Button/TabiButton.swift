@@ -12,10 +12,15 @@ import Resource
 public struct TabiButton: View {
 
     public enum Style {
+        public enum GlassContext {
+            case surface
+            case accent
+        }
+
         case primary
         case secondary
         case ghost
-        case glass
+        case glass(on: GlassContext = .surface)
     }
 
     private let title: String
@@ -30,7 +35,8 @@ public struct TabiButton: View {
         case .primary: return .tabiOnColor
         case .secondary: return .tabiPrimary
         case .ghost: return .tabiTextPrimary
-        case .glass: return .tabiPrimary
+        case .glass(on: .surface): return .tabiPrimary
+        case .glass(on: .accent): return .tabiSurface
         }
     }
 
@@ -117,20 +123,30 @@ private struct TabiButtonBackground: ViewModifier {
     let backgroundColor: TabiColor?
 
     func body(content: Content) -> some View {
-        if self.style == .glass {
+        switch self.style {
+        case .glass(on: .surface):
             content
                 .glassEffect(.regular, in: .rect(cornerRadius: .tabiRadiusSm))
-        } else {
+        case .glass(on: .accent):
+            content
+                .background(Color.white.opacity(0.25))
+                .clipShape(.rect(cornerRadius: .tabiRadiusSm))
+                .overlay {
+                    RoundedRectangle(cornerRadius: .tabiRadiusSm)
+                        .stroke(Color.white.opacity(0.45), lineWidth: 1)
+                }
+        case .secondary:
             content
                 .background(self.backgroundColor ?? .tabiBackground)
                 .clipShape(.rect(cornerRadius: .tabiRadiusSm))
                 .overlay {
-                    if self.style == .secondary {
-                        RoundedRectangle(cornerRadius: .tabiRadiusSm)
-                            .stroke(TabiColor.tabiPrimary, lineWidth: 1.5)
-                    }
+                    RoundedRectangle(cornerRadius: .tabiRadiusSm)
+                        .stroke(TabiColor.tabiPrimary, lineWidth: 1.5)
                 }
+        default:
+            content
+                .background(self.backgroundColor ?? .tabiBackground)
+                .clipShape(.rect(cornerRadius: .tabiRadiusSm))
         }
     }
 }
-
