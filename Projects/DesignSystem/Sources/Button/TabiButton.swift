@@ -15,6 +15,7 @@ public struct TabiButton: View {
         public enum GlassContext {
             case surface
             case accent
+            case secondary
         }
 
         case primary
@@ -37,6 +38,7 @@ public struct TabiButton: View {
         case .ghost: return .tabiTextPrimary
         case .glass(on: .surface): return .tabiPrimary
         case .glass(on: .accent): return .tabiSurface
+        case .glass(on: .secondary): return .tabiSecondary
         }
     }
 
@@ -124,7 +126,7 @@ private struct TabiButtonBackground: ViewModifier {
 
     func body(content: Content) -> some View {
         switch self.style {
-        case .glass(on: .surface):
+        case .glass(on: .surface), .glass(on: .secondary):
             content
                 .glassEffect(.regular, in: .rect(cornerRadius: .tabiRadiusSm))
         case .glass(on: .accent):
