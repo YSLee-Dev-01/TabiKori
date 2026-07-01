@@ -12,6 +12,7 @@ public enum Strings {
     public enum Common {}
     public enum Tabbar {}
     public enum Home {}
+    public enum Region {}
 }
 
 public extension Strings.Common {
@@ -56,6 +57,42 @@ public extension Strings.Home {
     static let japanTravelBannerDescription = "旅行をもっと楽しむために、プランを作成してみましょう。"
     /// 일본 여행 배너 버튼
     static let japanTravelBannerButton = "プランを作成する"
+    /// 인기 관광 스팟 섹션 제목
+    static let popularSpotsTitle = "人気の観光スポット"
+    /// 전체보기
+    static let seeAll = "すべて見る"
+}
+
+public extension Strings.Region {
+    /// 서울
+    static let seoul = "ソウル"
+    /// 부산
+    static let busan = "釜山"
+    /// 제주
+    static let jeju = "済州"
+    /// 경주
+    static let gyeongju = "慶州"
+    /// 여수
+    static let yeosu = "麗水"
+    /// 강릉
+    static let gangneung = "江陵"
+    /// 전주
+    static let jeonju = "全州"
+
+    /// 서울 (한국어)
+    static let seoulKo = "서울"
+    /// 부산 (한국어)
+    static let busanKo = "부산"
+    /// 제주 (한국어)
+    static let jejuKo = "제주"
+    /// 경주 (한국어)
+    static let gyeongjuKo = "경주"
+    /// 여수 (한국어)
+    static let yeosuKo = "여수"
+    /// 강릉 (한국어)
+    static let gangneungKo = "강릉"
+    /// 전주 (한국어)
+    static let jeonjuKo = "전주"
 }
 
 public extension Strings.Tabbar {

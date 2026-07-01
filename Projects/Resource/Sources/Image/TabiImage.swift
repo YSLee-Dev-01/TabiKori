@@ -14,6 +14,17 @@ public enum TabiImage: String {
 
     case star = "star"
     case seoulTower = "seoulTower"
+    case koreaEvent = "koreaEvent"
+
+    // MARK: - Region
+
+    case regionSeoul = "regionSeoul"
+    case regionBusan = "regionBusan"
+    case regionJeju = "regionJeju"
+    case regionGyeongju = "regionGyeongju"
+    case regionYeosu = "regionYeosu"
+    case regionGangneung = "regionGangneung"
+    case regionJeonju = "regionJeonju"
 }
 
 public enum TabiIcon: String {
