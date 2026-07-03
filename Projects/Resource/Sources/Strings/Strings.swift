@@ -18,7 +18,7 @@ public enum Strings {
 public extension Strings.Common {
     /// 타비코리
     static let tabicori = "タビコリ"
-    
+
     /// 카테고리
     static let categoryTitle = "カテゴリー"
     /// 관광지
@@ -33,7 +33,14 @@ public extension Strings.Common {
     static let categoryShopping = "ショッピング"
     /// 자연
     static let categoryNature = "自然"
-    
+    /// 문화시설
+    static let contentTypeCulturalFacility = "文化施設"
+    /// 레포츠
+    static let contentTypeLeisure = "レジャー"
+    /// 교통
+    static let contentTypeTransportation = "交通"
+    /// 전체
+    static let contentTypeAll = "すべて"
 }
 
 public extension Strings.Home {
@@ -49,18 +56,22 @@ public extension Strings.Home {
     static let locationBannerTitle = "位置情報へのアクセス"
     /// 위치 배너 설명
     static let locationBannerDescription = "近くのスポットを表示するには、位置情報の利用を許可してください。"
-    /// 위치 배너 버튼
-    static let locationBannerButton = "設定を開く"
-    /// 일본 여행 배너 제목
-    static let japanTravelBannerTitle = "日本にいますね！"
     /// 일본 여행 배너 설명
     static let japanTravelBannerDescription = "旅行をもっと楽しむために、プランを作成してみましょう。"
-    /// 일본 여행 배너 버튼
-    static let japanTravelBannerButton = "プランを作成する"
+    /// 일본 여행 배너 출발 라벨
+    static let japanTravelBannerFromLabel = "FROM"
+    /// 일본 여행 배너 출발 국가
+    static let japanTravelBannerFromCountry = "JPN"
+    /// 일본 여행 배너 도착 라벨
+    static let japanTravelBannerToLabel = "TO"
+    /// 일본 여행 배너 도착 국가
+    static let japanTravelBannerToCountry = "KOR"
+    /// 일본 여행 배너 하단 라벨
+    static let japanTravelBannerPlanLabel = "TRAVEL PLAN"
     /// 인기 관광 스팟 섹션 제목
     static let popularSpotsTitle = "人気の観光スポット"
-    /// 전체보기
-    static let seeAll = "すべて見る"
+    /// 주변 스팟 섹션 제목
+    static let nearbySpotsTitle = "近くのスポット"
 }
 
 public extension Strings.Region {

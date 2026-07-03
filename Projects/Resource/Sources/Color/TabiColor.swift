@@ -41,6 +41,7 @@ public enum TabiColor: String {
 
     case tabiDestructive
     case tabiOnColor
+    case tabiScrim
 
     // MARK: - Category
 
