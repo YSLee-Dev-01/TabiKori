@@ -70,8 +70,10 @@ public extension Strings.Home {
     static let japanTravelBannerPlanLabel = "TRAVEL PLAN"
     /// 인기 관광 스팟 섹션 제목
     static let popularSpotsTitle = "人気の観光スポット"
-    /// 주변 스팟 섹션 제목
-    static let nearbySpotsTitle = "近くのスポット"
+    /// 주변 관광지 섹션 제목
+    static let nearbyTouristSpotsTitle = "近くの観光地"
+    /// 주변 맛집 섹션 제목
+    static let nearbyRestaurantsTitle = "近くの飲食店"
 }
 
 public extension Strings.Region {
