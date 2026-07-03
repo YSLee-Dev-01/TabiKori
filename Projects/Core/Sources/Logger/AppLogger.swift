@@ -9,16 +9,16 @@
 import Foundation
 import OSLog
 
-struct AppLogger {
+public struct AppLogger: Sendable {
     private let logger: Logger
     private let categoryName: String
     private let totalLogEnabled: Bool
     
-    enum LogLevel {
+    public enum LogLevel {
         case error, info, debug
     }
     
-    func log(_ level: LogLevel, _ message: String, enableLog: Bool = true) {
+    public func log(_ level: LogLevel, _ message: String, enableLog: Bool = true) {
         if !enableLog || !self.totalLogEnabled {return}
         
         switch level {
@@ -32,25 +32,25 @@ struct AppLogger {
 extension AppLogger {
     private static let subsystem = Bundle.main.bundleIdentifier ?? "com.yslee.tabikori"
     
-    static let network = AppLogger(
+    public static let network = AppLogger(
         logger: Logger(subsystem: subsystem, category: "Network"),
         categoryName: "🛜 Network",
         totalLogEnabled: AppConfig.shared.enableTotalNetworkLog
     )
     
-    static let core = AppLogger(
+    public static let core = AppLogger(
         logger: Logger(subsystem: subsystem, category: "Core"),
         categoryName: "💪 Core",
         totalLogEnabled: AppConfig.shared.enableCoreLog
     )
     
-    static let view = AppLogger(
+    public static let view = AppLogger(
         logger: Logger(subsystem: subsystem, category: "View"),
         categoryName: "💬 View",
         totalLogEnabled: AppConfig.shared.enableViewLog
     )
     
-    static let coordinator = AppLogger(
+    public static let coordinator = AppLogger(
         logger: Logger(subsystem: subsystem, category: "Coordinator"),
         categoryName: "🧑‍🧑‍🧒‍🧒 Coordinator",
         totalLogEnabled: AppConfig.shared.enableCoordinatorLog
