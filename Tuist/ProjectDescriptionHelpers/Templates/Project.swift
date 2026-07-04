@@ -12,7 +12,9 @@ public extension Project {
     static func makeProject(
         name: String,
         product: Product,
-        hasResource: Bool
+        hasResource: Bool,
+        infoPlist: InfoPlist = .file(path: .relativeToRoot("Tuist/Config/Info.plist")),
+        xcconfig: Path? = nil
     ) -> Project {
         let debugScheme = Scheme.makeScheme(
             schemeName: "\(name)Debug",
@@ -32,13 +34,15 @@ public extension Project {
             name: name,
             organizationName: Environment.organizationName,
             options: options(disableBundleAccessors: hasResource),
-            settings: Settings.defaultTargetSettings(),
+            settings: Settings.defaultTargetSettings(xcconfig: xcconfig),
             targets: [
                 Target.makeTarget(
                     name: name,
                     hasResource: hasResource,
                     product: product,
-                    dependencies: DependencyInformation.dependencies(name: name)
+                    dependencies: DependencyInformation.dependencies(name: name),
+                    infoPlist: infoPlist,
+                    xcconfig: xcconfig
                 )
             ],
             schemes: [

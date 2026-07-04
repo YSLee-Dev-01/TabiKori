@@ -13,7 +13,9 @@ public extension Target {
         name: String,
         hasResource: Bool,
         product: Product,
-        dependencies: [TargetDependency]
+        dependencies: [TargetDependency],
+        infoPlist: InfoPlist = .file(path: .relativeToRoot("Tuist/Config/Info.plist")),
+        xcconfig: Path? = nil
     ) -> Target {
         return Target.target(
             name: name,
@@ -21,11 +23,11 @@ public extension Target {
             product: product,
             bundleId: "\(Environment.organizationName).\(Environment.appName).\(name)",
             deploymentTargets: Environment.deploymentTarget,
-            infoPlist: .file(path: .relativeToRoot("Tuist/Config/Info.plist")),
+            infoPlist: infoPlist,
             sources: ["Sources/**"],
             resources: hasResource ? ["Resources/**"] : nil,
             dependencies: dependencies,
-            settings: Settings.defaultTargetSettings()
+            settings: Settings.defaultTargetSettings(xcconfig: xcconfig)
             )
     }
 }

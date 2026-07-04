@@ -9,7 +9,7 @@ import Foundation
 import ProjectDescription
 
 extension Settings {
-    static func defaultTargetSettings() -> Settings {
+    static func defaultTargetSettings(xcconfig: Path? = nil) -> Settings {
         return Settings.settings(
             base: [
                 "SWIFT_VERSION": "6.0",
@@ -21,13 +21,15 @@ extension Settings {
                     name: .debug,
                     settings: [
                         "OTHER_SWIFT_FLAGS": "-DDEBUG",
-                    ]
+                    ],
+                    xcconfig: xcconfig
                 ),
                 .release(
                     name: .release,
                     settings: [
                         "OTHER_SWIFT_FLAGS": ["-DRELEASE"],
-                    ]
+                    ],
+                    xcconfig: xcconfig
                 )
             ],
             defaultSettings: DefaultSettings.recommended
