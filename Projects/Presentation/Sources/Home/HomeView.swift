@@ -32,15 +32,32 @@ public struct HomeView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 20) {
-                    self.inJapanBanner()
-                    self.nearbyTouristSpotBanner()
-                    self.nearbyRestaurantBanner()
-                    self.locationPermissionBanner()
+                    if self.store.locationStatus == .allowed && self.store.currentRegion.isKorea {
+                        self.inKoreaBanner()
+                            .staggeredAppear(index: 0)
+                        self.exchangeRateCard()
+                            .staggeredAppear(index: 1)
+                        self.categoryView()
+                            .staggeredAppear(index: 2)
+                        self.nearbyTouristSpotBanner()
+                            .staggeredAppear(index: 3)
+                        self.nearbyRestaurantBanner()
+                            .staggeredAppear(index: 4)
+                    } else {
+                        if self.store.locationStatus == .allowed {
+                            self.inJapanBanner()
+                                .staggeredAppear(index: 0)
+                        } else {
+                            self.locationPermissionBanner()
+                                .staggeredAppear(index: 0)
+                        }
+                        self.categoryView()
+                            .staggeredAppear(index: 1)
+                        self.recommendedRegionBanner()
+                            .staggeredAppear(index: 2)
+                    }
                     self.recommendedEventBanner()
-                    self.categoryView()
-                    self.recommendedRegionBanner()
-                    self.inKoreaBanner()
-                    self.exchangeRateCard()
+                        .staggeredAppear(index: 5)
                 }
                 .animation(.tabiStandard, value: self.store.locationStatus)
                 .padding(.horizontal, 20)
@@ -55,7 +72,6 @@ public struct HomeView: View {
                 }
             }
         }
-        //.background(Color.getTabiColor(.tabiBackground))
         .onAppear {
             self.store.send(.onAppear)
         }

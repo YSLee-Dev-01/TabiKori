@@ -12,4 +12,9 @@ public enum TravelRegion: Equatable, Sendable {
     case korea(KoreanRegion)
     case japan
     case unsupported
+    
+    public var isKorea: Bool {
+        guard case .korea = self else { return false }
+        return true
+    }
 }

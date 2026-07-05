@@ -9,6 +9,7 @@
 import Foundation
 
 import ComposableArchitecture
+import Core
 import Domain
 
 // MARK: - NearbySpot (임시)
@@ -59,6 +60,7 @@ public struct HomeFeature: Sendable {
     public struct State: Equatable {
         var currentDate: String = Date().homeDateTitle
         var locationStatus: LocationAuthorizationStatus = .denied
+        var currentRegion: TravelRegion = .unsupported
         var nearbyTouristSpots: [NearbySpot] = NearbySpot.touristDummies
         var nearbyRestaurants: [NearbySpot] = NearbySpot.restaurantDummies
         var isLoadingTouristSpots: Bool = false
@@ -74,6 +76,7 @@ public struct HomeFeature: Sendable {
         case onAppear
         case requestLocationPermission
         case locationPermissionResult(LocationAuthorizationStatus)
+        case regionResult(TravelRegion)
         case planCreateButtonTapped
         case nearbySpotTapped(NearbySpot)
     }
@@ -102,9 +105,21 @@ public struct HomeFeature: Sendable {
             case .onAppear:
                 state.locationStatus = self.locationUseCase.checkAuthorization()
 
-                if state.locationStatus == .undetermined {
+                switch state.locationStatus {
+                case .undetermined:
                     return .send(.requestLocationPermission)
-                } else {
+
+                case .allowed:
+                    return .run { [locationUseCase = self.locationUseCase] send in
+                        do {
+                            let region = try await locationUseCase.fetchCurrentRegion()
+                            await send(.regionResult(region))
+                        } catch {
+                            AppLogger.view.log(.error, "현재 지역 조회 실패: \(error.localizedDescription)")
+                        }
+                    }
+
+                case .denied:
                     return .none
                 }
 
@@ -116,6 +131,10 @@ public struct HomeFeature: Sendable {
 
             case .locationPermissionResult(let status):
                 state.locationStatus = status
+                return .none
+
+            case .regionResult(let region):
+                state.currentRegion = region
                 return .none
 
             case .planCreateButtonTapped:
