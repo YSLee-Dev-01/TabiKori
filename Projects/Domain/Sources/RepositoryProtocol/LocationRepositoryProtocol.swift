@@ -11,4 +11,5 @@ import Foundation
 public protocol LocationRepositoryProtocol: Sendable {
     func checkAuthorization() -> LocationAuthorizationStatus
     func requestAuthorization() async -> LocationAuthorizationStatus
+    func fetchCurrentCoordinate() async throws -> Coordinate
 }

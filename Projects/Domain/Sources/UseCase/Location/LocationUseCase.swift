@@ -29,4 +29,13 @@ public final class LocationUseCase: LocationUseCaseProtocol {
     public func requestAuthorization() async -> LocationAuthorizationStatus {
         return await self.repository.requestAuthorization()
     }
+
+    public func fetchCurrentCoordinate() async throws -> Coordinate {
+        return try await self.repository.fetchCurrentCoordinate()
+    }
+
+    public func fetchCurrentRegion() async throws -> TravelRegion {
+        let coordinate = try await self.fetchCurrentCoordinate()
+        return RegionClassifier.classify(coordinate)
+    }
 }

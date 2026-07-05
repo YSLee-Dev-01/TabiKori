@@ -11,4 +11,6 @@ import Foundation
 public protocol LocationUseCaseProtocol: Sendable {
     func checkAuthorization() -> LocationAuthorizationStatus
     func requestAuthorization() async -> LocationAuthorizationStatus
+    func fetchCurrentCoordinate() async throws -> Coordinate
+    func fetchCurrentRegion() async throws -> TravelRegion
 }

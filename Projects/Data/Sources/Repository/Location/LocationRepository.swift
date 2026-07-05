@@ -15,9 +15,12 @@ public final class LocationRepository: NSObject, LocationRepositoryProtocol, @un
     
     private let locationManager: CLLocationManager
     private var authContinuation: CheckedContinuation<LocationAuthorizationStatus, Never>?
-    
+    private var coordinateContinuation: CheckedContinuation<Coordinate, Error>?
+
     public init(locationManager: CLLocationManager = .init()) {
         self.locationManager = locationManager
+        super.init()
+        self.locationManager.delegate = self
     }
     
     public func checkAuthorization() -> LocationAuthorizationStatus {
@@ -30,7 +33,14 @@ public final class LocationRepository: NSObject, LocationRepositoryProtocol, @un
             self.locationManager.requestWhenInUseAuthorization()
         }
     }
-    
+
+    public func fetchCurrentCoordinate() async throws -> Coordinate {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.coordinateContinuation = continuation
+            self.locationManager.requestLocation()
+        }
+    }
+
     fileprivate static func mapAuthorizationStatus(_ status: CLAuthorizationStatus) -> LocationAuthorizationStatus {
         switch status {
         case .authorizedAlways, .authorizedWhenInUse:
@@ -49,5 +59,19 @@ extension LocationRepository: CLLocationManagerDelegate {
     public func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         self.authContinuation?.resume(returning: Self.mapAuthorizationStatus(manager.authorizationStatus))
         self.authContinuation = nil
+    }
+
+    public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        self.coordinateContinuation?.resume(returning: Coordinate(
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude
+        ))
+        self.coordinateContinuation = nil
+    }
+
+    public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        self.coordinateContinuation?.resume(throwing: error)
+        self.coordinateContinuation = nil
     }
 }
