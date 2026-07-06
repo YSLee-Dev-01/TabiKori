@@ -53,8 +53,6 @@ public struct HomeFeature: Sendable {
 
     @Dependency(\.locationUseCase) var locationUseCase
     @Dependency(\.exchangeRateUseCase) var exchangeRateUseCase
-    
-    private let mockExchangeRate: Double = 0
 
     @ObservableState
     public struct State: Equatable {
@@ -65,8 +63,9 @@ public struct HomeFeature: Sendable {
         var nearbyRestaurants: [NearbySpot] = NearbySpot.restaurantDummies
         var isLoadingTouristSpots: Bool = false
         var isLoadingRestaurants: Bool = false
-        var krwAmountText: String = "0"
+        var krwAmountText: String = "1000"
         var jpyAmountText: String = "0"
+        fileprivate var krwToJPYRate: Double = 0
 
         public init() {}
     }
@@ -77,6 +76,7 @@ public struct HomeFeature: Sendable {
         case requestLocationPermission
         case locationPermissionResult(LocationAuthorizationStatus)
         case regionResult(TravelRegion)
+        case exchangeRateResult(Double)
         case planCreateButtonTapped
         case nearbySpotTapped(NearbySpot)
     }
@@ -89,13 +89,13 @@ public struct HomeFeature: Sendable {
             switch action {
             case .binding(\.krwAmountText):
                 if let krw = Double(state.krwAmountText) {
-                    state.jpyAmountText = String(format: "%.1f", krw * self.mockExchangeRate)
+                    state.jpyAmountText = String(format: "%.1f", krw * state.krwToJPYRate)
                 }
                 return .none
 
             case .binding(\.jpyAmountText):
-                if let jpy = Double(state.jpyAmountText) {
-                    state.krwAmountText = String(format: "%.0f", jpy / self.mockExchangeRate)
+                if let jpy = Double(state.jpyAmountText), state.krwToJPYRate != 0 {
+                    state.krwAmountText = String(format: "%.0f", jpy / state.krwToJPYRate)
                 }
                 return .none
 
@@ -105,12 +105,13 @@ public struct HomeFeature: Sendable {
             case .onAppear:
                 state.locationStatus = self.locationUseCase.checkAuthorization()
 
+                let locationEffect: Effect<Action>
                 switch state.locationStatus {
                 case .undetermined:
-                    return .send(.requestLocationPermission)
+                    locationEffect = .send(.requestLocationPermission)
 
                 case .allowed:
-                    return .run { [locationUseCase = self.locationUseCase] send in
+                    locationEffect = .run { [locationUseCase = self.locationUseCase] send in
                         try? await Task.sleep(for: .seconds(1))
                         do {
                             let region = try await locationUseCase.fetchCurrentRegion()
@@ -121,8 +122,19 @@ public struct HomeFeature: Sendable {
                     }
 
                 case .denied:
-                    return .none
+                    locationEffect = .none
                 }
+
+                let exchangeRateEffect: Effect<Action> = .run { [exchangeRateUseCase = self.exchangeRateUseCase] send in
+                    do {
+                        let rate = try await exchangeRateUseCase.fetchKRWToJPYRate()
+                        await send(.exchangeRateResult(rate))
+                    } catch {
+                        AppLogger.view.log(.error, "환율 조회 실패: \(error.localizedDescription)")
+                    }
+                }
+
+                return .merge(locationEffect, exchangeRateEffect)
 
             case .requestLocationPermission:
                 return .run { send in
@@ -136,6 +148,13 @@ public struct HomeFeature: Sendable {
 
             case .regionResult(let region):
                 state.currentRegion = region
+                return .none
+
+            case .exchangeRateResult(let rate):
+                state.krwToJPYRate = rate
+                if let krw = Double(state.krwAmountText) {
+                    state.jpyAmountText = String(format: "%.1f", krw * rate)
+                }
                 return .none
 
             case .planCreateButtonTapped:
