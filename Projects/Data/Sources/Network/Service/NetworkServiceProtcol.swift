@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol NetworkServiceProtocol {
+public protocol NetworkServiceProtocol: Sendable {
     /// 네트워크 통신과 디코딩을 동시에 진행할 때 사용해요.
     /// - Parameters:
     ///     - endPoint: 네트워크 통신을 요청하고 싶은 EndPoint

@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum NetworkError: Error, Equatable {
+public enum NetworkError: Error, Equatable {
     case timeout
     case cancelled
     case invalidURL

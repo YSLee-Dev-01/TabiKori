@@ -9,20 +9,24 @@
 import Foundation
 import Core
 
-final class NetworkService: NetworkServiceProtocol {
-    
+public final class NetworkService: NetworkServiceProtocol {
+
     // MARK: - Properties
-    
+
     private let session: URLSessionProtocol
-    
+
     // MARK: - LifeCycle
-    
-    init(session: URLSessionProtocol = URLSession.shared) {
+
+    public init() {
+        self.session = URLSession.shared
+    }
+
+    init(session: URLSessionProtocol) {
         self.session = session
     }
-    
+
     // MARK: - Methods
-    func request<T>(
+    public func request<T>(
         endPoint: Endpoint,
         responseType: T.Type
     ) async throws(NetworkError)
