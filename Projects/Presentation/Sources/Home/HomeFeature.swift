@@ -111,6 +111,7 @@ public struct HomeFeature: Sendable {
 
                 case .allowed:
                     return .run { [locationUseCase = self.locationUseCase] send in
+                        try? await Task.sleep(for: .seconds(1))
                         do {
                             let region = try await locationUseCase.fetchCurrentRegion()
                             await send(.regionResult(region))

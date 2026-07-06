@@ -10,7 +10,7 @@ import SwiftUI
 
 public extension Animation {
     static let tabiFast = Animation.timingCurve(0.4, 0.0, 0.6, 1, duration: 0.15)
-    static let tabiStandard = Animation.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.25)
+    static let tabiStandard = Animation.smooth
     static let tabiModerate = Animation.timingCurve(0.0, 0.0, 0.2, 1, duration: 0.35)
     static let tabiSlow = Animation.timingCurve(0.0, 0.0, 0.2, 1, duration: 0.50)
     static let tabiSpring = Animation.spring(response: 0.35, dampingFraction: 0.7)

@@ -60,6 +60,7 @@ public struct HomeView: View {
                         .staggeredAppear(index: 5)
                 }
                 .animation(.tabiStandard, value: self.store.locationStatus)
+                .animation(.tabiStandard, value: self.store.currentRegion.isKorea)
                 .padding(.horizontal, 20)
                 .padding(.top, 15)
             }
