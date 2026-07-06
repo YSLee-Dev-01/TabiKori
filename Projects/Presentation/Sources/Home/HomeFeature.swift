@@ -52,9 +52,9 @@ public enum TourismContentType: String, Equatable, CaseIterable, Sendable {
 public struct HomeFeature: Sendable {
 
     @Dependency(\.locationUseCase) var locationUseCase
-
-    // 환율 API 연동 전까지 사용하는 임시 고정값 (1 KRW = 0.1073 JPY)
-    private let mockExchangeRate: Double = 0.1073
+    @Dependency(\.exchangeRateUseCase) var exchangeRateUseCase
+    
+    private let mockExchangeRate: Double = 0
 
     @ObservableState
     public struct State: Equatable {
@@ -65,8 +65,8 @@ public struct HomeFeature: Sendable {
         var nearbyRestaurants: [NearbySpot] = NearbySpot.restaurantDummies
         var isLoadingTouristSpots: Bool = false
         var isLoadingRestaurants: Bool = false
-        var krwAmountText: String = "1000"
-        var jpyAmountText: String = "107.3"
+        var krwAmountText: String = "0"
+        var jpyAmountText: String = "0"
 
         public init() {}
     }

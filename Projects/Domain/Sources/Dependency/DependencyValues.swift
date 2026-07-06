@@ -20,4 +20,9 @@ extension DependencyValues {
         get {self[LocationUseCaseDependencyKey.self]}
         set {self[LocationUseCaseDependencyKey.self] = newValue}
     }
+
+    public var exchangeRateUseCase: ExchangeRateUseCaseProtocol {
+        get {self[ExchangeRateUseCaseDependencyKey.self]}
+        set {self[ExchangeRateUseCaseDependencyKey.self] = newValue}
+    }
 }
