@@ -37,7 +37,7 @@ public final class LocationRepository: NSObject, LocationRepositoryProtocol, @un
     public func fetchCurrentCoordinate() async throws -> Coordinate {
         return try await withCheckedThrowingContinuation { continuation in
             self.coordinateContinuation = continuation
-            self.locationManager.requestLocation()
+            self.locationManager.startUpdatingLocation()
         }
     }
 
@@ -62,16 +62,18 @@ extension LocationRepository: CLLocationManagerDelegate {
     }
 
     public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let location = locations.last else { return }
+        guard let location = locations.first else { return }
         self.coordinateContinuation?.resume(returning: Coordinate(
             latitude: location.coordinate.latitude,
             longitude: location.coordinate.longitude
         ))
         self.coordinateContinuation = nil
+        self.locationManager.stopUpdatingLocation()
     }
 
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         self.coordinateContinuation?.resume(throwing: error)
         self.coordinateContinuation = nil
+        self.locationManager.stopUpdatingLocation()
     }
 }
