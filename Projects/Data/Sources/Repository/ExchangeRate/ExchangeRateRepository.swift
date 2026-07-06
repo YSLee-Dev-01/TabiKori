@@ -10,7 +10,7 @@ import Foundation
 
 import Domain
 
-public final class ExchangeRateRepository {
+public final class ExchangeRateRepository: ExchangeRateRepositoryProtocol {
 
     // MARK: - Properties
 
@@ -18,11 +18,17 @@ public final class ExchangeRateRepository {
 
     // MARK: - Init
 
-    init(networkService: NetworkServiceProtocol) {
+    public init(networkService: NetworkServiceProtocol = NetworkService()) {
         self.networkService = networkService
     }
-    
+
     // MARK: - Method
-    
-    
+
+    public func fetchExchangeRates() async throws -> [ExchangeRate] {
+        let dtos = try await self.networkService.request(
+            endPoint: ExchangeRateEndpoint.today,
+            responseType: [ExchangeRateDTO].self
+        )
+        return dtos.compactMap { $0.toEntity() }
+    }
 }
