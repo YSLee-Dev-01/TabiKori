@@ -82,34 +82,6 @@ public struct HomeView: View {
     }
 }
 
-// MARK: - TouristSpotContentType View Extension
-
-private extension TouristSpotContentType {
-    var label: String {
-        switch self {
-        case .touristSpot: Strings.Common.categorySightseeing
-        case .restaurant: Strings.Common.categoryFood
-        case .accommodation: Strings.Common.categoryHotel
-        case .festival: Strings.Common.categoryFestival
-        case .shopping: Strings.Common.categoryShopping
-        case .culturalFacility: Strings.Common.contentTypeCulturalFacility
-        case .leisure: Strings.Common.contentTypeLeisure
-        }
-    }
-
-    var tagColor: TabiColor {
-        switch self {
-        case .touristSpot: .categorySightseeing
-        case .restaurant: .categoryFood
-        case .accommodation: .categoryHotel
-        case .festival: .categoryFestival
-        case .shopping: .categoryShopping
-        case .culturalFacility: .tabiAccentLavender
-        case .leisure: .tabiAccentMint
-        }
-    }
-}
-
 // MARK: - TouristSpot View Extension
 
 private extension TouristSpot {
@@ -284,7 +256,7 @@ fileprivate extension HomeView {
                 .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
 
                 VStack(alignment: .leading, spacing: 4) {
-                    TabiTag(spot.contentType.label, color: spot.contentType.tagColor)
+                    TabiTag(spot.contentType.label, color: spot.contentType.color)
 
                     TabiLabel(
                         title: spot.title,
@@ -387,7 +359,7 @@ fileprivate extension HomeView {
 
                 VStack(alignment: .leading, spacing: 4) {
                     TabiLabel(title: spot.title, style: .bodyMBold, color: .tabiTextPrimary, lineLimit: 2)
-                    TabiTag(spot.contentType.label, color: spot.contentType.tagColor)
+                    TabiTag(spot.contentType.label, color: spot.contentType.color)
                 }
 
                 Spacer()

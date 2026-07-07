@@ -73,7 +73,7 @@ extension TouristSpotResponseDTO {
 
 private extension TouristSpotItemDTO {
     func toEntity() -> TouristSpot? {
-        guard let contenttypeid, let contentType = TouristSpotContentType(apiCode: contenttypeid) else {
+        guard let contenttypeid, let contentType = CategoryType(apiCode: contenttypeid) else {
             AppLogger.network.log(.error, "❌ 알 수 없는 contenttypeid: \(self.contenttypeid ?? "nil")")
             return nil
         }
@@ -85,20 +85,5 @@ private extension TouristSpotItemDTO {
             distanceMeters: self.dist?.toDouble(),
             contentType: contentType
         )
-    }
-}
-
-private extension TouristSpotContentType {
-    init?(apiCode: String) {
-        switch apiCode {
-        case "12": self = .touristSpot
-        case "14": self = .culturalFacility
-        case "15": self = .festival
-        case "28": self = .leisure
-        case "32": self = .accommodation
-        case "38": self = .shopping
-        case "39": self = .restaurant
-        default: return nil
-        }
     }
 }

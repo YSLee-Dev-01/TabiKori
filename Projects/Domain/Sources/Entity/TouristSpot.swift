@@ -13,14 +13,14 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
     public let title: String
     public let thumbnailURL: String?
     public let distanceMeters: Double?
-    public let contentType: TouristSpotContentType
+    public let contentType: CategoryType
 
     public init(
         id: String,
         title: String,
         thumbnailURL: String?,
         distanceMeters: Double?,
-        contentType: TouristSpotContentType
+        contentType: CategoryType
     ) {
         self.id = id
         self.title = title
@@ -28,14 +28,4 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
         self.distanceMeters = distanceMeters
         self.contentType = contentType
     }
-}
-
-public enum TouristSpotContentType: String, Equatable, CaseIterable, Sendable {
-    case touristSpot
-    case culturalFacility
-    case festival
-    case leisure
-    case accommodation
-    case shopping
-    case restaurant
 }

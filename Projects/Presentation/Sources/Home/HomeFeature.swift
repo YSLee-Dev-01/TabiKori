@@ -137,14 +137,14 @@ public struct HomeFeature: Sendable {
 
 private extension TouristSpot {
     static let touristDummies: [TouristSpot] = [
-        TouristSpot(id: "1", title: "景福宮", thumbnailURL: nil, distanceMeters: 320, contentType: .touristSpot),
-        TouristSpot(id: "2", title: "ソウル市立美術館", thumbnailURL: nil, distanceMeters: 1200, contentType: .culturalFacility),
-        TouristSpot(id: "3", title: "北村韓屋村", thumbnailURL: nil, distanceMeters: 680, contentType: .touristSpot),
+        TouristSpot(id: "1", title: "景福宮", thumbnailURL: nil, distanceMeters: 320, contentType: .sightseeing),
+        TouristSpot(id: "2", title: "ソウル市立美術館", thumbnailURL: nil, distanceMeters: 1200, contentType: .sightseeing),
+        TouristSpot(id: "3", title: "北村韓屋村", thumbnailURL: nil, distanceMeters: 680, contentType: .sightseeing),
     ]
 
     static let restaurantDummies: [TouristSpot] = [
-        TouristSpot(id: "4", title: "土俗村サムゲタン", thumbnailURL: nil, distanceMeters: 430, contentType: .restaurant),
-        TouristSpot(id: "5", title: "明洞餃子", thumbnailURL: nil, distanceMeters: 210, contentType: .restaurant),
-        TouristSpot(id: "6", title: "広蔵市場", thumbnailURL: nil, distanceMeters: 890, contentType: .restaurant),
+        TouristSpot(id: "4", title: "土俗村サムゲタン", thumbnailURL: nil, distanceMeters: 430, contentType: .food),
+        TouristSpot(id: "5", title: "明洞餃子", thumbnailURL: nil, distanceMeters: 210, contentType: .food),
+        TouristSpot(id: "6", title: "広蔵市場", thumbnailURL: nil, distanceMeters: 890, contentType: .food),
     ]
 }

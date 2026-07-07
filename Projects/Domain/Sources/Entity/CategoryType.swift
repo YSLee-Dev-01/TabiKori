@@ -8,6 +8,6 @@
 
 import Foundation
 
-public enum CategoryType: String, Codable {
+public enum CategoryType: String, Codable, Sendable {
     case sightseeing, food, hotel, festival, shopping, nature
 }
