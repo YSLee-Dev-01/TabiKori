@@ -12,40 +12,6 @@ import ComposableArchitecture
 import Core
 import Domain
 
-// MARK: - NearbySpot (임시)
-
-public struct NearbySpot: Equatable, Identifiable, Sendable {
-    public let id: String
-    public let title: String
-    public let thumbnailURL: String?
-    public let distanceMeters: Double?
-    public let contentType: TourismContentType
-    
-    public init(id: String, title: String, thumbnailURL: String?, distanceMeters: Double?, contentType: TourismContentType) {
-        self.id = id
-        self.title = title
-        self.thumbnailURL = thumbnailURL
-        self.distanceMeters = distanceMeters
-        self.contentType = contentType
-    }
-}
-
-// MARK: - TourismContentType (임시)
-
-public enum TourismContentType: String, Equatable, CaseIterable, Sendable {
-    case touristSpot
-    case culturalFacility
-    case restaurant
-    case shopping
-    case festival
-    case accommodation
-    case leisure
-
-    static let chipFilterItems: [Self] = [
-        .touristSpot, .restaurant, .culturalFacility, .shopping
-    ]
-}
-
 // MARK: - HomeFeature
 
 @Reducer
@@ -59,8 +25,8 @@ public struct HomeFeature: Sendable {
         var currentDate: String = Date().homeDateTitle
         var locationStatus: LocationAuthorizationStatus = .denied
         var currentRegion: TravelRegion = .unsupported
-        var nearbyTouristSpots: [NearbySpot] = NearbySpot.touristDummies
-        var nearbyRestaurants: [NearbySpot] = NearbySpot.restaurantDummies
+        var nearbyTouristSpots: [TouristSpot] = TouristSpot.touristDummies
+        var nearbyRestaurants: [TouristSpot] = TouristSpot.restaurantDummies
         var isLoadingTouristSpots: Bool = false
         var isLoadingRestaurants: Bool = false
         var krwAmountText: String = "1000"
@@ -78,7 +44,7 @@ public struct HomeFeature: Sendable {
         case regionResult(TravelRegion)
         case exchangeRateResult(Double)
         case planCreateButtonTapped
-        case nearbySpotTapped(NearbySpot)
+        case nearbySpotTapped(TouristSpot)
     }
 
     public init() {}
@@ -167,18 +133,18 @@ public struct HomeFeature: Sendable {
     }
 }
 
-// MARK: - NearbySpot Dummy
+// MARK: - TouristSpot Dummy
 
-private extension NearbySpot {
-    static let touristDummies: [NearbySpot] = [
-        NearbySpot(id: "1", title: "景福宮", thumbnailURL: nil, distanceMeters: 320, contentType: .touristSpot),
-        NearbySpot(id: "2", title: "ソウル市立美術館", thumbnailURL: nil, distanceMeters: 1200, contentType: .culturalFacility),
-        NearbySpot(id: "3", title: "北村韓屋村", thumbnailURL: nil, distanceMeters: 680, contentType: .touristSpot),
+private extension TouristSpot {
+    static let touristDummies: [TouristSpot] = [
+        TouristSpot(id: "1", title: "景福宮", thumbnailURL: nil, distanceMeters: 320, contentType: .touristSpot),
+        TouristSpot(id: "2", title: "ソウル市立美術館", thumbnailURL: nil, distanceMeters: 1200, contentType: .culturalFacility),
+        TouristSpot(id: "3", title: "北村韓屋村", thumbnailURL: nil, distanceMeters: 680, contentType: .touristSpot),
     ]
 
-    static let restaurantDummies: [NearbySpot] = [
-        NearbySpot(id: "4", title: "土俗村サムゲタン", thumbnailURL: nil, distanceMeters: 430, contentType: .restaurant),
-        NearbySpot(id: "5", title: "明洞餃子", thumbnailURL: nil, distanceMeters: 210, contentType: .restaurant),
-        NearbySpot(id: "6", title: "広蔵市場", thumbnailURL: nil, distanceMeters: 890, contentType: .restaurant),
+    static let restaurantDummies: [TouristSpot] = [
+        TouristSpot(id: "4", title: "土俗村サムゲタン", thumbnailURL: nil, distanceMeters: 430, contentType: .restaurant),
+        TouristSpot(id: "5", title: "明洞餃子", thumbnailURL: nil, distanceMeters: 210, contentType: .restaurant),
+        TouristSpot(id: "6", title: "広蔵市場", thumbnailURL: nil, distanceMeters: 890, contentType: .restaurant),
     ]
 }

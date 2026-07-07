@@ -82,9 +82,9 @@ public struct HomeView: View {
     }
 }
 
-// MARK: - TourismContentType View Extension
+// MARK: - TouristSpotContentType View Extension
 
-private extension TourismContentType {
+private extension TouristSpotContentType {
     var label: String {
         switch self {
         case .touristSpot: Strings.Common.categorySightseeing
@@ -110,9 +110,9 @@ private extension TourismContentType {
     }
 }
 
-// MARK: - NearbySpot View Extension
+// MARK: - TouristSpot View Extension
 
-private extension NearbySpot {
+private extension TouristSpot {
     var formattedDistance: String? {
         guard let dist = self.distanceMeters else { return nil }
         if dist >= 1000 { return String(format: "%.1fkm", dist / 1000) }
@@ -263,7 +263,7 @@ fileprivate extension HomeView {
         }
     }
 
-    func nearbyTouristSpotCard(_ spot: NearbySpot) -> some View {
+    func nearbyTouristSpotCard(_ spot: TouristSpot) -> some View {
         Button {
             self.store.send(.nearbySpotTapped(spot))
         } label: {
@@ -365,7 +365,7 @@ fileprivate extension HomeView {
         }
     }
 
-    func nearbyRestaurantRow(_ spot: NearbySpot) -> some View {
+    func nearbyRestaurantRow(_ spot: TouristSpot) -> some View {
         Button {
             self.store.send(.nearbySpotTapped(spot))
         } label: {
