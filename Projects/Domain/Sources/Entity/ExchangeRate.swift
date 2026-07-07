@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct ExchangeRate: Equatable, Sendable {
+public struct ExchangeRate: Equatable, Sendable, Codable {
     public let currencyCode: String
     public let currencyName: String
     public let unitScale: Int

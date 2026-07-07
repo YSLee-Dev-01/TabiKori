@@ -10,4 +10,6 @@ import Foundation
 
 public enum TabiUserDefaultKey: String {
     case onboardingCompleted
+    case exchangeRates
+    case exchangeRateFetchedAt
 }
