@@ -20,6 +20,7 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
 
     // 외부 (라이브러리)
     case tca = "ComposableArchitecture"
+    case lottie = "Lottie"
 
     static let internalDependencyInfo: [DependencyInformation: [DependencyInformation]] = [
         .app: [.domain, .data, .presentation],
@@ -32,7 +33,7 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
     ]
 
     static let externalDependencyInfo: [DependencyInformation: [DependencyInformation]] = [
-        .presentation: [.tca],
+        .presentation: [.tca, .lottie],
         .domain: [.tca],
         .app: [.tca]
     ]
