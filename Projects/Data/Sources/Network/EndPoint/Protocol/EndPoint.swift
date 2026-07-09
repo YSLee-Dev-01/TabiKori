@@ -27,7 +27,12 @@ extension Endpoint {
             return self.baseURL + self.path
         }
         if !self.queryItems.isEmpty {
-            components.queryItems = self.queryItems
+            components.percentEncodedQueryItems = self.queryItems.map { item in
+                URLQueryItem(
+                    name: item.name,
+                    value: item.value?.addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed)
+                )
+            }
         }
         return components.url?.absoluteString ?? self.baseURL + self.path
     }
