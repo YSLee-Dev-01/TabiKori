@@ -37,6 +37,6 @@ public final class TouristSpotRepository: TouristSpotRepositoryProtocol {
             ),
             responseType: TouristSpotResponseDTO.self
         )
-        return dto.toEntities()
+        return try dto.toEntities()
     }
 }

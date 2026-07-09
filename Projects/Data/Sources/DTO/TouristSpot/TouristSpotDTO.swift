@@ -59,15 +59,15 @@ struct TouristSpotItemDTO: Decodable {
 // MARK: - Mapping
 
 extension TouristSpotResponseDTO {
-    func toEntities() -> [TouristSpot] {
-        switch self.response.header.resultCode {
-        case "0000":
-            return self.response.body.items.item.compactMap { $0.toEntity() }
-
-        default:
+    func toEntities() throws -> [TouristSpot] {
+        guard self.response.header.resultCode == "0000" else {
             AppLogger.network.log(.error, "❌ 관광지 조회 실패: \(self.response.header.resultCode) \(self.response.header.resultMsg)")
-            return []
+            throw TabiError.apiFailed(
+                code: self.response.header.resultCode,
+                message: self.response.header.resultMsg
+            )
         }
+        return self.response.body.items.item.compactMap { $0.toEntity() }
     }
 }
 

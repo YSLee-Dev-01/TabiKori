@@ -26,7 +26,7 @@ public final class ExchangeRateUseCase: ExchangeRateUseCaseProtocol {
         let rates = try await self.repository.fetchExchangeRates()
 
         guard let jpy = rates.first(where: { $0.currencyCode == "JPY" }) else {
-            throw ExchangeRateError.currencyNotFound
+            throw TabiError.dataNotFound
         }
 
         return Double(jpy.unitScale) / jpy.baseRate
