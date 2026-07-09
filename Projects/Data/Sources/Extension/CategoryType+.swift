@@ -13,23 +13,23 @@ import Domain
 extension CategoryType {
     var apiCode: String {
         switch self {
-        case .sightseeing: return "12"
-        case .food: return "39"
-        case .hotel: return "32"
-        case .festival: return "15"
-        case .shopping: return "38"
-        case .nature: return "28"
+        case .sightseeing: return "76"
+        case .food: return "82"
+        case .hotel: return "80"
+        case .festival: return "85"
+        case .shopping: return "79"
+        case .nature: return "75"
         }
     }
 
     init?(apiCode: String) {
         switch apiCode {
-        case "12", "14": self = .sightseeing
-        case "39": self = .food
-        case "32": self = .hotel
-        case "15": self = .festival
-        case "38": self = .shopping
-        case "28": self = .nature
+        case "76", "78": self = .sightseeing
+        case "82": self = .food
+        case "80": self = .hotel
+        case "85": self = .festival
+        case "79": self = .shopping
+        case "75": self = .nature
         default: return nil
         }
     }
