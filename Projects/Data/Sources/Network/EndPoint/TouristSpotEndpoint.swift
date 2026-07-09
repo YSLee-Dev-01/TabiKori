@@ -21,7 +21,7 @@ enum TouristSpotEndpoint: Endpoint {
 
     var path: String {
         switch self {
-        case .nearbySpots: return "/B551011/KorService2/locationBasedList2"
+        case .nearbySpots: return "/B551011/JpnService2/locationBasedList2"
         }
     }
 
