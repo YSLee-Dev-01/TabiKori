@@ -25,4 +25,9 @@ extension DependencyValues {
         get {self[ExchangeRateUseCaseDependencyKey.self]}
         set {self[ExchangeRateUseCaseDependencyKey.self] = newValue}
     }
+
+    public var touristSpotUseCase: TouristSpotUseCaseProtocol {
+        get {self[TouristSpotUseCaseDependencyKey.self]}
+        set {self[TouristSpotUseCaseDependencyKey.self] = newValue}
+    }
 }

@@ -19,14 +19,17 @@ public struct HomeFeature: Sendable {
 
     @Dependency(\.locationUseCase) var locationUseCase
     @Dependency(\.exchangeRateUseCase) var exchangeRateUseCase
+    @Dependency(\.touristSpotUseCase) var touristSpotUseCase
+
+    private let nearbySpotRadiusMeters = 10000
 
     @ObservableState
     public struct State: Equatable {
         var currentDate: String = Date().homeDateTitle
         var locationStatus: LocationAuthorizationStatus = .denied
         var currentRegion: TravelRegion = .unsupported
-        var nearbyTouristSpots: [TouristSpot] = TouristSpot.touristDummies
-        var nearbyRestaurants: [TouristSpot] = TouristSpot.restaurantDummies
+        var nearbyTouristSpots: [TouristSpot] = []
+        var nearbyRestaurants: [TouristSpot] = []
         var isLoadingTouristSpots: Bool = false
         var isLoadingRestaurants: Bool = false
         var krwAmountText: String = "1000"
@@ -43,6 +46,8 @@ public struct HomeFeature: Sendable {
         case locationPermissionResult(LocationAuthorizationStatus)
         case regionResult(TravelRegion)
         case exchangeRateResult(Double)
+        case nearbyTouristSpotsResult([TouristSpot])
+        case nearbyRestaurantsResult([TouristSpot])
         case planCreateButtonTapped
         case nearbySpotTapped(TouristSpot)
     }
@@ -114,13 +119,54 @@ public struct HomeFeature: Sendable {
 
             case .regionResult(let region):
                 state.currentRegion = region
-                return .none
+                guard region.isKorea else { return .none }
+
+                state.isLoadingTouristSpots = true
+                state.isLoadingRestaurants = true
+
+                return .run { [
+                    locationUseCase = self.locationUseCase,
+                    touristSpotUseCase = self.touristSpotUseCase,
+                    radius = self.nearbySpotRadiusMeters
+                ] send in
+                    do {
+                        let coordinate = try await locationUseCase.fetchCurrentCoordinate()
+
+                        async let touristSpots = touristSpotUseCase.fetchNearbySpots(
+                            contentType: .sightseeing,
+                            coordinate: coordinate,
+                            radiusMeters: radius
+                        )
+                        async let restaurants = touristSpotUseCase.fetchNearbySpots(
+                            contentType: .food,
+                            coordinate: coordinate,
+                            radiusMeters: radius
+                        )
+
+                        await send(.nearbyTouristSpotsResult(try await touristSpots))
+                        await send(.nearbyRestaurantsResult(try await restaurants))
+                    } catch {
+                        await send(.nearbyTouristSpotsResult([]))
+                        await send(.nearbyRestaurantsResult([]))
+                        AppLogger.view.log(.error, "주변 관광정보 조회 실패: \(error.localizedDescription)")
+                    }
+                }
 
             case .exchangeRateResult(let rate):
                 state.krwToJPYRate = rate
                 if let krw = Double(state.krwAmountText) {
                     state.jpyAmountText = String(format: "%.1f", krw * rate)
                 }
+                return .none
+
+            case .nearbyTouristSpotsResult(let spots):
+                state.nearbyTouristSpots = spots
+                state.isLoadingTouristSpots = false
+                return .none
+
+            case .nearbyRestaurantsResult(let spots):
+                state.nearbyRestaurants = spots
+                state.isLoadingRestaurants = false
                 return .none
 
             case .planCreateButtonTapped:
@@ -131,20 +177,4 @@ public struct HomeFeature: Sendable {
             }
         }
     }
-}
-
-// MARK: - TouristSpot Dummy
-
-private extension TouristSpot {
-    static let touristDummies: [TouristSpot] = [
-        TouristSpot(id: "1", title: "景福宮", thumbnailURL: nil, distanceMeters: 320, contentType: .sightseeing),
-        TouristSpot(id: "2", title: "ソウル市立美術館", thumbnailURL: nil, distanceMeters: 1200, contentType: .sightseeing),
-        TouristSpot(id: "3", title: "北村韓屋村", thumbnailURL: nil, distanceMeters: 680, contentType: .sightseeing),
-    ]
-
-    static let restaurantDummies: [TouristSpot] = [
-        TouristSpot(id: "4", title: "土俗村サムゲタン", thumbnailURL: nil, distanceMeters: 430, contentType: .food),
-        TouristSpot(id: "5", title: "明洞餃子", thumbnailURL: nil, distanceMeters: 210, contentType: .food),
-        TouristSpot(id: "6", title: "広蔵市場", thumbnailURL: nil, distanceMeters: 890, contentType: .food),
-    ]
 }
