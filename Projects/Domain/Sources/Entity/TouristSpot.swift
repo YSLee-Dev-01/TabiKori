@@ -11,21 +11,25 @@ import Foundation
 public struct TouristSpot: Equatable, Sendable, Identifiable {
     public let id: String
     public let title: String
-    public let thumbnailURL: String?
+    public let thumbnailURLString: String?
     public let distanceMeters: Double?
     public let contentType: CategoryType
 
     public init(
         id: String,
         title: String,
-        thumbnailURL: String?,
+        thumbnailURLString: String?,
         distanceMeters: Double?,
         contentType: CategoryType
     ) {
         self.id = id
         self.title = title
-        self.thumbnailURL = thumbnailURL
+        self.thumbnailURLString = thumbnailURLString
         self.distanceMeters = distanceMeters
         self.contentType = contentType
+    }
+    
+    public var thumbnailURL: URL? {
+        return URL(string: self.thumbnailURLString ?? "")
     }
 }

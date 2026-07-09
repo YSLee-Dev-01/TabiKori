@@ -12,6 +12,7 @@ import DesignSystem
 import Resource
 import Domain
 import ComposableArchitecture
+import Kingfisher
 
 public struct HomeView: View {
 
@@ -240,20 +241,18 @@ fileprivate extension HomeView {
             self.store.send(.nearbySpotTapped(spot))
         } label: {
             VStack(alignment: .leading, spacing: 6) {
-                AsyncImage(url: URL(string: spot.thumbnailURL ?? "")) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    Color.getTabiColor(.tabiBorder).opacity(0.25)
-                        .overlay {
-                            Image(systemName: "photo")
-                                .font(.system(size: 20))
-                                .foregroundStyle(TabiColor.tabiTextTertiary)
-                        }
-                }
-                .frame(width: 160, height: 110)
-                .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
+                KFImage(spot.thumbnailURL)
+                    .placeholder {
+                        Color.getTabiColor(.tabiBorder).opacity(0.25)
+                            .overlay {
+                                Image(systemName: "photo")
+                                    .font(.system(size: 20))
+                                    .foregroundStyle(TabiColor.tabiTextTertiary)
+                            }
+                    }
+                    .scaledToFill()
+                    .frame(width: 160, height: 110)
+                    .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
 
                 VStack(alignment: .leading, spacing: 4) {
                     TabiTag(spot.contentType.label, color: spot.contentType.color)
@@ -342,21 +341,19 @@ fileprivate extension HomeView {
             self.store.send(.nearbySpotTapped(spot))
         } label: {
             HStack(spacing: 12) {
-                AsyncImage(url: URL(string: spot.thumbnailURL ?? "")) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    Color.getTabiColor(.tabiBorder).opacity(0.25)
-                        .overlay {
-                            Image(systemName: "fork.knife")
-                                .font(.system(size: 16))
-                                .foregroundStyle(TabiColor.tabiTextTertiary)
-                        }
-                }
-                .frame(width: 64, height: 64)
-                .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
-
+                KFImage(spot.thumbnailURL)
+                    .placeholder {
+                        Color.getTabiColor(.tabiBorder).opacity(0.25)
+                            .overlay {
+                                Image(systemName: "fork.knife")
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(TabiColor.tabiTextTertiary)
+                            }
+                    }
+                    .scaledToFill()
+                    .frame(width: 64, height: 64)
+                    .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
+                
                 VStack(alignment: .leading, spacing: 4) {
                     TabiLabel(title: spot.title, style: .bodyMBold, color: .tabiTextPrimary, lineLimit: 2)
                     TabiTag(spot.contentType.label, color: spot.contentType.color)

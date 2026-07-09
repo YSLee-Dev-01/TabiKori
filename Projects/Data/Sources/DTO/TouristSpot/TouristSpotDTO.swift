@@ -81,7 +81,7 @@ private extension TouristSpotItemDTO {
         return TouristSpot(
             id: self.contentid,
             title: self.title,
-            thumbnailURL: self.firstimage,
+            thumbnailURLString: self.firstimage,
             distanceMeters: self.dist?.toDouble(),
             contentType: contentType
         )
