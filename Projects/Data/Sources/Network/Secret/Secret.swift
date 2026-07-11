@@ -11,7 +11,6 @@ import Core
 
 enum Secret {
     static let tourAPIKey: String = Self.value(for: "TOUR_API_KEY")
-    static let exchangeAPIKey: String = Self.value(for: "EXCHANGE_API_KEY")
 }
 
 private extension Secret {

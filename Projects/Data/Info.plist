@@ -20,7 +20,5 @@
 	<string>1</string>
 	<key>TOUR_API_KEY</key>
 	<string>$(TOUR_API_KEY)</string>
-	<key>EXCHANGE_API_KEY</key>
-	<string>$(EXCHANGE_API_KEY)</string>
 </dict>
 </plist>
