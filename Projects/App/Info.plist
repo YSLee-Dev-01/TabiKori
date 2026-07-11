@@ -18,6 +18,15 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>現在地周辺の観光スポットや旅行情報を提供するために、位置情報を使用します。</string>
+	<key>UILaunchScreen</key>
+	<dict/>
 	<key>TOUR_API_KEY</key>
 	<string>$(TOUR_API_KEY)</string>
 </dict>

@@ -15,12 +15,10 @@ enum Secret {
 
 private extension Secret {
     static func value(for key: String) -> String {
-        guard let value = Bundle(for: BundleToken.self).object(forInfoDictionaryKey: key) as? String else {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
             AppLogger.network.log(.error, "❌ Info.plist 키 누락: \(key)")
             return ""
         }
         return value
     }
 }
-
-private final class BundleToken {}
