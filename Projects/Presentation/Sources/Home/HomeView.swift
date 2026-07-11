@@ -201,7 +201,7 @@ fileprivate extension HomeView {
                 self.nearbyTouristSpotEmptyState()
             } else {
                 ScrollView(.horizontal) {
-                    HStack(alignment: .top, spacing: 14) {
+                    LazyHStack(alignment: .top, spacing: 14) {
                         ForEach(self.store.nearbyTouristSpots) { spot in
                             self.nearbyTouristSpotCard(spot)
                         }
@@ -222,7 +222,7 @@ fileprivate extension HomeView {
                 self.nearbyRestaurantEmptyState()
             } else {
                 TabiCard {
-                    VStack(spacing: 0) {
+                    LazyVStack(spacing: 0) {
                         ForEach(Array(self.store.nearbyRestaurants.enumerated()), id: \.element.id) { index, spot in
                             if index > 0 {
                                 Divider()
@@ -276,6 +276,7 @@ fileprivate extension HomeView {
                 }
             }
             .frame(width: 160)
+            .contentShape(Rectangle())
         }
         .buttonStyle(TabiPressStyle())
     }
@@ -371,6 +372,7 @@ fileprivate extension HomeView {
                 }
             }
             .padding(16)
+            .contentShape(Rectangle())
         }
         .buttonStyle(TabiPressStyle())
     }
