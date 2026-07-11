@@ -63,7 +63,7 @@ public struct HomeView: View {
                 .animation(.tabiStandard, value: self.store.locationStatus)
                 .animation(.tabiStandard, value: self.store.currentRegion.isKorea)
                 .padding(.horizontal, 20)
-                .padding(.top, 15)
+                .padding(.vertical, 15)
             }
             .scrollDismissesKeyboard(.immediately)
         }
@@ -328,8 +328,8 @@ fileprivate extension HomeView {
                     .foregroundStyle(TabiColor.tabiTextTertiary)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    TabiLabel(title: "観光地が見つかりませんでした", style: .bodySBold, color: .tabiTextSecondary)
-                    TabiLabel(title: "周辺に観光スポットはありません。", style: .captionM, color: .tabiTextTertiary, isExpanded: true)
+                    TabiLabel(title: Strings.Home.nearbyTouristSpotEmptyTitle, style: .bodySBold, color: .tabiTextSecondary)
+                    TabiLabel(title: Strings.Home.nearbyTouristSpotEmptyDescription, style: .captionM, color: .tabiTextTertiary, isExpanded: true)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -420,8 +420,8 @@ fileprivate extension HomeView {
                     .foregroundStyle(TabiColor.tabiTextTertiary)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    TabiLabel(title: "飲食店が見つかりませんでした", style: .bodySBold, color: .tabiTextSecondary)
-                    TabiLabel(title: "周辺に飲食店はありません。", style: .captionM, color: .tabiTextTertiary, isExpanded: true)
+                    TabiLabel(title: Strings.Home.nearbyRestaurantEmptyTitle, style: .bodySBold, color: .tabiTextSecondary)
+                    TabiLabel(title: Strings.Home.nearbyRestaurantEmptyDescription, style: .captionM, color: .tabiTextTertiary, isExpanded: true)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -651,7 +651,7 @@ fileprivate extension HomeView {
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
                 TabiLabel(title: Strings.Region.seoul, style: .titleM, color: .tabiOnColor)
-                TabiLabel(title: "ソウルにいますね！", style: .bodyS, color: .tabiOnColor)
+                TabiLabel(title: Strings.Home.inKoreaBannerSubtitle, style: .bodyS, color: .tabiOnColor)
                     .opacity(0.85)
                 Spacer()
             }
@@ -659,7 +659,7 @@ fileprivate extension HomeView {
 
             HStack(spacing: 0) {
                 Spacer()
-                TabiButton("プランへ移動", style: .glass(on: .accent)) {}
+                TabiButton(Strings.Home.moveToPlanButton, style: .glass(on: .accent)) {}
             }
             .padding(16)
         }

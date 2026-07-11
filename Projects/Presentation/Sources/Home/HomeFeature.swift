@@ -165,7 +165,7 @@ public struct HomeFeature: Sendable {
                 return .none
 
             case .nearbyRestaurantsResult(let spots):
-                state.nearbyRestaurants = spots
+                state.nearbyRestaurants = Array(spots.prefix(10))
                 state.isLoadingRestaurants = false
                 return .none
 

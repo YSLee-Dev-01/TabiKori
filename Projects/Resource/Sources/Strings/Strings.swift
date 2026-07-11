@@ -74,6 +74,18 @@ public extension Strings.Home {
     static let nearbyTouristSpotsTitle = "近くの観光地"
     /// 주변 맛집 섹션 제목
     static let nearbyRestaurantsTitle = "近くの飲食店"
+    /// 주변 관광지 empty 제목
+    static let nearbyTouristSpotEmptyTitle = "観光地が見つかりませんでした"
+    /// 주변 관광지 empty 설명
+    static let nearbyTouristSpotEmptyDescription = "周辺に観光スポットはありません。"
+    /// 주변 음식점 empty 제목
+    static let nearbyRestaurantEmptyTitle = "飲食店が見つかりませんでした"
+    /// 주변 음식점 empty 설명
+    static let nearbyRestaurantEmptyDescription = "周辺に飲食店はありません。"
+    /// 한국 배너 부제목 (서울)
+    static let inKoreaBannerSubtitle = "ソウルにいますね！"
+    /// 플랜으로 이동 버튼
+    static let moveToPlanButton = "プランへ移動"
 }
 
 public extension Strings.Region {
