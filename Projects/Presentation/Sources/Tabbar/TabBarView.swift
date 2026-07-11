@@ -9,6 +9,7 @@
 import SwiftUI
 
 import ComposableArchitecture
+import Resource
 
 public struct TabBarView: View {
 
@@ -50,5 +51,6 @@ public struct TabBarView: View {
                 }
                 .tag(AppTab.search)
         }
+        .tint(Color.getTabiColor(.tabiPrimary))
     }
 }
