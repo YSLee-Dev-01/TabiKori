@@ -115,7 +115,16 @@ public struct HomeFeature: Sendable {
 
             case .locationPermissionResult(let status):
                 state.locationStatus = status
-                return .none
+                guard status == .allowed else { return .none }
+
+                return .run { [locationUseCase = self.locationUseCase] send in
+                    do {
+                        let region = try await locationUseCase.fetchCurrentRegion()
+                        await send(.regionResult(region))
+                    } catch {
+                        AppLogger.view.log(.error, "현재 지역 조회 실패: \(error.localizedDescription)")
+                    }
+                }
 
             case .regionResult(let region):
                 state.currentRegion = region
