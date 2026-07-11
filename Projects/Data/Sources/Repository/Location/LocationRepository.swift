@@ -35,10 +35,14 @@ public final class LocationRepository: NSObject, LocationRepositoryProtocol, @un
     }
 
     public func fetchCurrentCoordinate() async throws -> Coordinate {
+        #if targetEnvironment(simulator)
+        return Coordinate(latitude: 37.5666102, longitude: 126.9783881)
+        #else
         return try await withCheckedThrowingContinuation { continuation in
             self.coordinateContinuation = continuation
             self.locationManager.startUpdatingLocation()
         }
+        #endif
     }
 
     fileprivate static func mapAuthorizationStatus(_ status: CLAuthorizationStatus) -> LocationAuthorizationStatus {
