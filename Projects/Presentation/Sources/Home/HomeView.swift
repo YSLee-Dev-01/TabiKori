@@ -96,6 +96,28 @@ private extension TouristSpot {
 // MARK: - HomeView Private
 
 fileprivate extension HomeView {
+    func chevronIcon() -> some View {
+        Image(systemName: "chevron.right")
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(TabiColor.tabiTextTertiary)
+    }
+
+    func distanceLabel(_ distance: String) -> some View {
+        HStack(spacing: 3) {
+            Image(systemName: "location.fill")
+                .font(.system(size: 10))
+                .foregroundStyle(TabiColor.tabiTextTertiary)
+            TabiLabel(title: distance, style: .captionM, color: .tabiTextTertiary)
+        }
+    }
+
+    func travelDirectionLabel(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundStyle(TabiColor.tabiTextTertiary)
+            .tracking(1.0)
+    }
+
     func inJapanBanner() -> some View {
         Button {
             self.store.send(.planCreateButtonTapped)
@@ -104,10 +126,7 @@ fileprivate extension HomeView {
                 VStack(spacing: 0) {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(Strings.Home.japanTravelBannerFromLabel)
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(TabiColor.tabiTextTertiary)
-                                .tracking(1.0)
+                            self.travelDirectionLabel(Strings.Home.japanTravelBannerFromLabel)
                             Text(Strings.Home.japanTravelBannerFromCountry)
                                 .font(.system(size: 22, weight: .bold))
                                 .foregroundStyle(TabiColor.tabiTextPrimary)
@@ -118,10 +137,7 @@ fileprivate extension HomeView {
                             .foregroundStyle(TabiColor.tabiPrimary)
                         Spacer()
                         VStack(alignment: .trailing, spacing: 2) {
-                            Text(Strings.Home.japanTravelBannerToLabel)
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(TabiColor.tabiTextTertiary)
-                                .tracking(1.0)
+                            self.travelDirectionLabel(Strings.Home.japanTravelBannerToLabel)
                             Text(Strings.Home.japanTravelBannerToCountry)
                                 .font(.system(size: 22, weight: .bold))
                                 .foregroundStyle(TabiColor.tabiPrimary)
@@ -149,9 +165,7 @@ fileprivate extension HomeView {
                             TabiLabel(title: Strings.Home.japanTravelBannerDescription, style: .bodyLBold, color: .tabiTextPrimary)
                         }
                         Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(TabiColor.tabiTextTertiary)
+                        self.chevronIcon()
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 16)
@@ -181,9 +195,7 @@ fileprivate extension HomeView {
                         )
                     }
 
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(TabiColor.tabiTextTertiary)
+                    self.chevronIcon()
                 }
                 .padding(16)
             }
@@ -198,7 +210,11 @@ fileprivate extension HomeView {
             if self.store.isLoadingTouristSpots {
                 self.nearbyTouristSpotSkeletonRow()
             } else if self.store.nearbyTouristSpots.isEmpty {
-                self.nearbyTouristSpotEmptyState()
+                self.nearbyEmptyState(
+                    icon: "mappin.slash",
+                    title: Strings.Home.nearbyTouristSpotEmptyTitle,
+                    description: Strings.Home.nearbyTouristSpotEmptyDescription
+                )
             } else {
                 ScrollView(.horizontal) {
                     LazyHStack(alignment: .top, spacing: 14) {
@@ -219,7 +235,11 @@ fileprivate extension HomeView {
             if self.store.isLoadingRestaurants {
                 self.nearbyRestaurantSkeletonCard()
             } else if self.store.nearbyRestaurants.isEmpty {
-                self.nearbyRestaurantEmptyState()
+                self.nearbyEmptyState(
+                    icon: "fork.knife",
+                    title: Strings.Home.nearbyRestaurantEmptyTitle,
+                    description: Strings.Home.nearbyRestaurantEmptyDescription
+                )
             } else {
                 TabiCard {
                     LazyVStack(spacing: 0) {
@@ -266,12 +286,7 @@ fileprivate extension HomeView {
                     .frame(width: 160, alignment: .leading)
 
                     if let distance = spot.formattedDistance {
-                        HStack(spacing: 3) {
-                            Image(systemName: "location.fill")
-                                .font(.system(size: 10))
-                                .foregroundStyle(TabiColor.tabiTextTertiary)
-                            TabiLabel(title: distance, style: .captionM, color: .tabiTextTertiary)
-                        }
+                        self.distanceLabel(distance)
                     }
                 }
             }
@@ -320,16 +335,16 @@ fileprivate extension HomeView {
         .frame(width: 160)
     }
 
-    func nearbyTouristSpotEmptyState() -> some View {
+    func nearbyEmptyState(icon: String, title: String, description: String) -> some View {
         TabiCard {
             HStack(spacing: 10) {
-                Image(systemName: "mappin.slash")
+                Image(systemName: icon)
                     .font(.system(size: 22))
                     .foregroundStyle(TabiColor.tabiTextTertiary)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    TabiLabel(title: Strings.Home.nearbyTouristSpotEmptyTitle, style: .bodySBold, color: .tabiTextSecondary)
-                    TabiLabel(title: Strings.Home.nearbyTouristSpotEmptyDescription, style: .captionM, color: .tabiTextTertiary, isExpanded: true)
+                    TabiLabel(title: title, style: .bodySBold, color: .tabiTextSecondary)
+                    TabiLabel(title: description, style: .captionM, color: .tabiTextTertiary, isExpanded: true)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -363,12 +378,7 @@ fileprivate extension HomeView {
                 Spacer()
 
                 if let distance = spot.formattedDistance {
-                    HStack(spacing: 3) {
-                        Image(systemName: "location.fill")
-                            .font(.system(size: 10))
-                            .foregroundStyle(TabiColor.tabiTextTertiary)
-                        TabiLabel(title: distance, style: .captionM, color: .tabiTextTertiary)
-                    }
+                    self.distanceLabel(distance)
                 }
             }
             .padding(16)
@@ -412,23 +422,6 @@ fileprivate extension HomeView {
         .allowsHitTesting(false)
     }
 
-    func nearbyRestaurantEmptyState() -> some View {
-        TabiCard {
-            HStack(spacing: 10) {
-                Image(systemName: "fork.knife")
-                    .font(.system(size: 22))
-                    .foregroundStyle(TabiColor.tabiTextTertiary)
-
-                VStack(alignment: .leading, spacing: 3) {
-                    TabiLabel(title: Strings.Home.nearbyRestaurantEmptyTitle, style: .bodySBold, color: .tabiTextSecondary)
-                    TabiLabel(title: Strings.Home.nearbyRestaurantEmptyDescription, style: .captionM, color: .tabiTextTertiary, isExpanded: true)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-        }
-    }
-
     func categoryView() -> some View {
         VStack(alignment: .leading, spacing: 12) {
             TabiLabel(title: Strings.Common.categoryTitle, style: .titleM, color: .tabiTextPrimary)
@@ -467,9 +460,7 @@ fileprivate extension HomeView {
                         )
                     }
 
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(TabiColor.tabiTextTertiary)
+                    self.chevronIcon()
                 }
                 .frame(maxWidth: .infinity)
                 .padding(16)
@@ -506,7 +497,6 @@ fileprivate extension HomeView {
                     .padding(.bottom, 4)
 
                 TabiLabel(title: region.jaTitle, style: .bodyMBold, color: .tabiTextPrimary)
-                TabiLabel(title: region.koTitle, style: .captionM, color: .tabiTextSecondary)
             }
         }
         .buttonStyle(TabiPressStyle())
@@ -666,6 +656,7 @@ fileprivate extension HomeView {
         .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusLg))
     }
 }
+
 #Preview {
     HomeView(store: .init(
         initialState: .init(),
