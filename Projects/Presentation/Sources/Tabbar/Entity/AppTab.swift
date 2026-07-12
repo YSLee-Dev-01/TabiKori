@@ -10,7 +10,7 @@ import Foundation
 
 import Resource
 
-public enum AppTab: CaseIterable {
+public enum AppTab: CaseIterable, Equatable {
     case home
     case map
     case plan

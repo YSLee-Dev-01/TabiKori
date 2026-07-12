@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum LocationAuthorizationStatus {
+public enum LocationAuthorizationStatus: Equatable {
     case allowed
     case denied
     case undetermined

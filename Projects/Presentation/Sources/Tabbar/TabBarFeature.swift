@@ -28,12 +28,15 @@ public struct TabBarFeature {
         public struct SaveState: Equatable { public init() {} }
         public struct SearchState: Equatable { public init() {} }
 
+        var path = StackState<StackPath.State>()
+
         public init() {}
     }
 
     public enum Action: Equatable {
         case tabSelected(AppTab)
         case home(HomeFeature.Action)
+        case path(StackActionOf<StackPath>)
     }
 
     public init() {}
@@ -42,15 +45,24 @@ public struct TabBarFeature {
         Scope(state: \.homeState, action: \.home) {
             HomeFeature()
         }
-        
+
         Reduce { state, action in
             switch action {
             case .tabSelected(let tab):
                 state.selectedTab = tab
                 return .none
+
+            case .home(.nearbySpotTapped(let spot)):
+                state.path.append(.detail(DetailFeature.State(touristSpot: spot)))
+                return .none
+
             case .home:
+                return .none
+
+            case .path:
                 return .none
             }
         }
+        .forEach(\.path, action: \.path)
     }
 }

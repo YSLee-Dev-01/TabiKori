@@ -24,9 +24,11 @@ public struct HomeView: View {
     @Bindable private var store: StoreOf<HomeFeature>
     @Environment(\.openURL) var openURL
     @FocusState private var focusedExchangeField: ExchangeField?
+    let namespace: Namespace.ID
 
-    public init(store: StoreOf<HomeFeature>) {
+    public init(store: StoreOf<HomeFeature>, namespace: Namespace.ID) {
         self.store = store
+        self.namespace = namespace
     }
 
     public var body: some View {
@@ -305,6 +307,7 @@ fileprivate extension HomeView {
             .contentShape(Rectangle())
         }
         .buttonStyle(TabiPressStyle())
+        .matchedTransitionSource(id: spot.id, in: self.namespace)
     }
 
     func nearbyTouristSpotSkeletonRow() -> some View {
@@ -403,6 +406,7 @@ fileprivate extension HomeView {
             .contentShape(Rectangle())
         }
         .buttonStyle(TabiPressStyle())
+        .matchedTransitionSource(id: spot.id, in: self.namespace)
     }
 
     func nearbyRestaurantSkeletonCard() -> some View {
@@ -677,8 +681,13 @@ fileprivate extension HomeView {
 }
 
 #Preview {
-    HomeView(store: .init(
-        initialState: .init(),
-        reducer: { HomeFeature() }
-    ))
+    @Previewable @Namespace var namespace
+
+    HomeView(
+        store: .init(
+            initialState: .init(),
+            reducer: { HomeFeature() }
+        ),
+        namespace: namespace
+    )
 }
