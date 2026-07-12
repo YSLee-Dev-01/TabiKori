@@ -111,8 +111,6 @@ public struct HomeFeature: Sendable {
 
             case .refreshTriggered:
                 guard state.currentRegion.isKorea else { return .none }
-                state.isLoadingTouristSpots = true
-                state.isLoadingRestaurants = true
                 return self.fetchNearbySpotsEffect()
 
             case .requestLocationPermission:
@@ -198,6 +196,10 @@ private extension HomeFeature {
                 await send(.nearbyTouristSpotsResult(try await touristSpots))
                 await send(.nearbyRestaurantsResult(try await restaurants))
             } catch {
+                guard !Task.isCancelled else {
+                    AppLogger.view.log(.debug, "주변 관광정보 조회 취소됨")
+                    return
+                }
                 await send(.nearbyTouristSpotsResult([]))
                 await send(.nearbyRestaurantsResult([]))
                 AppLogger.view.log(.error, "주변 관광정보 조회 실패: \(error.localizedDescription)")
