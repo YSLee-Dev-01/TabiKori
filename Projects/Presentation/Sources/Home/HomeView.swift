@@ -29,6 +29,7 @@ public struct HomeView: View {
     public init(store: StoreOf<HomeFeature>, namespace: Namespace.ID) {
         self.store = store
         self.namespace = namespace
+        UIRefreshControl.appearance().tintColor = UIColor(Color.getTabiColor(.tabiPrimary))
     }
 
     public var body: some View {
@@ -68,6 +69,9 @@ public struct HomeView: View {
                 .padding(.vertical, 15)
             }
             .scrollDismissesKeyboard(.immediately)
+            .refreshable {
+                await self.store.send(.refreshTriggered).finish()
+            }
         }
         .safeAreaBar(edge: .top) {
             TabiNavigationBar(subtitle: self.store.currentDate, title: Strings.Common.tabicori) {

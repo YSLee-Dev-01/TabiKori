@@ -25,6 +25,7 @@ public struct HomeFeature: Sendable {
 
     @ObservableState
     public struct State: Equatable {
+        var hasLoadedInitialSpots: Bool = false
         var currentDate: String = Date().homeDateTitle
         var locationStatus: LocationAuthorizationStatus = .denied
         var currentRegion: TravelRegion = .unsupported
@@ -42,6 +43,7 @@ public struct HomeFeature: Sendable {
     public enum Action: BindableAction, Equatable {
         case binding(BindingAction<State>)
         case onAppear
+        case refreshTriggered
         case requestLocationPermission
         case locationPermissionResult(LocationAuthorizationStatus)
         case regionResult(TravelRegion)
@@ -107,6 +109,12 @@ public struct HomeFeature: Sendable {
 
                 return .merge(locationEffect, exchangeRateEffect)
 
+            case .refreshTriggered:
+                guard state.currentRegion.isKorea else { return .none }
+                state.isLoadingTouristSpots = true
+                state.isLoadingRestaurants = true
+                return self.fetchNearbySpotsEffect()
+
             case .requestLocationPermission:
                 return .run { send in
                     let result = await self.locationUseCase.requestAuthorization()
@@ -128,38 +136,14 @@ public struct HomeFeature: Sendable {
 
             case .regionResult(let region):
                 state.currentRegion = region
-                guard region.isKorea else { return .none }
+                guard region.isKorea,
+                      state.hasLoadedInitialSpots == false else { return .none }
+                state.hasLoadedInitialSpots = true
 
                 state.isLoadingTouristSpots = true
                 state.isLoadingRestaurants = true
 
-                return .run { [
-                    locationUseCase = self.locationUseCase,
-                    touristSpotUseCase = self.touristSpotUseCase,
-                    radius = self.nearbySpotRadiusMeters
-                ] send in
-                    do {
-                        let coordinate = try await locationUseCase.fetchCurrentCoordinate()
-
-                        async let touristSpots = touristSpotUseCase.fetchNearbySpots(
-                            contentType: .sightseeing,
-                            coordinate: coordinate,
-                            radiusMeters: radius
-                        )
-                        async let restaurants = touristSpotUseCase.fetchNearbySpots(
-                            contentType: .food,
-                            coordinate: coordinate,
-                            radiusMeters: radius
-                        )
-
-                        await send(.nearbyTouristSpotsResult(try await touristSpots))
-                        await send(.nearbyRestaurantsResult(try await restaurants))
-                    } catch {
-                        await send(.nearbyTouristSpotsResult([]))
-                        await send(.nearbyRestaurantsResult([]))
-                        AppLogger.view.log(.error, "주변 관광정보 조회 실패: \(error.localizedDescription)")
-                    }
-                }
+                return self.fetchNearbySpotsEffect()
 
             case .exchangeRateResult(let rate):
                 state.krwToJPYRate = rate
@@ -183,6 +167,40 @@ public struct HomeFeature: Sendable {
 
             case .nearbySpotTapped:
                 return .none
+            }
+        }
+    }
+}
+
+// MARK: - Method
+
+private extension HomeFeature {
+    func fetchNearbySpotsEffect() -> Effect<Action> {
+        .run { [
+            locationUseCase = self.locationUseCase,
+            touristSpotUseCase = self.touristSpotUseCase,
+            radius = self.nearbySpotRadiusMeters
+        ] send in
+            do {
+                let coordinate = try await locationUseCase.fetchCurrentCoordinate()
+
+                async let touristSpots = touristSpotUseCase.fetchNearbySpots(
+                    contentType: .sightseeing,
+                    coordinate: coordinate,
+                    radiusMeters: radius
+                )
+                async let restaurants = touristSpotUseCase.fetchNearbySpots(
+                    contentType: .food,
+                    coordinate: coordinate,
+                    radiusMeters: radius
+                )
+
+                await send(.nearbyTouristSpotsResult(try await touristSpots))
+                await send(.nearbyRestaurantsResult(try await restaurants))
+            } catch {
+                await send(.nearbyTouristSpotsResult([]))
+                await send(.nearbyRestaurantsResult([]))
+                AppLogger.view.log(.error, "주변 관광정보 조회 실패: \(error.localizedDescription)")
             }
         }
     }

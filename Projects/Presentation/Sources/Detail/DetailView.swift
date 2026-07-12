@@ -16,7 +16,7 @@ struct DetailView: View {
     let namespace: Namespace.ID
 
     var body: some View {
-        Text("DetailView")
+        Text("\(self.store.touristSpot.japaneseTitle)")
             .navigationTransition(.zoom(sourceID: self.store.touristSpot.id, in: self.namespace))
     }
 }
