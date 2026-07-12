@@ -103,6 +103,21 @@ public extension Strings.Region {
     static let gangneung = "江陵"
     /// 전주
     static let jeonju = "全州"
+
+    /// 서울 (한국어)
+    static let seoulKo = "서울"
+    /// 부산 (한국어)
+    static let busanKo = "부산"
+    /// 제주 (한국어)
+    static let jejuKo = "제주"
+    /// 경주 (한국어)
+    static let gyeongjuKo = "경주"
+    /// 여수 (한국어)
+    static let yeosuKo = "여수"
+    /// 강릉 (한국어)
+    static let gangneungKo = "강릉"
+    /// 전주 (한국어)
+    static let jeonjuKo = "전주"
 }
 
 public extension Strings.Tabbar {

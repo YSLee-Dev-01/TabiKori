@@ -497,6 +497,7 @@ fileprivate extension HomeView {
                     .padding(.bottom, 4)
 
                 TabiLabel(title: region.jaTitle, style: .bodyMBold, color: .tabiTextPrimary)
+                TabiLabel(title: region.koTitle, style: .captionM, color: .tabiTextSecondary)
             }
         }
         .buttonStyle(TabiPressStyle())

@@ -24,6 +24,18 @@ extension KoreanRegion {
         }
     }
 
+    var koTitle: String {
+        switch self {
+        case .seoul: Strings.Region.seoulKo
+        case .busan: Strings.Region.busanKo
+        case .jeju: Strings.Region.jejuKo
+        case .gyeongju: Strings.Region.gyeongjuKo
+        case .yeosu: Strings.Region.yeosuKo
+        case .gangneung: Strings.Region.gangneungKo
+        case .jeonju: Strings.Region.jeonjuKo
+        }
+    }
+
     var image: TabiImage {
         switch self {
         case .seoul: .regionSeoul
