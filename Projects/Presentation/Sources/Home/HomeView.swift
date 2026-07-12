@@ -277,12 +277,23 @@ fileprivate extension HomeView {
                 VStack(alignment: .leading, spacing: 4) {
                     TabiTag(spot.contentType.label, color: spot.contentType.color)
 
-                    TabiLabel(
-                        title: spot.title,
-                        style: .bodyMBold,
-                        color: .tabiTextPrimary,
-                        lineLimit: 2
-                    )
+                    VStack(alignment: .leading, spacing: 2) {
+                        TabiLabel(
+                            title: spot.japaneseTitle,
+                            style: .bodyMBold,
+                            color: .tabiTextPrimary,
+                            lineLimit: 1
+                        )
+
+                        if let korean = spot.koreanTitle {
+                            TabiLabel(
+                                title: korean,
+                                style: .captionM,
+                                color: .tabiTextSecondary,
+                                lineLimit: 1
+                            )
+                        }
+                    }
                     .frame(width: 160, alignment: .leading)
 
                     if let distance = spot.formattedDistance {
@@ -371,7 +382,14 @@ fileprivate extension HomeView {
                     .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    TabiLabel(title: spot.title, style: .bodyMBold, color: .tabiTextPrimary, lineLimit: 2)
+                    VStack(alignment: .leading, spacing: 2) {
+                        TabiLabel(title: spot.japaneseTitle, style: .bodyMBold, color: .tabiTextPrimary, lineLimit: 1)
+
+                        if let korean = spot.koreanTitle {
+                            TabiLabel(title: korean, style: .captionM, color: .tabiTextSecondary, lineLimit: 1)
+                        }
+                    }
+
                     TabiTag(spot.contentType.label, color: spot.contentType.color)
                 }
 
