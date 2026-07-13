@@ -35,6 +35,7 @@ public struct HomeFeature: Sendable {
         var isLoadingRestaurants: Bool = false
         var krwAmountText: String = "1000"
         var jpyAmountText: String = "0"
+        var exchangeRateUpdatedAtTitle: String = ""
         fileprivate var krwToJPYRate: Double = 0
 
         public init() {}
@@ -47,7 +48,7 @@ public struct HomeFeature: Sendable {
         case requestLocationPermission
         case locationPermissionResult(LocationAuthorizationStatus)
         case regionResult(TravelRegion)
-        case exchangeRateResult(Double)
+        case exchangeRateResult(KRWToJPYRate)
         case nearbyTouristSpotsResult([TouristSpot])
         case nearbyRestaurantsResult([TouristSpot])
         case planCreateButtonTapped
@@ -100,8 +101,8 @@ public struct HomeFeature: Sendable {
 
                 let exchangeRateEffect: Effect<Action> = .run { [exchangeRateUseCase = self.exchangeRateUseCase] send in
                     do {
-                        let rate = try await exchangeRateUseCase.fetchKRWToJPYRate()
-                        await send(.exchangeRateResult(rate))
+                        let krwToJPYRate = try await exchangeRateUseCase.fetchKRWToJPYRate()
+                        await send(.exchangeRateResult(krwToJPYRate))
                     } catch {
                         AppLogger.view.log(.error, "환율 조회 실패: \(error.localizedDescription)")
                     }
@@ -143,10 +144,11 @@ public struct HomeFeature: Sendable {
 
                 return self.fetchNearbySpotsEffect()
 
-            case .exchangeRateResult(let rate):
-                state.krwToJPYRate = rate
+            case .exchangeRateResult(let krwToJPYRate):
+                state.krwToJPYRate = krwToJPYRate.rate
+                state.exchangeRateUpdatedAtTitle = krwToJPYRate.updatedAt.exchangeRateUpdatedAtTitle
                 if let krw = Double(state.krwAmountText) {
-                    state.jpyAmountText = String(format: "%.1f", krw * rate)
+                    state.jpyAmountText = String(format: "%.1f", krw * krwToJPYRate.rate)
                 }
                 return .none
 

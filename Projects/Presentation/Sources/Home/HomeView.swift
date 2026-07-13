@@ -556,37 +556,48 @@ fileprivate extension HomeView {
 
     func exchangeRateCard() -> some View {
         TabiCard {
-            HStack(spacing: 0) {
-                self.currencyAmountField(
-                    flag: "🇰🇷",
-                    code: "KRW",
-                    symbol: "₩",
-                    field: .krw,
-                    text: self.$store.krwAmountText,
-                    fractionDigits: 0,
-                    valueColor: .tabiTextPrimary
-                )
-                .frame(maxWidth: .infinity)
+            VStack(spacing: 15) {
+                HStack(spacing: 0) {
+                    self.currencyAmountField(
+                        flag: "🇰🇷",
+                        code: "KRW",
+                        symbol: "₩",
+                        field: .krw,
+                        text: self.$store.krwAmountText,
+                        fractionDigits: 0,
+                        valueColor: .tabiTextPrimary
+                    )
+                    .frame(maxWidth: .infinity)
 
-                VStack(spacing: 6) {
-                    Image(systemName: "arrow.left.arrow.right")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(TabiColor.tabiTextTertiary)
-                    Text("=")
-                        .font(.system(size: 12))
-                        .foregroundStyle(TabiColor.tabiTextTertiary)
+                    VStack(spacing: 6) {
+                        Image(systemName: "arrow.left.arrow.right")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(TabiColor.tabiTextTertiary)
+                        Text("=")
+                            .font(.system(size: 12))
+                            .foregroundStyle(TabiColor.tabiTextTertiary)
+                    }
+
+                    self.currencyAmountField(
+                        flag: "🇯🇵",
+                        code: "JPY",
+                        symbol: "¥",
+                        field: .jpy,
+                        text: self.$store.jpyAmountText,
+                        fractionDigits: 1,
+                        valueColor: .tabiPrimary
+                    )
+                    .frame(maxWidth: .infinity)
                 }
 
-                self.currencyAmountField(
-                    flag: "🇯🇵",
-                    code: "JPY",
-                    symbol: "¥",
-                    field: .jpy,
-                    text: self.$store.jpyAmountText,
-                    fractionDigits: 1,
-                    valueColor: .tabiPrimary
-                )
-                .frame(maxWidth: .infinity)
+                if self.store.exchangeRateUpdatedAtTitle.isEmpty == false {
+                    TabiLabel(
+                        title: self.store.exchangeRateUpdatedAtTitle,
+                        style: .captionS,
+                        color: .tabiTextTertiary
+                    )
+                    .frame(maxWidth: .infinity, alignment: .center)
+                }
             }
             .padding(.vertical, 20)
             .padding(.horizontal, 16)
