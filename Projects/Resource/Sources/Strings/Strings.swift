@@ -86,6 +86,10 @@ public extension Strings.Home {
     static let inKoreaBannerSubtitle = "ソウルにいますね！"
     /// 플랜으로 이동 버튼
     static let moveToPlanButton = "プランへ移動"
+    /// 환율 기준 시각 (%@: 날짜/시간)
+    nonisolated(unsafe) static let exchangeRateUpdatedAtTitle: ((String) -> String) = {
+        "為替レート基準時刻: \($0)"
+    }
 }
 
 public extension Strings.Region {
