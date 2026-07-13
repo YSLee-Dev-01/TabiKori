@@ -22,13 +22,13 @@ public final class ExchangeRateUseCase: ExchangeRateUseCaseProtocol {
 
     // MARK: - Method
 
-    public func fetchKRWToJPYRate() async throws -> Double {
+    public func fetchKRWToJPYRate() async throws -> KRWToJPYRate {
         let rates = try await self.repository.fetchExchangeRates()
 
         guard let jpy = rates.first(where: { $0.currencyCode == "JPY" }) else {
             throw TabiError.dataNotFound
         }
 
-        return Double(jpy.unitScale) / jpy.baseRate
+        return KRWToJPYRate(rate: Double(jpy.unitScale) / jpy.baseRate, updatedAt: jpy.updatedAt)
     }
 }
