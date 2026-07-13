@@ -39,4 +39,28 @@ public final class TouristSpotRepository: TouristSpotRepositoryProtocol {
         )
         return try dto.toEntities()
     }
+
+    public func fetchDetail(contentId: String) async throws -> TouristSpotDetail {
+        let dto = try await self.networkService.request(
+            endPoint: TouristSpotEndpoint.detail(contentId: contentId),
+            responseType: TouristSpotDetailResponseDTO.self
+        )
+        return try dto.toEntity()
+    }
+
+    public func fetchIntro(contentId: String, contentType: CategoryType) async throws -> TouristSpotIntro {
+        let dto = try await self.networkService.request(
+            endPoint: TouristSpotEndpoint.intro(contentId: contentId, contentType: contentType),
+            responseType: TouristSpotIntroResponseDTO.self
+        )
+        return try dto.toEntity()
+    }
+
+    public func fetchImages(contentId: String) async throws -> [TouristSpotImage] {
+        let dto = try await self.networkService.request(
+            endPoint: TouristSpotEndpoint.images(contentId: contentId),
+            responseType: TouristSpotImageResponseDTO.self
+        )
+        return try dto.toEntities()
+    }
 }
