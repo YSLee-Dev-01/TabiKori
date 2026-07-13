@@ -13,6 +13,9 @@ public final class TestTouristSpotUseCase: TouristSpotUseCaseProtocol, @unchecke
     // MARK: - Properties
 
     public var nearbySpots: [TouristSpot] = []
+    public var detail: TouristSpotDetail!
+    public var intro: TouristSpotIntro!
+    public var images: [TouristSpotImage] = []
 
     // MARK: - Method
 
@@ -22,5 +25,17 @@ public final class TestTouristSpotUseCase: TouristSpotUseCaseProtocol, @unchecke
         radiusMeters: Int
     ) async throws -> [TouristSpot] {
         return self.nearbySpots
+    }
+
+    public func fetchDetail(contentId: String) async throws -> TouristSpotDetail {
+        return self.detail
+    }
+
+    public func fetchIntro(contentId: String, contentType: CategoryType) async throws -> TouristSpotIntro {
+        return self.intro
+    }
+
+    public func fetchImages(contentId: String) async throws -> [TouristSpotImage] {
+        return self.images
     }
 }

@@ -14,4 +14,10 @@ public protocol TouristSpotUseCaseProtocol: Sendable {
         coordinate: Coordinate,
         radiusMeters: Int
     ) async throws -> [TouristSpot]
+
+    func fetchDetail(contentId: String) async throws -> TouristSpotDetail
+
+    func fetchIntro(contentId: String, contentType: CategoryType) async throws -> TouristSpotIntro
+
+    func fetchImages(contentId: String) async throws -> [TouristSpotImage]
 }

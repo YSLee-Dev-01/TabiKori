@@ -33,4 +33,16 @@ public final class TouristSpotUseCase: TouristSpotUseCaseProtocol {
             radiusMeters: radiusMeters
         )
     }
+
+    public func fetchDetail(contentId: String) async throws -> TouristSpotDetail {
+        return try await self.repository.fetchDetail(contentId: contentId)
+    }
+
+    public func fetchIntro(contentId: String, contentType: CategoryType) async throws -> TouristSpotIntro {
+        return try await self.repository.fetchIntro(contentId: contentId, contentType: contentType)
+    }
+
+    public func fetchImages(contentId: String) async throws -> [TouristSpotImage] {
+        return try await self.repository.fetchImages(contentId: contentId)
+    }
 }
