@@ -13,6 +13,7 @@ public enum Strings {
     public enum Tabbar {}
     public enum Home {}
     public enum Region {}
+    public enum Detail {}
 }
 
 public extension Strings.Common {
@@ -135,4 +136,37 @@ public extension Strings.Tabbar {
     static let save = "保存"
     /// 검색
     static let search = "検索"
+}
+
+public extension Strings.Detail {
+    /// 정보 탭
+    static let tabInfo = "情報"
+    /// 사진 탭
+    static let tabPhotos = "写真"
+    /// 지도 섹션 제목
+    static let sectionMap = "地図"
+    /// 영업시간
+    static let infoOpenTime = "営業時間"
+    /// 정기휴일
+    static let infoRestDate = "定休日"
+    /// 전화번호
+    static let infoPhone = "電話番号"
+    /// 주차
+    static let infoParking = "駐車場"
+    /// 주소
+    static let infoAddress = "住所"
+    /// 홈페이지
+    static let infoHomepage = "ホームページ"
+    /// 체험안내
+    static let infoExperienceGuide = "体験案内"
+    /// 체험가능연령
+    static let infoExperienceAgeRange = "体験可能年齢"
+    /// 이용시기
+    static let infoUseSeason = "利用時期"
+    /// 일정에 추가 버튼
+    static let ctaAddToItinerary = "旅程に追加"
+    /// 지도 앱에서 열기 버튼
+    static let openInMaps = "地図アプリで開く"
+    /// 지도 준비 중
+    static let mapComingSoon = "地図準備中"
 }
