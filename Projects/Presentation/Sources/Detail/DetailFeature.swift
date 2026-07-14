@@ -10,6 +10,19 @@ import Foundation
 
 import ComposableArchitecture
 import Domain
+import Resource
+
+public enum DetailTab: String, CaseIterable, Equatable {
+    case info
+    case photos
+
+    var label: String {
+        switch self {
+        case .info: return Strings.Detail.tabInfo
+        case .photos: return Strings.Detail.tabPhotos
+        }
+    }
+}
 
 @Reducer
 public struct DetailFeature {
@@ -17,18 +30,34 @@ public struct DetailFeature {
     @ObservableState
     public struct State: Equatable {
         let touristSpot: TouristSpot
+        var detail: TouristSpotDetail = .mock
+        var intro: TouristSpotIntro = .mock
+        var images: [TouristSpotImage] = .mock
+        var selectedTab: DetailTab = .info
+        var isSaved: Bool = false
+        var currentImageIndex: Int = 0
     }
 
-    public enum Action: Equatable {
-
+    public enum Action: Equatable, BindableAction {
+        case binding(BindingAction<State>)
+        case tabSelected(DetailTab)
+        case saveButtonTapped
     }
 
     public init() {}
 
     public var body: some Reducer<State, Action> {
+        BindingReducer()
         Reduce { state, action in
             switch action {
-            default: return .none
+            case .tabSelected(let tab):
+                state.selectedTab = tab
+                return .none
+            case .saveButtonTapped:
+                state.isSaved.toggle()
+                return .none
+            case .binding:
+                return .none
             }
         }
     }
