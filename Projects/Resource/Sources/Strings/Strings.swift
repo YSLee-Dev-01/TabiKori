@@ -143,6 +143,8 @@ public extension Strings.Detail {
     static let tabInfo = "情報"
     /// 사진 탭
     static let tabPhotos = "写真"
+    /// 지도 탭
+    static let tabMap = "地図"
     /// 지도 섹션 제목
     static let sectionMap = "地図"
     /// 영업시간
