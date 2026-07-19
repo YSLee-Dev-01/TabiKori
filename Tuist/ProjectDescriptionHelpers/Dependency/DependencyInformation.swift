@@ -37,10 +37,11 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
     ]
 
     static let externalDependencyInfo: [DependencyInformation: [DependencyInformation]] = [
-        .presentation: [.tca, .lottie, .kingfisher, .naverMap],
+        .presentation: [.tca, .lottie, .kingfisher],
         .domain: [.tca],
         .app: [.tca, .firebaseDatabase, .firebaseAnalytics],
-        .data: [.firebaseDatabase]
+        .data: [.firebaseDatabase],
+        .designSystem: [.naverMap]
     ]
 }
 
