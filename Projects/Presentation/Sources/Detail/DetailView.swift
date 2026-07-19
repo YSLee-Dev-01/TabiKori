@@ -50,18 +50,26 @@ struct DetailView: View {
         }
         .navigationBarBackButtonHidden(true)
         .toolbarBackground(.hidden, for: .navigationBar)
+        .tint(Color.getTabiColor(.tabiPrimary))
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                TabiGlassIconButton(systemName: "chevron.left") {
+                Button {
                     self.dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 8) {
-                    TabiGlassIconButton(systemName: "square.and.arrow.up") {}
-                    TabiGlassIconButton(systemName: self.store.isSaved ? "heart.fill" : "heart") {
-                        self.store.send(.saveButtonTapped)
-                    }
+                Button {
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    self.store.send(.saveButtonTapped)
+                } label: {
+                    Image(systemName: self.store.isSaved ? "heart.fill" : "heart")
                 }
             }
         }
