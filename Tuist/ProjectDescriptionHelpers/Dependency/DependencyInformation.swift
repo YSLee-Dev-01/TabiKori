@@ -24,6 +24,7 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
     case kingfisher = "Kingfisher"
     case firebaseDatabase = "FirebaseDatabase"
     case firebaseAnalytics = "FirebaseAnalytics"
+    case naverMap = "NMapsMap"
 
     static let internalDependencyInfo: [DependencyInformation: [DependencyInformation]] = [
         .app: [.domain, .data, .presentation],
@@ -36,7 +37,7 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
     ]
 
     static let externalDependencyInfo: [DependencyInformation: [DependencyInformation]] = [
-        .presentation: [.tca, .lottie, .kingfisher],
+        .presentation: [.tca, .lottie, .kingfisher, .naverMap],
         .domain: [.tca],
         .app: [.tca, .firebaseDatabase, .firebaseAnalytics],
         .data: [.firebaseDatabase]
