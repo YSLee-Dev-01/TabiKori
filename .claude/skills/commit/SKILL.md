@@ -30,11 +30,12 @@ allowed-tools:
 4. 결정한 파일들을 별도 확인 없이 바로 `git add`로 스테이징
 5. 스테이징된 파일 목록을 사용자에게 보여줌
 6. 변경사항을 분석하여 적절한 type 선택, 제목 작성
-7. 커밋 메시지 초안을 출력하고 사용자 확인을 받은 후에만 `git commit` 실행
+7. 커밋 메시지 초안을 출력하고, **AskUserQuestion으로 커밋 진행 여부를 확인받은 후에만** `git commit` 실행
+   - 텍스트로 "진행"/"네" 등의 입력을 기다리지 않는다 — 반드시 AskUserQuestion으로 승인/수정/취소를 선택받는다
 
 > **IMPORTANT**: 스테이징 대상은 항상 명시적 경로로 지정한다 (`-A`/`.` 금지)
-> **IMPORTANT**: 커밋 분리 여부 등 사용자 판단이 필요한 질문은 텍스트가 아닌 AskUserQuestion 도구로 묻는다
-> **IMPORTANT**: `git add`는 사용자 확인 없이 바로 실행한다 (커밋 직전 확인 절차만 유지)
+> **IMPORTANT**: 커밋 분리 여부, 최종 커밋 실행 여부 등 사용자 판단이 필요한 모든 질문은 텍스트가 아닌 AskUserQuestion 도구로 묻는다
+> **IMPORTANT**: `git add`는 사용자 확인 없이 바로 실행한다 (커밋 직전 확인 절차만 AskUserQuestion으로 유지)
 > **IMPORTANT**: 시크릿/자격증명으로 의심되는 파일은 절대 add하지 않는다
 > **IMPORTANT**: 커밋 메시지에 `Co-Authored-By` 트레일러를 절대 추가하지 않는다
 
@@ -60,6 +61,7 @@ Design(Main > CongestionModal): Padding 값 조정 (CC)
 
 - [ ] 스테이징된 파일이 이번 논리적 변경과 관련 있는지 확인
 - [ ] 무관한 변경이 섞여 있었다면 AskUserQuestion으로 분리 여부를 확인했는지 점검
+- [ ] `git commit` 실행 전 AskUserQuestion으로 최종 승인을 받았는지 점검
 - [ ] 시크릿/의심 파일이 스테이징에 포함되지 않았는지 확인
 - [ ] type이 변경사항의 성격과 일치하는지 확인
 - [ ] 제목이 변경 내용을 정확하게 요약하는지 확인
