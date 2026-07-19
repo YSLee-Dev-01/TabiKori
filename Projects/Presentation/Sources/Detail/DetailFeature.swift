@@ -15,11 +15,13 @@ import Resource
 public enum DetailTab: String, CaseIterable, Equatable {
     case info
     case photos
+    case map
 
     var label: String {
         switch self {
         case .info: return Strings.Detail.tabInfo
         case .photos: return Strings.Detail.tabPhotos
+        case .map: return Strings.Detail.tabMap
         }
     }
 }

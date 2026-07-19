@@ -20,7 +20,6 @@ struct DetailInfoTabView: View {
         VStack(alignment: .leading, spacing: 16) {
             self.overviewSection()
             self.infoRowList()
-            self.mapSection()
         }
         .padding(.horizontal, 20)
     }
@@ -109,35 +108,6 @@ private extension DetailInfoTabView {
                     value: useSeason,
                     color: self.detail.contentType.color
                 )
-            }
-        }
-    }
-
-    func mapSection() -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            TabiLabel(title: Strings.Detail.sectionMap, style: .titleS, color: .tabiTextPrimary)
-            RoundedRectangle(cornerRadius: .tabiRadiusLg)
-                .fill(Color(red: 0.94, green: 0.91, blue: 0.87))
-                .frame(height: 140)
-                .overlay {
-                    VStack(spacing: 6) {
-                        Image(systemName: "map")
-                            .font(.system(size: 28))
-                        TabiLabel(title: Strings.Detail.mapComingSoon, style: .captionM, color: .tabiTextTertiary)
-                    }
-                }
-                .overlay {
-                    RoundedRectangle(cornerRadius: .tabiRadiusLg)
-                        .stroke(TabiColor.tabiBorder.opacity(0.4), lineWidth: 1)
-                }
-            HStack {
-                Spacer()
-                TabiButton(
-                    Strings.Detail.openInMaps,
-                    style: .secondary,
-                    icon: Image(systemName: "arrow.up.right.square")
-                ) {}
-                .disabled(true)
             }
         }
     }
