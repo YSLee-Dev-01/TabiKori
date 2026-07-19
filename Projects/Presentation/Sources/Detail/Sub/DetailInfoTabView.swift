@@ -16,6 +16,8 @@ struct DetailInfoTabView: View {
     @Binding var intro: TouristSpotIntro
     @Binding var detail: TouristSpotDetail
 
+    @Environment(\.openURL) private var openURL
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             self.overviewSection()
@@ -77,12 +79,14 @@ private extension DetailInfoTabView {
                 value: self.detail.address,
                 color: self.detail.contentType.color
             )
-            if let homepage = self.detail.homepageURLString {
+            if let homepage = self.detail.homepageURLString, let homepageURL = self.detail.homepageURL {
                 DetailInfoRow(
                     systemName: "globe",
                     label: Strings.Detail.infoHomepage,
                     value: homepage,
-                    color: self.detail.contentType.color
+                    color: self.detail.contentType.color,
+                    isLink: true,
+                    onTap: { self.openURL(homepageURL) }
                 )
             }
             if let experienceGuide = self.introFields.experienceGuide {

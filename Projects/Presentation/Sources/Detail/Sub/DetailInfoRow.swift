@@ -16,8 +16,23 @@ struct DetailInfoRow: View {
     let label: String
     let value: String
     let color: TabiColor
+    var isLink: Bool = false
+    var onTap: (() -> Void)?
 
     var body: some View {
+        if let onTap {
+            Button(action: onTap) { self.card() }
+                .buttonStyle(.tabiPress)
+        } else {
+            self.card()
+        }
+    }
+}
+
+// MARK: - View
+
+private extension DetailInfoRow {
+    func card() -> some View {
         TabiCard {
             HStack(alignment: .top, spacing: 12) {
                 RoundedRectangle(cornerRadius: .tabiRadiusSm)
@@ -30,7 +45,13 @@ struct DetailInfoRow: View {
                     }
                 VStack(alignment: .leading, spacing: 3) {
                     TabiLabel(title: self.label, style: .captionM, color: .tabiTextTertiary)
-                    TabiLabel(title: self.value, style: .bodyS, color: .tabiTextPrimary, isExpanded: true)
+                    TabiLabel(
+                        title: self.value,
+                        style: .bodyS,
+                        color: self.isLink ? self.color : .tabiTextPrimary,
+                        isExpanded: true,
+                        isUnderlined: self.isLink
+                    )
                 }
                 Spacer()
             }

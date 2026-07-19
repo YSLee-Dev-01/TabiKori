@@ -97,7 +97,7 @@ private extension TouristSpotDetailItemDTO {
         let address = addressParts.joined(separator: " ")
 
         let tel = self.tel?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let homepage = self.homepage?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let homepage = self.homepage?.trimmingCharacters(in: .whitespacesAndNewlines).extractedHomepageURLString
 
         return TouristSpotDetail(
             id: self.contentid,
@@ -110,5 +110,17 @@ private extension TouristSpotDetailItemDTO {
             coordinate: coordinate,
             overview: self.overview
         )
+    }
+}
+
+private extension String {
+    // TourAPI의 homepage 필드는 "<a href=\"URL\" ...>텍스트</a>" 형태의 HTML로 내려오므로 href 값만 추출한다
+    var extractedHomepageURLString: String {
+        guard let regex = try? NSRegularExpression(pattern: "href=\"([^\"]+)\""),
+              let match = regex.firstMatch(in: self, range: NSRange(self.startIndex..., in: self)),
+              let range = Range(match.range(at: 1), in: self) else {
+            return self
+        }
+        return String(self[range]).replacingOccurrences(of: "&amp;", with: "&")
     }
 }
