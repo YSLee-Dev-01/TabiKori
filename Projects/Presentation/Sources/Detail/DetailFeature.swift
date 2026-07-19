@@ -73,6 +73,7 @@ public struct DetailFeature {
         case onAppear
         case tabSelected(DetailTab)
         case saveButtonTapped
+        case photoCellTapped(index: Int)
         case detailResult(TouristSpotDetail?)
         case introResult(TouristSpotIntro?)
         case imagesResult([TouristSpotImage]?)
@@ -100,6 +101,9 @@ public struct DetailFeature {
 
             case .saveButtonTapped:
                 state.isSaved.toggle()
+                return .none
+
+            case .photoCellTapped:
                 return .none
 
             case .detailResult(let detail):

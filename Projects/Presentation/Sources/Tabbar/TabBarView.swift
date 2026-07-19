@@ -63,6 +63,8 @@ public struct TabBarView: View {
             switch store.case {
             case .detail(let store):
                 DetailView(store: store, namespace: self.heroNamespace)
+            case .photoViewer(let store):
+                PhotoViewerView(store: store)
             }
         }
     }

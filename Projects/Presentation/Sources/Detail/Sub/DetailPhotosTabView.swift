@@ -14,14 +14,16 @@ import Kingfisher
 
 struct DetailPhotosTabView: View {
     let images: [TouristSpotImage]
+    let onImageTapped: (Int) -> Void
 
     var body: some View {
         LazyVGrid(
             columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)],
             spacing: 8
         ) {
-            ForEach(self.images, id: \.imageURLString) { image in
+            ForEach(Array(self.images.enumerated()), id: \.element.imageURLString) { index, image in
                 self.photoCell(image)
+                    .onTapGesture { self.onImageTapped(index) }
             }
         }
         .padding(.horizontal, 20)

@@ -11,6 +11,7 @@ import ComposableArchitecture
 @Reducer
 public enum StackPath {
     case detail(DetailFeature)
+    case photoViewer(PhotoViewerFeature)
 }
 
 extension StackPath.State: Equatable {}

@@ -59,6 +59,15 @@ public struct TabBarFeature {
             case .home:
                 return .none
 
+            case .path(.element(id: let id, action: .detail(.photoCellTapped(let index)))):
+                guard case .detail(let detailState) = state.path[id: id] else { return .none }
+                state.path.append(.photoViewer(PhotoViewerFeature.State(
+                    images: detailState.images,
+                    startIndex: index,
+                    title: detailState.detail.japaneseTitle
+                )))
+                return .none
+
             case .path:
                 return .none
             }

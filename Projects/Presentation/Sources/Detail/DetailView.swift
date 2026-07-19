@@ -149,7 +149,10 @@ private extension DetailView {
             }
         }
         if self.store.selectedTab == .photos {
-            DetailPhotosTabView(images: self.store.images)
+            DetailPhotosTabView(
+                images: self.store.images,
+                onImageTapped: { self.store.send(.photoCellTapped(index: $0)) }
+            )
         }
         if self.store.selectedTab == .map {
             DetailMapTabView()
