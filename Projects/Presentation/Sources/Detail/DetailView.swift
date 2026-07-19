@@ -29,6 +29,7 @@ struct DetailView: View {
             VStack(spacing: 0) {
                 DetailHeroView(
                     images: self.store.images,
+                    fallbackImageURL: self.store.detail.imageURL,
                     currentIndex: self.$store.currentImageIndex
                 )
                 self.contentHeaderSection()

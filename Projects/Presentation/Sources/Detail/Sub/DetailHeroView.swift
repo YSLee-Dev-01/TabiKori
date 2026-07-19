@@ -17,6 +17,7 @@ struct DetailHeroView: View {
     private static let heroHeight: CGFloat = 340
 
     let images: [TouristSpotImage]
+    let fallbackImageURL: URL?
     @Binding var currentIndex: Int
 
     var body: some View {
@@ -25,7 +26,11 @@ struct DetailHeroView: View {
             let height = minY > 0 ? Self.heroHeight + minY : Self.heroHeight
 
             ZStack {
-                self.imagePager(height: height)
+                if self.images.isEmpty {
+                    self.fallbackImage(height: height)
+                } else {
+                    self.imagePager(height: height)
+                }
                 self.bottomGradient(height: height)
                 self.topGradient(height: height)
             }
@@ -61,6 +66,23 @@ private extension DetailHeroView {
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
+    }
+
+    func fallbackImage(height: CGFloat) -> some View {
+        KFImage(self.fallbackImageURL)
+            .placeholder {
+                Color.getTabiColor(.tabiBorder).opacity(0.3)
+                    .overlay {
+                        Image(systemName: "photo")
+                            .font(.system(size: 28))
+                            .foregroundStyle(TabiColor.tabiTextTertiary)
+                    }
+            }
+            .resizable()
+            .scaledToFill()
+            .frame(maxWidth: .infinity)
+            .frame(height: height)
+            .clipped()
     }
 
     func bottomGradient(height: CGFloat) -> some View {
