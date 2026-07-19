@@ -118,6 +118,9 @@ public struct DetailFeature {
                 if let images { state.images = images }
                 state.hasReceivedImages = true
                 state.isLoading = !state.hasReceivedAllResults
+                if state.images.isEmpty, state.selectedTab == .photos {
+                    state.selectedTab = .info
+                }
                 return .none
 
             case .binding:

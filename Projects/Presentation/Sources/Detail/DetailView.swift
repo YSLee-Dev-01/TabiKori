@@ -111,7 +111,7 @@ private extension DetailView {
 
     func tabBarSection() -> some View {
         HStack(spacing: 8) {
-            ForEach(DetailTab.allCases, id: \.self) { tab in
+            ForEach(self.visibleTabs, id: \.self) { tab in
                 TabiChip(tab.label, isSelected: self.store.selectedTab == tab) {
                     self.store.send(.tabSelected(tab))
                 }
@@ -119,6 +119,10 @@ private extension DetailView {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
+    }
+
+    var visibleTabs: [DetailTab] {
+        DetailTab.allCases.filter { $0 != .photos || self.store.images.isEmpty == false }
     }
 
     @ViewBuilder
