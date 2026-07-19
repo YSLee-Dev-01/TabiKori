@@ -16,7 +16,7 @@ struct TouristSpotResponseDTO: Decodable {
 
     struct ResponseBody: Decodable {
         let header: Header
-        let body: Body
+        let body: Body?
     }
 
     struct Header: Decodable {
@@ -67,7 +67,7 @@ extension TouristSpotResponseDTO {
                 message: self.response.header.resultMsg
             )
         }
-        return self.response.body.items.item.compactMap { $0.toEntity() }
+        return self.response.body?.items.item.compactMap { $0.toEntity() } ?? []
     }
 }
 

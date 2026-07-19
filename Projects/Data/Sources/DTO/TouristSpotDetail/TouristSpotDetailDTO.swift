@@ -16,7 +16,7 @@ struct TouristSpotDetailResponseDTO: Decodable {
 
     struct ResponseBody: Decodable {
         let header: Header
-        let body: Body
+        let body: Body?
     }
 
     struct Header: Decodable {
@@ -73,7 +73,7 @@ extension TouristSpotDetailResponseDTO {
                 message: self.response.header.resultMsg
             )
         }
-        guard let item = self.response.body.items.item.first else {
+        guard let item = self.response.body?.items.item.first else {
             AppLogger.network.log(.error, "❌ 관광지 상세 데이터 없음")
             throw TabiError.apiFailed(code: "EMPTY", message: "No detail item found")
         }

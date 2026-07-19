@@ -77,8 +77,7 @@ enum TouristSpotEndpoint: Endpoint {
                 URLQueryItem(name: "numOfRows", value: "50"),
                 URLQueryItem(name: "pageNo", value: "1"),
                 URLQueryItem(name: "contentId", value: contentId),
-                URLQueryItem(name: "imageYN", value: "Y"),
-                URLQueryItem(name: "cpyrhtDivCd", value: "Type1")
+                URLQueryItem(name: "imageYN", value: "Y")
             ]
         }
     }
