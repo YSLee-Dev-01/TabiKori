@@ -18,7 +18,7 @@ public struct TabiNavigationBar<Trailing: View>: View {
     public init(
         subtitle: String,
         title: String,
-        @ViewBuilder trailing: () -> Trailing
+        @ViewBuilder trailing: () -> Trailing = { EmptyView() }
     ) {
         self.subtitle = subtitle
         self.title = title

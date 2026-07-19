@@ -51,7 +51,6 @@ struct DetailView: View {
         }
         .navigationBarBackButtonHidden(true)
         .toolbarBackground(.hidden, for: .navigationBar)
-        .tint(Color.getTabiColor(.tabiPrimary))
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
@@ -59,12 +58,14 @@ struct DetailView: View {
                 } label: {
                     Image(systemName: "chevron.left")
                 }
+                .tint(Color.getTabiColor(.tabiPrimary))
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                 } label: {
                     Image(systemName: "square.and.arrow.up")
                 }
+                .tint(Color.getTabiColor(.tabiPrimary))
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -72,6 +73,7 @@ struct DetailView: View {
                 } label: {
                     Image(systemName: self.store.isSaved ? "heart.fill" : "heart")
                 }
+                .tint(Color.getTabiColor(.tabiPrimary))
             }
         }
         .navigationTransition(.zoom(sourceID: self.store.touristSpot.id, in: self.namespace))

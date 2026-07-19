@@ -74,11 +74,7 @@ public struct HomeView: View {
             }
         }
         .safeAreaBar(edge: .top) {
-            TabiNavigationBar(subtitle: self.store.currentDate, title: Strings.Common.tabicori) {
-                TabiGlassIconButton(systemName: "bell") {
-                    print("tap")
-                }
-            }
+            TabiNavigationBar(subtitle: self.store.currentDate, title: Strings.Common.tabicori)
         }
         .onAppear {
             self.store.send(.onAppear)
