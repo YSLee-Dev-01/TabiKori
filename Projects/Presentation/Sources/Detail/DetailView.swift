@@ -14,6 +14,8 @@ import Domain
 import Resource
 
 struct DetailView: View {
+    private static let heroTopAnchorID = "detailHeroTop"
+
     @Bindable private var store: StoreOf<DetailFeature>
     let namespace: Namespace.ID
 
@@ -25,60 +27,63 @@ struct DetailView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                DetailHeroView(
-                    images: self.store.images,
-                    fallbackImageURL: self.store.detail.imageURL,
-                    currentIndex: self.$store.currentImageIndex
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    DetailHeroView(
+                        images: self.store.images,
+                        fallbackImageURL: self.store.detail.imageURL,
+                        currentIndex: self.$store.currentImageIndex
+                    )
+                    .id(Self.heroTopAnchorID)
+                    self.contentHeaderSection()
+                    self.tabBarSection(proxy: proxy)
+                    self.tabContentSection()
+                        .animation(.tabiStandard, value: self.store.selectedTab)
+                }
+                .padding(.bottom, 115)
+            }
+            .scrollIndicators(.hidden)
+            .coordinateSpace(name: "detailScroll")
+            .ignoresSafeArea(edges: .all)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                DetailBottomCTAView(
+                    isSaved: self.store.isSaved,
+                    onSaveTapped: { self.store.send(.saveButtonTapped) },
+                    onAddToItineraryTapped: {}
                 )
-                self.contentHeaderSection()
-                self.tabBarSection()
-                self.tabContentSection()
-                    .animation(.tabiStandard, value: self.store.selectedTab)
             }
-            .padding(.bottom, 100)
-        }
-        .scrollIndicators(.hidden)
-        .coordinateSpace(name: "detailScroll")
-        .ignoresSafeArea(edges: .all)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            DetailBottomCTAView(
-                isSaved: self.store.isSaved,
-                onSaveTapped: { self.store.send(.saveButtonTapped) },
-                onAddToItineraryTapped: {}
-            )
-        }
-        .navigationBarBackButtonHidden(true)
-        .toolbarBackground(.hidden, for: .navigationBar)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    self.dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
+            .navigationBarBackButtonHidden(true)
+            .toolbarBackground(.hidden, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        self.dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                    }
+                    .tint(Color.getTabiColor(.tabiPrimary))
                 }
-                .tint(Color.getTabiColor(.tabiPrimary))
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                } label: {
-                    Image(systemName: "square.and.arrow.up")
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                    .tint(Color.getTabiColor(.tabiPrimary))
                 }
-                .tint(Color.getTabiColor(.tabiPrimary))
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    self.store.send(.saveButtonTapped)
-                } label: {
-                    Image(systemName: self.store.isSaved ? "heart.fill" : "heart")
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        self.store.send(.saveButtonTapped)
+                    } label: {
+                        Image(systemName: self.store.isSaved ? "heart.fill" : "heart")
+                    }
+                    .tint(Color.getTabiColor(.tabiPrimary))
                 }
-                .tint(Color.getTabiColor(.tabiPrimary))
             }
-        }
-        .navigationTransition(.zoom(sourceID: self.store.touristSpot.id, in: self.namespace))
-        .onAppear {
-            self.store.send(.onAppear)
+            .navigationTransition(.zoom(sourceID: self.store.touristSpot.id, in: self.namespace))
+            .onAppear {
+                self.store.send(.onAppear)
+            }
         }
     }
 }
@@ -111,16 +116,24 @@ private extension DetailView {
         .padding(.top, 20)
     }
 
-    func tabBarSection() -> some View {
+    func tabBarSection(proxy: ScrollViewProxy) -> some View {
         HStack(spacing: 8) {
             ForEach(self.visibleTabs, id: \.self) { tab in
                 TabiChip(tab.label, isSelected: self.store.selectedTab == tab) {
-                    self.store.send(.tabSelected(tab))
+                    self.selectTab(tab, proxy: proxy)
                 }
             }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
+    }
+
+    func selectTab(_ tab: DetailTab, proxy: ScrollViewProxy) {
+        withAnimation(.tabiStandard) {
+            proxy.scrollTo(Self.heroTopAnchorID, anchor: .top)
+        } completion: {
+            self.store.send(.tabSelected(tab))
+        }
     }
 
     var visibleTabs: [DetailTab] {

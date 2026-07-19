@@ -87,7 +87,7 @@ private extension DetailHeroView {
 
     func bottomGradient(height: CGFloat) -> some View {
         LinearGradient(
-            colors: [.clear, Color.getTabiColor(.tabiBackground)],
+            colors: [.clear, Color.getTabiColor(.tabiBackground).opacity(0.7)],
             startPoint: UnitPoint(x: 0.5, y: 0.55),
             endPoint: .bottom
         )
