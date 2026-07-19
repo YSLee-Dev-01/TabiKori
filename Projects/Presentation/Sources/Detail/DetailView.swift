@@ -14,12 +14,15 @@ import Domain
 import Resource
 
 struct DetailView: View {
-    private static let heroTopAnchorID = "detailHeroTop"
-
     @Bindable private var store: StoreOf<DetailFeature>
     let namespace: Namespace.ID
 
     @Environment(\.dismiss) private var dismiss
+    
+    fileprivate var visibleTabs: [DetailTab] {
+        DetailTab.allCases.filter { $0 != .photos || self.store.images.isEmpty == false }
+    }
+    private static let heroTopAnchorID = "detailHeroTop"
 
     init(store: StoreOf<DetailFeature>, namespace: Namespace.ID) {
         self.store = store
@@ -46,15 +49,6 @@ struct DetailView: View {
             .scrollIndicators(.hidden)
             .coordinateSpace(name: "detailScroll")
             .ignoresSafeArea(edges: .all)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                DetailBottomCTAView(
-                    isSaved: self.store.isSaved,
-                    onSaveTapped: { self.store.send(.saveButtonTapped) },
-                    onAddToItineraryTapped: {}
-                )
-            }
-            .navigationBarBackButtonHidden(true)
-            .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -81,6 +75,15 @@ struct DetailView: View {
                 }
             }
             .navigationTransition(.zoom(sourceID: self.store.touristSpot.id, in: self.namespace))
+            .navigationBarBackButtonHidden(true)
+            .toolbarBackground(.hidden, for: .navigationBar)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                DetailBottomCTAView(
+                    isSaved: self.store.isSaved,
+                    onSaveTapped: { self.store.send(.saveButtonTapped) },
+                    onAddToItineraryTapped: {}
+                )
+            }
             .onAppear {
                 self.store.send(.onAppear)
             }
@@ -134,10 +137,6 @@ private extension DetailView {
         } completion: {
             self.store.send(.tabSelected(tab))
         }
-    }
-
-    var visibleTabs: [DetailTab] {
-        DetailTab.allCases.filter { $0 != .photos || self.store.images.isEmpty == false }
     }
 
     @ViewBuilder
