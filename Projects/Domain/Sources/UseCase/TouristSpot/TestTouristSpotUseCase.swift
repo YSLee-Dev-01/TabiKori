@@ -17,6 +17,10 @@ public final class TestTouristSpotUseCase: TouristSpotUseCaseProtocol, @unchecke
     public var intro: TouristSpotIntro!
     public var images: [TouristSpotImage] = []
 
+    // MARK: - Init
+
+    public init() {}
+
     // MARK: - Method
 
     public func fetchNearbySpots(

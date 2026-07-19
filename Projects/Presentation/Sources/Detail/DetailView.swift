@@ -25,31 +25,21 @@ struct DetailView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .top) {
-            ScrollView {
-                VStack(spacing: 0) {
-                    DetailHeroView(
-                        images: self.store.images,
-                        currentIndex: self.$store.currentImageIndex
-                    )
-                    self.contentHeaderSection()
-                    self.tabBarSection()
-                    self.tabContentSection()
-                        .animation(.tabiStandard, value: self.store.selectedTab)
-                }
-                .padding(.bottom, 100)
+        ScrollView {
+            VStack(spacing: 0) {
+                DetailHeroView(
+                    images: self.store.images,
+                    currentIndex: self.$store.currentImageIndex
+                )
+                self.contentHeaderSection()
+                self.tabBarSection()
+                self.tabContentSection()
+                    .animation(.tabiStandard, value: self.store.selectedTab)
             }
-            .scrollIndicators(.hidden)
-            .coordinateSpace(name: "detailScroll")
-
-            DetailPinnedTopBar(
-                isSaved: self.store.isSaved,
-                onBackTapped: { self.dismiss() },
-                onShareTapped: {},
-                onSaveTapped: { self.store.send(.saveButtonTapped) }
-            )
+            .padding(.bottom, 100)
         }
-        .toolbar(.hidden, for: .navigationBar)
+        .scrollIndicators(.hidden)
+        .coordinateSpace(name: "detailScroll")
         .ignoresSafeArea(edges: .all)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             DetailBottomCTAView(
@@ -58,7 +48,27 @@ struct DetailView: View {
                 onAddToItineraryTapped: {}
             )
         }
+        .navigationBarBackButtonHidden(true)
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                TabiGlassIconButton(systemName: "chevron.left") {
+                    self.dismiss()
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                HStack(spacing: 8) {
+                    TabiGlassIconButton(systemName: "square.and.arrow.up") {}
+                    TabiGlassIconButton(systemName: self.store.isSaved ? "heart.fill" : "heart") {
+                        self.store.send(.saveButtonTapped)
+                    }
+                }
+            }
+        }
         .navigationTransition(.zoom(sourceID: self.store.touristSpot.id, in: self.namespace))
+        .onAppear {
+            self.store.send(.onAppear)
+        }
     }
 }
 
@@ -105,7 +115,11 @@ private extension DetailView {
     @ViewBuilder
     func tabContentSection() -> some View {
         if self.store.selectedTab == .info {
-            DetailInfoTabView(intro: self.$store.intro, detail: self.$store.detail)
+            if self.store.isLoading {
+                self.infoLoadingPlaceholder()
+            } else {
+                DetailInfoTabView(intro: self.$store.intro, detail: self.$store.detail)
+            }
         }
         if self.store.selectedTab == .photos {
             DetailPhotosTabView(images: self.store.images)
@@ -114,10 +128,24 @@ private extension DetailView {
             DetailMapTabView()
         }
     }
+
+    func infoLoadingPlaceholder() -> some View {
+        ProgressView()
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 40)
+    }
 }
 
 #Preview {
     @Previewable @Namespace var namespace
+
+    let mockUseCase: TestTouristSpotUseCase = {
+        let useCase = TestTouristSpotUseCase()
+        useCase.detail = .mock
+        useCase.intro = .mock
+        useCase.images = .mock
+        return useCase
+    }()
 
     DetailView(
         store: Store(
@@ -130,7 +158,10 @@ private extension DetailView {
                     contentType: .sightseeing
                 )
             ),
-            reducer: { DetailFeature() }
+            reducer: { DetailFeature() },
+            withDependencies: { dependency in
+                dependency.touristSpotUseCase = mockUseCase
+            }
         ),
         namespace: namespace
     )
