@@ -19,6 +19,7 @@ struct DetailHeroView: View {
     let images: [TouristSpotImage]
     let fallbackImageURL: URL?
     @Binding var currentIndex: Int
+    let onImageTapped: (Int) -> Void
 
     var body: some View {
         GeometryReader { proxy in
@@ -65,6 +66,8 @@ private extension DetailHeroView {
                     .frame(maxWidth: .infinity)
                     .frame(height: height)
                     .clipped()
+                    .contentShape(Rectangle())
+                    .onTapGesture { self.onImageTapped(index) }
                     .tag(index)
             }
         }

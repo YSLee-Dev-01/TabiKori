@@ -36,7 +36,8 @@ struct DetailView: View {
                     DetailHeroView(
                         images: self.store.images,
                         fallbackImageURL: self.store.detail.imageURL,
-                        currentIndex: self.$store.currentImageIndex
+                        currentIndex: self.$store.currentImageIndex,
+                        onImageTapped: { self.store.send(.photoCellTapped(index: $0)) }
                     )
                     .id(Self.heroTopAnchorID)
                     self.contentHeaderSection()
