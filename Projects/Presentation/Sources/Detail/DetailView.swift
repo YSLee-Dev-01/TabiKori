@@ -44,6 +44,7 @@ struct DetailView: View {
                     self.tabBarSection(proxy: proxy)
                     self.tabContentSection()
                         .animation(.tabiStandard, value: self.store.selectedTab)
+                        .animation(.tabiStandard, value: self.store.isLoading)
                 }
                 .padding(.bottom, 115)
             }
@@ -145,8 +146,10 @@ private extension DetailView {
         if self.store.selectedTab == .info {
             if self.store.isLoading {
                 self.infoLoadingPlaceholder()
+                    .transition(.opacity)
             } else {
                 DetailInfoTabView(intro: self.$store.intro, detail: self.$store.detail)
+                    .transition(.opacity)
             }
         }
         if self.store.selectedTab == .photos {

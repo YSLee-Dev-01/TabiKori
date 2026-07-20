@@ -29,12 +29,15 @@ struct DetailHeroView: View {
             ZStack {
                 if self.images.isEmpty {
                     self.fallbackImage(height: height)
+                        .transition(.opacity)
                 } else {
                     self.imagePager(height: height)
+                        .transition(.opacity)
                 }
                 self.bottomGradient(height: height)
                 self.topGradient(height: height)
             }
+            .animation(.tabiStandard, value: self.images.isEmpty)
             .frame(height: height)
             .offset(y: minY > 0 ? -minY : 0)
             .overlay(alignment: .bottom) {
