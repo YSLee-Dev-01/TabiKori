@@ -36,7 +36,10 @@ struct DetailHeroView: View {
             }
             .frame(height: height)
             .offset(y: minY > 0 ? -minY : 0)
-            .overlay(alignment: .bottom) { self.pageIndicator() }
+            .overlay(alignment: .bottom) {
+                TabiPageIndicator(count: self.images.count, currentIndex: self.currentIndex)
+                    .padding(.bottom, 16)
+            }
         }
         .frame(height: Self.heroHeight)
     }
@@ -103,26 +106,5 @@ private extension DetailHeroView {
         )
         .frame(height: height)
         .allowsHitTesting(false)
-    }
-
-    @ViewBuilder
-    func pageIndicator() -> some View {
-        if self.images.count > 1 {
-            HStack(spacing: 6) {
-                ForEach(Array(self.images.enumerated()), id: \.element.imageURLString) { index, _ in
-                    Circle()
-                        .fill(
-                            index == self.currentIndex
-                                ? Color.getTabiColor(.tabiPrimary)
-                                : Color.white.opacity(0.6)
-                        )
-                        .frame(
-                            width: index == self.currentIndex ? 6 : 5,
-                            height: index == self.currentIndex ? 6 : 5
-                        )
-                }
-            }
-            .padding(.bottom, 16)
-        }
     }
 }

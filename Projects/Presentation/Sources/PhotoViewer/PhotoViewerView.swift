@@ -26,10 +26,25 @@ struct PhotoViewerView: View {
         ZStack {
             Color.black.ignoresSafeArea()
             self.pager()
+                .ignoresSafeArea()
         }
-        .overlay(alignment: .top) { self.topBar() }
+        .overlay(alignment: .bottom) {
+            TabiPageIndicator(count: self.store.images.count, currentIndex: self.store.currentIndex)
+                .padding(.bottom, 16)
+        }
+        .navigationTitle(self.store.title)
+        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    self.dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                }
+                .tint(Color.getTabiColor(.tabiPrimary))
+            }
+        }
     }
 }
 
@@ -44,18 +59,6 @@ private extension PhotoViewerView {
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
-    }
-
-    func topBar() -> some View {
-        HStack(spacing: 12) {
-            TabiGlassIconButton(systemName: "chevron.left") {
-                self.dismiss()
-            }
-            TabiLabel(title: self.store.title, style: .titleS, color: .tabiOnColor)
-            Spacer()
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 8)
     }
 }
 
