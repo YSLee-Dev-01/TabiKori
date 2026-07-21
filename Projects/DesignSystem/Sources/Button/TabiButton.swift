@@ -29,6 +29,7 @@ public struct TabiButton: View {
     private let icon: Image?
     private let isExpanded: Bool
     private let isLoading: Bool
+    private let height: CGFloat?
     private let action: () -> Void
 
     private var foregroundColor: TabiColor {
@@ -71,6 +72,7 @@ public struct TabiButton: View {
         icon: Image? = nil,
         isExpanded: Bool = false,
         isLoading: Bool = false,
+        height: CGFloat? = nil,
         action: @escaping () -> Void
     ) {
         self.title = title
@@ -78,6 +80,7 @@ public struct TabiButton: View {
         self.icon = icon
         self.isExpanded = isExpanded
         self.isLoading = isLoading
+        self.height = height
         self.action = action
     }
 
@@ -109,6 +112,7 @@ public struct TabiButton: View {
             .animation(.tabiStandard, value: self.isLoading)
             .padding(.vertical, 12)
             .padding(.horizontal, self.horizontalPadding)
+            .frame(minHeight: self.height)
             .frame(maxWidth: self.isExpanded ? .infinity : nil)
             .modifier(TabiButtonBackground(style: self.style, backgroundColor: self.backgroundColor))
         }

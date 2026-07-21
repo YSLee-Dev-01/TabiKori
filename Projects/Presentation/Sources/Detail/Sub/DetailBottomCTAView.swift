@@ -12,21 +12,20 @@ import DesignSystem
 import Resource
 
 struct DetailBottomCTAView: View {
-    let isSaved: Bool
-    let onSaveTapped: () -> Void
+    let onRouteDirectionsTapped: () -> Void
     let onAddToItineraryTapped: () -> Void
 
     var body: some View {
         HStack(spacing: 10) {
             Button {
-                self.onSaveTapped()
+                self.onRouteDirectionsTapped()
             } label: {
-                Image(systemName: self.isSaved ? "heart.fill" : "heart")
+                Image(systemName: "arrow.triangle.turn.up.right.diamond")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 22, height: 22)
-                    .foregroundStyle(self.isSaved ? TabiColor.tabiPrimary : TabiColor.tabiTextSecondary)
-                    .frame(width: 52, height: 52)
+                    .foregroundStyle(TabiColor.tabiTextSecondary)
+                    .frame(width: 45, height: 45)
                     .glassEffect(.regular, in: .rect(cornerRadius: .tabiRadiusSm))
             }
             .buttonStyle(TabiPressStyle())
@@ -35,7 +34,8 @@ struct DetailBottomCTAView: View {
                 Strings.Detail.ctaAddToItinerary,
                 style: .primary,
                 icon: Image(systemName: "plus"),
-                isExpanded: true
+                isExpanded: true,
+                height: 45
             ) {
                 self.onAddToItineraryTapped()
             }
