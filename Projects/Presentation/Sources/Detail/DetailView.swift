@@ -20,7 +20,13 @@ struct DetailView: View {
     @Environment(\.dismiss) private var dismiss
     
     fileprivate var visibleTabs: [DetailTab] {
-        DetailTab.allCases.filter { $0 != .photos || self.store.images.isEmpty == false }
+        DetailTab.allCases.filter { tab in
+            switch tab {
+            case .photos: return self.store.images.isEmpty == false
+            case .map: return self.store.isLoading == false
+            case .info: return true
+            }
+        }
     }
     private static let heroTopAnchorID = "detailHeroTop"
 
