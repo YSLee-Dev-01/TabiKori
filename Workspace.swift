@@ -9,7 +9,7 @@ import Foundation
 import ProjectDescription
 
 let workspace = Workspace(
-    name: "Tabikori",
+    name: "TabiKori",
     projects: [
         "Projects/App",
         "Projects/Core",
