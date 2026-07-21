@@ -34,6 +34,7 @@ struct ZoomableImageView: View {
             }
             .resizable()
             .scaledToFit()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .scaleEffect(self.scale)
             .gesture(self.magnificationGesture)
             .onChange(of: self.isActive) { _, isActive in

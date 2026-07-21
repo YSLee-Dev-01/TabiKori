@@ -15,8 +15,18 @@ import Resource
 
 struct PhotoViewerView: View {
     @Bindable private var store: StoreOf<PhotoViewerFeature>
-
     @Environment(\.dismiss) private var dismiss
+    
+    fileprivate var currentIndexBinding: Binding<Int?> {
+        Binding(
+            get: { self.store.currentIndex },
+            set: { newValue in
+                guard let newValue else { return }
+                self.store.currentIndex = newValue
+            }
+        )
+    }
+
 
     init(store: StoreOf<PhotoViewerFeature>) {
         self.store = store
@@ -24,7 +34,8 @@ struct PhotoViewerView: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.black
+                .ignoresSafeArea()
             self.pager()
                 .ignoresSafeArea()
         }
@@ -52,13 +63,19 @@ struct PhotoViewerView: View {
 
 private extension PhotoViewerView {
     func pager() -> some View {
-        TabView(selection: self.$store.currentIndex) {
-            ForEach(Array(self.store.images.enumerated()), id: \.element.imageURLString) { index, image in
-                ZoomableImageView(imageURL: image.imageURL, isActive: index == self.store.currentIndex)
-                    .tag(index)
+        ScrollView(.horizontal) {
+            LazyHStack(spacing: 0) {
+                ForEach(Array(self.store.images.enumerated()), id: \.offset) { index, image in
+                    ZoomableImageView(imageURL: image.imageURL, isActive: index == self.store.currentIndex)
+                        .containerRelativeFrame(.horizontal)
+                        .id(index)
+                }
             }
+            .scrollTargetLayout()
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
+        .scrollTargetBehavior(.paging)
+        .scrollPosition(id: self.currentIndexBinding)
+        .scrollIndicators(.hidden)
     }
 }
 
