@@ -33,7 +33,7 @@ struct DetailMapTabView: View {
                 onMapTapped: { _, _ in },
                 onMarkerTapped: { _ in }
             )
-            .frame(height: 240)
+            .frame(height: 300)
             .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusLg))
             .overlay {
                 RoundedRectangle(cornerRadius: .tabiRadiusLg)
