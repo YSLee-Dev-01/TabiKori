@@ -11,7 +11,7 @@ import Core
 
 enum Secret {
     static let tourAPIKey: String = Self.value(for: "TOUR_API_KEY")
-    static let naverMapClientID: String = Self.value(for: "NMFGovClientId")
+    static let naverMapClientID: String = Self.value(for: "NMFNcpKeyId")
 }
 
 private extension Secret {
