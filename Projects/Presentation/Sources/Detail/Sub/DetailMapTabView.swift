@@ -9,25 +9,36 @@
 import SwiftUI
 
 import DesignSystem
+import Domain
 import Resource
 
 struct DetailMapTabView: View {
+    let touristSpotID: String
+    let title: String
+    let coordinate: Coordinate
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            RoundedRectangle(cornerRadius: .tabiRadiusLg)
-                .fill(Color(red: 0.94, green: 0.91, blue: 0.87))
-                .frame(height: 240)
-                .overlay {
-                    VStack(spacing: 6) {
-                        Image(systemName: "map")
-                            .font(.system(size: 28))
-                        TabiLabel(title: Strings.Detail.mapComingSoon, style: .captionM, color: .tabiTextTertiary)
-                    }
-                }
-                .overlay {
-                    RoundedRectangle(cornerRadius: .tabiRadiusLg)
-                        .stroke(TabiColor.tabiBorder.opacity(0.4), lineWidth: 1)
-                }
+            TabiMapView(
+                centerLatitude: self.coordinate.latitude,
+                centerLongitude: self.coordinate.longitude,
+                markers: [
+                    TabiMapMarker(
+                        id: self.touristSpotID,
+                        latitude: self.coordinate.latitude,
+                        longitude: self.coordinate.longitude,
+                        title: self.title
+                    )
+                ],
+                onMapTapped: { _, _ in },
+                onMarkerTapped: { _ in }
+            )
+            .frame(height: 240)
+            .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusLg))
+            .overlay {
+                RoundedRectangle(cornerRadius: .tabiRadiusLg)
+                    .stroke(TabiColor.tabiBorder.opacity(0.4), lineWidth: 1)
+            }
             HStack {
                 Spacer()
                 TabiButton(

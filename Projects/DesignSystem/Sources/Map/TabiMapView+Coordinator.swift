@@ -15,6 +15,7 @@ extension TabiMapView {
         private var markerCache: [String: NMFMarker] = [:]
         private var clusterer: NMCClusterer<TabiClusteringKey>?
         private var clusteredKeys: [String: TabiClusteringKey] = [:]
+        private var markerTitles: [String: String] = [:]
 
         init(
             onMapTapped: @escaping (Double, Double) -> Void,
@@ -63,6 +64,7 @@ private extension TabiMapView.Coordinator {
         for marker in markers where self.markerCache[marker.id] == nil {
             let nmfMarker = NMFMarker()
             nmfMarker.position = NMGLatLng(lat: marker.latitude, lng: marker.longitude)
+            nmfMarker.captionText = marker.title
             nmfMarker.touchHandler = { [weak self] _ in
                 self?.onMarkerTapped(marker.id)
                 return true
@@ -92,6 +94,7 @@ private extension TabiMapView.Coordinator {
             clusterer.removeAll(staleKeys)
             for id in staleIDs {
                 self.clusteredKeys.removeValue(forKey: id)
+                self.markerTitles.removeValue(forKey: id)
             }
         }
 
@@ -105,6 +108,7 @@ private extension TabiMapView.Coordinator {
                 position: NMGLatLng(lat: marker.latitude, lng: marker.longitude)
             )
             self.clusteredKeys[marker.id] = key
+            self.markerTitles[marker.id] = marker.title
             keyTagMap[key] = marker.id as NSString
         }
         clusterer.addAll(keyTagMap)
@@ -112,7 +116,10 @@ private extension TabiMapView.Coordinator {
 
     func makeClusterer() -> NMCClusterer<TabiClusteringKey> {
         let builder = NMCBuilder<TabiClusteringKey>()
-        builder.leafMarkerUpdater = TabiLeafMarkerUpdater(onMarkerTapped: self.onMarkerTapped)
+        builder.leafMarkerUpdater = TabiLeafMarkerUpdater(
+            onMarkerTapped: self.onMarkerTapped,
+            titleProvider: { [weak self] id in self?.markerTitles[id] }
+        )
         return builder.build()
     }
 
@@ -130,9 +137,11 @@ private extension TabiMapView.Coordinator {
 private final class TabiLeafMarkerUpdater: NSObject {
     private let defaultUpdater = NMCDefaultLeafMarkerUpdater()
     private let onMarkerTapped: (String) -> Void
+    private let titleProvider: (String) -> String?
 
-    init(onMarkerTapped: @escaping (String) -> Void) {
+    init(onMarkerTapped: @escaping (String) -> Void, titleProvider: @escaping (String) -> String?) {
         self.onMarkerTapped = onMarkerTapped
+        self.titleProvider = titleProvider
     }
 }
 
@@ -143,6 +152,7 @@ extension TabiLeafMarkerUpdater: NMCLeafMarkerUpdater {
         self.defaultUpdater.updateLeafMarker(info, marker)
 
         guard let markerID = info.tag as? String else { return }
+        marker.captionText = self.titleProvider(markerID) ?? ""
         marker.touchHandler = { [weak self] _ in
             self?.onMarkerTapped(markerID)
             return true

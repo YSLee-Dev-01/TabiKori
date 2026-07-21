@@ -159,7 +159,11 @@ private extension DetailView {
             )
         }
         if self.store.selectedTab == .map {
-            DetailMapTabView()
+            DetailMapTabView(
+                touristSpotID: self.store.touristSpot.id,
+                title: self.store.touristSpot.title,
+                coordinate: self.store.detail.coordinate
+            )
         }
     }
 
