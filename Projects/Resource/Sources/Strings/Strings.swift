@@ -129,7 +129,7 @@ public extension Strings.Tabbar {
     /// 홈
     static let home = "ホーム"
     /// 지도
-    static let map = "地図"
+    static let map = "マップ"
     /// 여행 계획
     static let plan = "旅程"
     /// 저장

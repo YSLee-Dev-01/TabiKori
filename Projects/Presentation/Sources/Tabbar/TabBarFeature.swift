@@ -17,13 +17,12 @@ public struct TabBarFeature {
         var selectedTab: AppTab = .home
         
         var homeState: HomeFeature.State = .init()
-        var mapState: MapState = .init()
+        var mapState: MapFeature.State = .init()
         var planState: PlanState = .init()
         var saveState: SaveState = .init()
         var searchState: SearchState = .init()
 
         // 임시
-        public struct MapState: Equatable { public init() {} }
         public struct PlanState: Equatable { public init() {} }
         public struct SaveState: Equatable { public init() {} }
         public struct SearchState: Equatable { public init() {} }
@@ -36,6 +35,7 @@ public struct TabBarFeature {
     public enum Action: Equatable {
         case tabSelected(AppTab)
         case home(HomeFeature.Action)
+        case map(MapFeature.Action)
         case path(StackActionOf<StackPath>)
     }
 
@@ -44,6 +44,9 @@ public struct TabBarFeature {
     public var body: some Reducer<State, Action> {
         Scope(state: \.homeState, action: \.home) {
             HomeFeature()
+        }
+        Scope(state: \.mapState, action: \.map) {
+            MapFeature()
         }
 
         Reduce { state, action in
@@ -57,6 +60,9 @@ public struct TabBarFeature {
                 return .none
 
             case .home:
+                return .none
+
+            case .map:
                 return .none
 
             case .path(.element(id: let id, action: .detail(.photoCellTapped(let index)))):

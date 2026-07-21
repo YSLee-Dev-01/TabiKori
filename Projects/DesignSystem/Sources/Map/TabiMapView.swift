@@ -17,6 +17,7 @@ public struct TabiMapView {
     private let markers: [TabiMapMarker]
     private let isClusteringEnabled: Bool
     private let showsLocationButton: Bool
+    private let followsUserLocation: Bool
     private let onMapTapped: (Double, Double) -> Void
     private let onMarkerTapped: (String) -> Void
 
@@ -27,6 +28,7 @@ public struct TabiMapView {
         markers: [TabiMapMarker] = [],
         isClusteringEnabled: Bool = false,
         showsLocationButton: Bool = false,
+        followsUserLocation: Bool = true,
         onMapTapped: @escaping (Double, Double) -> Void,
         onMarkerTapped: @escaping (String) -> Void
     ) {
@@ -36,6 +38,7 @@ public struct TabiMapView {
         self.markers = markers
         self.isClusteringEnabled = isClusteringEnabled
         self.showsLocationButton = showsLocationButton
+        self.followsUserLocation = followsUserLocation
         self.onMapTapped = onMapTapped
         self.onMarkerTapped = onMarkerTapped
     }
@@ -69,7 +72,7 @@ extension TabiMapView: UIViewRepresentable {
 
     public func updateUIView(_ uiView: NMFNaverMapView, context: Context) {
         uiView.showLocationButton = self.showsLocationButton
-        uiView.mapView.positionMode = self.showsLocationButton ? .direction : .disabled
+        uiView.mapView.positionMode = self.showsLocationButton ? (self.followsUserLocation ? .direction : .normal) : .disabled
 
         context.coordinator.sync(
             markers: self.markers,

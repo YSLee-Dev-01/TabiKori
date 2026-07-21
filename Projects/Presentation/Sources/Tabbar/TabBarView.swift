@@ -34,7 +34,7 @@ public struct TabBarView: View {
                     }
                     .tag(AppTab.home)
 
-                Text(AppTab.map.title)
+                MapView(store: self.store.scope(state: \.mapState, action: \.map))
                     .tabItem {
                         Image(systemName: AppTab.map.systemImage)
                     }
