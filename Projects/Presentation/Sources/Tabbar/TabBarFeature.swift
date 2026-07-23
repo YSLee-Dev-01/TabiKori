@@ -20,12 +20,10 @@ public struct TabBarFeature {
         var mapState: MapFeature.State = .init()
         var planState: PlanState = .init()
         var saveState: SaveState = .init()
-        var searchState: SearchState = .init()
 
         // 임시
         public struct PlanState: Equatable { public init() {} }
         public struct SaveState: Equatable { public init() {} }
-        public struct SearchState: Equatable { public init() {} }
 
         var path = StackState<StackPath.State>()
 
@@ -57,6 +55,11 @@ public struct TabBarFeature {
 
             case .home(.nearbySpotTapped(let spot)):
                 state.path.append(.detail(DetailFeature.State(touristSpot: spot)))
+                return .none
+
+            case .home(.searchBarTapped):
+                state.selectedTab = .map
+                state.mapState.isSearching = true
                 return .none
 
             case .home:

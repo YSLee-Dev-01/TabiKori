@@ -29,13 +29,18 @@ public struct MapFeature: Sendable {
         var showsUserLocation: Bool = false
         var hasResolvedInitialCenter: Bool = false
         var locationStatus: LocationAuthorizationStatus = .undetermined
+        var isSearching: Bool = false
+        var searchQuery: String = ""
         fileprivate var hasLoadedInitial: Bool = false
 
         public init() {}
     }
 
-    public enum Action: Equatable {
+    public enum Action: BindableAction, Equatable {
+        case binding(BindingAction<State>)
         case onAppear
+        case searchFieldTapped
+        case searchCancelTapped
         case requestLocationPermission
         case locationPermissionResult(LocationAuthorizationStatus)
         case coordinateResult(Coordinate)
@@ -45,8 +50,21 @@ public struct MapFeature: Sendable {
     public init() {}
 
     public var body: some Reducer<State, Action> {
+        BindingReducer()
         Reduce { state, action in
             switch action {
+            case .binding:
+                return .none
+
+            case .searchFieldTapped:
+                state.isSearching = true
+                return .none
+
+            case .searchCancelTapped:
+                state.isSearching = false
+                state.searchQuery = ""
+                return .none
+
             case .onAppear:
                 guard state.hasLoadedInitial == false else { return .none }
                 state.hasLoadedInitial = true

@@ -15,7 +15,6 @@ public enum AppTab: CaseIterable, Equatable {
     case map
     case plan
     case save
-    case search
 
     var title: String {
         switch self {
@@ -23,7 +22,6 @@ public enum AppTab: CaseIterable, Equatable {
         case .map: return Strings.Tabbar.map
         case .plan: return Strings.Tabbar.plan
         case .save: return Strings.Tabbar.save
-        case .search: return Strings.Tabbar.search
         }
     }
 
@@ -33,7 +31,6 @@ public enum AppTab: CaseIterable, Equatable {
         case .map: return "map"
         case .plan: return "calendar"
         case .save: return "bookmark"
-        case .search: return "magnifyingglass"
         }
     }
 }

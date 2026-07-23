@@ -36,6 +36,11 @@ public struct HomeView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 20) {
+                    TabiSearchField(placeholder: Strings.Map.searchPlaceholder) {
+                        self.store.send(.searchBarTapped)
+                    }
+                    .staggeredAppear(index: 0)
+
                     if self.store.locationStatus == .allowed && self.store.currentRegion.isKorea {
                         self.inKoreaBanner()
                             .staggeredAppear(index: 0)

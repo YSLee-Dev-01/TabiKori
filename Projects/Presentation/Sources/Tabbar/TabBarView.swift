@@ -51,12 +51,6 @@ public struct TabBarView: View {
                         Image(systemName: AppTab.save.systemImage)
                     }
                     .tag(AppTab.save)
-
-                Text(AppTab.search.title)
-                    .tabItem {
-                        Image(systemName: AppTab.search.systemImage)
-                    }
-                    .tag(AppTab.search)
             }
             .tint(Color.getTabiColor(.tabiPrimary))
         } destination: { store in

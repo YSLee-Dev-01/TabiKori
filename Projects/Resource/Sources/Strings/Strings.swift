@@ -14,6 +14,7 @@ public enum Strings {
     public enum Home {}
     public enum Region {}
     public enum Detail {}
+    public enum Map {}
 }
 
 public extension Strings.Common {
@@ -134,8 +135,17 @@ public extension Strings.Tabbar {
     static let plan = "旅程"
     /// 저장
     static let save = "保存"
-    /// 검색
-    static let search = "検索"
+}
+
+public extension Strings.Map {
+    /// 지도 네비게이션 subtitle
+    static let navigationSubtitle = "🔍 検索"
+    /// 검색 placeholder
+    static let searchPlaceholder = "スポットを検索"
+    /// 검색 취소
+    static let searchCancel = "キャンセル"
+    /// 검색 안내 설명 (빈 상태)
+    static let searchEmptyDescription = "地名やスポット名で検索できます"
 }
 
 public extension Strings.Detail {

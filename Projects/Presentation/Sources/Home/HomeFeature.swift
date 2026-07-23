@@ -53,6 +53,7 @@ public struct HomeFeature: Sendable {
         case nearbyRestaurantsResult([TouristSpot])
         case planCreateButtonTapped
         case nearbySpotTapped(TouristSpot)
+        case searchBarTapped
     }
 
     public init() {}
@@ -166,6 +167,9 @@ public struct HomeFeature: Sendable {
                 return .none
 
             case .nearbySpotTapped:
+                return .none
+
+            case .searchBarTapped:
                 return .none
             }
         }
