@@ -22,6 +22,10 @@
 	<string>1</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.travel</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>nmap</string>
+	</array>
 	<key>NMFNcpKeyId</key>
 	<string>$(NAVERMAP_CLIENT_ID)</string>
 	<key>NSAppTransportSecurity</key>

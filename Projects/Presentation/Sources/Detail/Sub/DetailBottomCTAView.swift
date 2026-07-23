@@ -14,6 +14,7 @@ import Resource
 struct DetailBottomCTAView: View {
     let onRouteDirectionsTapped: () -> Void
     let onAddToItineraryTapped: () -> Void
+    let isRouteDirectionsDisabled: Bool
 
     var body: some View {
         HStack(spacing: 10) {
@@ -29,6 +30,7 @@ struct DetailBottomCTAView: View {
                     .glassEffect(.regular, in: .rect(cornerRadius: .tabiRadiusSm))
             }
             .buttonStyle(TabiPressStyle())
+            .disabled(self.isRouteDirectionsDisabled)
 
             TabiButton(
                 Strings.Detail.ctaAddToItinerary,

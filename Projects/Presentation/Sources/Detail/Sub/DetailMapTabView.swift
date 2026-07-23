@@ -16,6 +16,7 @@ struct DetailMapTabView: View {
     let touristSpotID: String
     let title: String
     let coordinate: Coordinate
+    let onViewInMapTapped: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -45,8 +46,9 @@ struct DetailMapTabView: View {
                     Strings.Detail.viewInMap,
                     style: .secondary,
                     icon: Image(systemName: "arrow.up.right.square")
-                ) {}
-                .disabled(true)
+                ) {
+                    self.onViewInMapTapped()
+                }
             }
         }
         .padding(.horizontal, 20)

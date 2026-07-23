@@ -31,6 +31,7 @@ public enum DetailTab: String, CaseIterable, Equatable {
 public struct DetailFeature {
 
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
+    @Dependency(\.naverMapUseCase) var naverMapUseCase
 
     @ObservableState
     public struct State: Equatable {
@@ -74,6 +75,8 @@ public struct DetailFeature {
         case tabSelected(DetailTab)
         case saveButtonTapped
         case photoCellTapped(index: Int)
+        case mapSearchButtonTapped
+        case routeDirectionsButtonTapped
         case detailResult(TouristSpotDetail?)
         case introResult(TouristSpotIntro?)
         case imagesResult([TouristSpotImage]?)
@@ -105,6 +108,16 @@ public struct DetailFeature {
 
             case .photoCellTapped:
                 return .none
+
+            case .mapSearchButtonTapped:
+                return .run { [naverMapUseCase = self.naverMapUseCase, query = state.touristSpot.japaneseTitle] _ in
+                    await naverMapUseCase.searchPlace(query: query)
+                }
+
+            case .routeDirectionsButtonTapped:
+                return .run { [naverMapUseCase = self.naverMapUseCase, coordinate = state.detail.coordinate, name = state.detail.japaneseTitle] _ in
+                    await naverMapUseCase.routeToDestination(coordinate: coordinate, destinationName: name)
+                }
 
             case .detailResult(let detail):
                 if let detail { state.detail = detail }

@@ -87,8 +87,9 @@ struct DetailView: View {
             .toolbarBackground(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 DetailBottomCTAView(
-                    onRouteDirectionsTapped: {},
-                    onAddToItineraryTapped: {}
+                    onRouteDirectionsTapped: { self.store.send(.routeDirectionsButtonTapped) },
+                    onAddToItineraryTapped: {},
+                    isRouteDirectionsDisabled: self.store.isLoading
                 )
             }
             .onAppear {
@@ -167,7 +168,8 @@ private extension DetailView {
             DetailMapTabView(
                 touristSpotID: self.store.touristSpot.id,
                 title: self.store.touristSpot.title,
-                coordinate: self.store.detail.coordinate
+                coordinate: self.store.detail.coordinate,
+                onViewInMapTapped: { self.store.send(.mapSearchButtonTapped) }
             )
         }
     }

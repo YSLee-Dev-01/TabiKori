@@ -27,7 +27,7 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
     case naverMap = "NMapsMap"
 
     static let internalDependencyInfo: [DependencyInformation: [DependencyInformation]] = [
-        .app: [.domain, .data, .presentation],
+        .app: [.domain, .data, .presentation, .core],
         .domain: [.core],
         .data: [.domain, .core],
         .core: [],

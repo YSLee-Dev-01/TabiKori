@@ -30,4 +30,9 @@ extension DependencyValues {
         get {self[TouristSpotUseCaseDependencyKey.self]}
         set {self[TouristSpotUseCaseDependencyKey.self] = newValue}
     }
+
+    public var naverMapUseCase: NaverMapUseCaseProtocol {
+        get {self[NaverMapUseCaseDependencyKey.self]}
+        set {self[NaverMapUseCaseDependencyKey.self] = newValue}
+    }
 }
