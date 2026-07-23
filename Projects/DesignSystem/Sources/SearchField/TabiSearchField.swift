@@ -17,34 +17,47 @@ import Resource
 /// - 실제 입력용: `init(placeholder:text:focus:)` — 바인딩된 TextField (Map 검색 모드 등)
 public struct TabiSearchField: View {
 
+    /// 배경 스타일
+    /// - `solid`: 불투명 surface 배경 (기본)
+    /// - `glass`: Liquid Glass 반투명 배경 (지도 등 위에 오버레이 시)
+    public enum Style {
+        case solid
+        case glass
+    }
+
     // MARK: - Properties
 
     private let placeholder: String
     private let text: Binding<String>?
     private let focus: FocusState<Bool>.Binding?
     private let onTap: (() -> Void)?
+    private let style: Style
 
     // MARK: - Init
 
     public init(
         placeholder: String,
+        style: Style = .solid,
         onTap: @escaping () -> Void
     ) {
         self.placeholder = placeholder
         self.text = nil
         self.focus = nil
         self.onTap = onTap
+        self.style = style
     }
 
     public init(
         placeholder: String,
         text: Binding<String>,
-        focus: FocusState<Bool>.Binding? = nil
+        focus: FocusState<Bool>.Binding? = nil,
+        style: Style = .solid
     ) {
         self.placeholder = placeholder
         self.text = text
         self.focus = focus
         self.onTap = nil
+        self.style = style
     }
 
     // MARK: - View
@@ -61,8 +74,9 @@ public struct TabiSearchField: View {
 // MARK: - Method
 
 private extension TabiSearchField {
+    @ViewBuilder
     func container<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        HStack(spacing: 8) {
+        let base = HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(TabiColor.tabiTextTertiary)
@@ -73,11 +87,20 @@ private extension TabiSearchField {
         }
         .padding(.horizontal, 14)
         .frame(height: 46)
-        .background(TabiColor.tabiSurface)
-        .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
-        .overlay {
-            RoundedRectangle(cornerRadius: .tabiRadiusMd)
-                .stroke(TabiColor.tabiBorder, lineWidth: 1)
+
+        switch self.style {
+        case .solid:
+            base
+                .background(TabiColor.tabiSurface)
+                .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
+                .overlay {
+                    RoundedRectangle(cornerRadius: .tabiRadiusMd)
+                        .stroke(TabiColor.tabiBorder, lineWidth: 1)
+                }
+
+        case .glass:
+            base
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: .tabiRadiusMd))
         }
     }
 

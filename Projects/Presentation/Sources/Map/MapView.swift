@@ -65,17 +65,29 @@ private extension MapView {
         .safeAreaBar(edge: .top) {
             VStack(spacing: 12) {
                 TabiNavigationBar(
-                    subtitle: Strings.Map.navigationSubtitle,
                     title: Strings.Tabbar.map
                 )
 
-                TabiSearchField(placeholder: Strings.Map.searchPlaceholder) {
+                TabiSearchField(
+                    placeholder: Strings.Map.searchPlaceholder,
+                    style: .glass
+                ) {
                     self.store.send(.searchFieldTapped)
                 }
                 .padding(.horizontal, 20)
             }
-            .padding(.bottom, 4)
-            .background(.bar)
+            .padding(.bottom, 16)
+            .background {
+                LinearGradient(
+                    colors: [
+                        Color.getTabiColor(.tabiBackground),
+                        Color.getTabiColor(.tabiBackground).opacity(0)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea(.container, edges: .top)
+            }
         }
     }
 
