@@ -167,8 +167,8 @@ public extension Strings.Detail {
     static let infoUseSeason = "利用時期"
     /// 일정에 추가 버튼
     static let ctaAddToItinerary = "旅程に追加"
-    /// 지도 앱에서 열기 버튼
-    static let openInMaps = "地図アプリで開く"
+    /// 지도보기 버튼
+    static let viewInMap = "地図で見る"
     /// 지도 준비 중
     static let mapComingSoon = "地図準備中"
 }

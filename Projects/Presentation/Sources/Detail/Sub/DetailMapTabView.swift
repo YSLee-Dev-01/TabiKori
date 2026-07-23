@@ -42,7 +42,7 @@ struct DetailMapTabView: View {
             HStack {
                 Spacer()
                 TabiButton(
-                    Strings.Detail.openInMaps,
+                    Strings.Detail.viewInMap,
                     style: .secondary,
                     icon: Image(systemName: "arrow.up.right.square")
                 ) {}
