@@ -87,8 +87,7 @@ struct DetailView: View {
             .toolbarBackground(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 DetailBottomCTAView(
-                    isSaved: self.store.isSaved,
-                    onSaveTapped: { self.store.send(.saveButtonTapped) },
+                    onRouteDirectionsTapped: {},
                     onAddToItineraryTapped: {}
                 )
             }
