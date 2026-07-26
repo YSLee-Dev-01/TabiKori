@@ -20,6 +20,7 @@ public struct TabiMapView {
     private let followsUserLocation: Bool
     private let onMapTapped: (Double, Double) -> Void
     private let onMarkerTapped: (String) -> Void
+    private let onMapDragged: () -> Void
 
     public init(
         centerLatitude: Double,
@@ -30,7 +31,8 @@ public struct TabiMapView {
         showsLocationButton: Bool = false,
         followsUserLocation: Bool = true,
         onMapTapped: @escaping (Double, Double) -> Void,
-        onMarkerTapped: @escaping (String) -> Void
+        onMarkerTapped: @escaping (String) -> Void,
+        onMapDragged: @escaping () -> Void = {}
     ) {
         self.centerLatitude = centerLatitude
         self.centerLongitude = centerLongitude
@@ -41,6 +43,7 @@ public struct TabiMapView {
         self.followsUserLocation = followsUserLocation
         self.onMapTapped = onMapTapped
         self.onMarkerTapped = onMarkerTapped
+        self.onMapDragged = onMapDragged
     }
 }
 
@@ -48,12 +51,13 @@ public struct TabiMapView {
 
 extension TabiMapView: UIViewRepresentable {
     public func makeCoordinator() -> Coordinator {
-        Coordinator(onMapTapped: self.onMapTapped, onMarkerTapped: self.onMarkerTapped)
+        Coordinator(onMapTapped: self.onMapTapped, onMarkerTapped: self.onMarkerTapped, onMapDragged: self.onMapDragged)
     }
 
     public func makeUIView(context: Context) -> NMFNaverMapView {
         let naverMapView = NMFNaverMapView(frame: .zero)
         naverMapView.mapView.touchDelegate = context.coordinator
+        naverMapView.mapView.addCameraDelegate(delegate: context.coordinator)
 
         let cameraUpdate = NMFCameraUpdate(
             scrollTo: NMGLatLng(lat: self.centerLatitude, lng: self.centerLongitude),

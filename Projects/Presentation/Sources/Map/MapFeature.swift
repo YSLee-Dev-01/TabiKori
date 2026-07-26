@@ -31,6 +31,7 @@ public struct MapFeature: Sendable {
         var locationStatus: LocationAuthorizationStatus = .undetermined
         var isSearching: Bool = false
         var searchQuery: String = ""
+        var panelStage: MapPanelStage = .half
         fileprivate var hasLoadedInitial: Bool = false
 
         public init() {}
@@ -41,6 +42,9 @@ public struct MapFeature: Sendable {
         case onAppear
         case searchFieldTapped
         case searchCancelTapped
+        case mapDragged
+        case searchSubmitted
+        case panelDragEnded(MapPanelStage)
         case requestLocationPermission
         case locationPermissionResult(LocationAuthorizationStatus)
         case coordinateResult(Coordinate)
@@ -58,11 +62,25 @@ public struct MapFeature: Sendable {
 
             case .searchFieldTapped:
                 state.isSearching = true
+                state.panelStage = .half
                 return .none
 
             case .searchCancelTapped:
                 state.isSearching = false
                 state.searchQuery = ""
+                state.panelStage = .half
+                return .none
+
+            case .mapDragged:
+                state.panelStage = .collapsed
+                return .none
+
+            case .searchSubmitted:
+                state.panelStage = .full
+                return .none
+
+            case .panelDragEnded(let stage):
+                state.panelStage = stage
                 return .none
 
             case .onAppear:

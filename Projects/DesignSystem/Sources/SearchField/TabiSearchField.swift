@@ -31,6 +31,7 @@ public struct TabiSearchField: View {
     private let text: Binding<String>?
     private let focus: FocusState<Bool>.Binding?
     private let onTap: (() -> Void)?
+    private let onSubmit: (() -> Void)?
     private let style: Style
 
     // MARK: - Init
@@ -44,6 +45,7 @@ public struct TabiSearchField: View {
         self.text = nil
         self.focus = nil
         self.onTap = onTap
+        self.onSubmit = nil
         self.style = style
     }
 
@@ -51,12 +53,14 @@ public struct TabiSearchField: View {
         placeholder: String,
         text: Binding<String>,
         focus: FocusState<Bool>.Binding? = nil,
-        style: Style = .solid
+        style: Style = .solid,
+        onSubmit: (() -> Void)? = nil
     ) {
         self.placeholder = placeholder
         self.text = text
         self.focus = focus
         self.onTap = nil
+        self.onSubmit = onSubmit
         self.style = style
     }
 
@@ -123,6 +127,7 @@ private extension TabiSearchField {
                 .font(.pretendard(TypographyStyle.bodyM.weight, size: TypographyStyle.bodyM.size))
                 .foregroundStyle(TabiColor.tabiTextPrimary)
                 .submitLabel(.search)
+                .onSubmit { self.onSubmit?() }
 
             if let focus = self.focus {
                 field.focused(focus)
