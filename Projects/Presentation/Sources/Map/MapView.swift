@@ -120,7 +120,7 @@ private extension MapView {
                 topTrailingRadius: .tabiRadiusXl
             )
         )
-        .ignoresSafeArea(.container, edges: .top)
+        .ignoresSafeArea(.container, edges: [.top, .bottom])
     }
 
     func panelGrabber() -> some View {
@@ -173,6 +173,7 @@ private extension MapView {
                         placeholder: Strings.Map.searchPlaceholder,
                         text: self.$store.searchQuery,
                         focus: self.$isSearchFieldFocused,
+                        style: .glass,
                         onSubmit: { self.store.send(.searchSubmitted) }
                     )
                     .matchedGeometryEffect(id: "mapSearchField", in: self.searchFieldNamespace)
