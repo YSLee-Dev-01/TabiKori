@@ -20,6 +20,7 @@ public struct MapView: View {
     @Namespace private var searchFieldNamespace
     @State private var mapContainerHeight: CGFloat = 0
     @State private var topBarHeight: CGFloat = 0
+    @State private var bottomSafeAreaInset: CGFloat = 0
     @GestureState private var panelDragTranslation: CGFloat = 0
     
     fileprivate var collapsedPanelHeight: CGFloat { 50 }
@@ -51,6 +52,11 @@ public struct MapView: View {
             proxy.size.height
         } action: { newValue in
             self.mapContainerHeight = newValue
+        }
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.safeAreaInsets.bottom
+        } action: { newValue in
+            self.bottomSafeAreaInset = newValue
         }
         .animation(.tabiStandard, value: self.store.isSearching)
         .animation(.tabiStandard, value: self.store.searchQuery.isEmpty)
@@ -120,6 +126,12 @@ private extension MapView {
                 topTrailingRadius: .tabiRadiusXl
             )
         )
+        .background(alignment: .bottom) {
+            Rectangle()
+                .fill(TabiColor.tabiSurface)
+                .frame(height: self.bottomSafeAreaInset)
+                .offset(y: self.bottomSafeAreaInset)
+        }
         .ignoresSafeArea(.container, edges: [.top, .bottom])
     }
 
