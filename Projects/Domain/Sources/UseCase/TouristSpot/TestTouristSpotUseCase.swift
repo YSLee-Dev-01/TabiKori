@@ -16,6 +16,7 @@ public final class TestTouristSpotUseCase: TouristSpotUseCaseProtocol, @unchecke
     public var detail: TouristSpotDetail!
     public var intro: TouristSpotIntro!
     public var images: [TouristSpotImage] = []
+    public var searchResults: [TouristSpot] = []
 
     // MARK: - Init
 
@@ -41,5 +42,9 @@ public final class TestTouristSpotUseCase: TouristSpotUseCaseProtocol, @unchecke
 
     public func fetchImages(contentId: String) async throws -> [TouristSpotImage] {
         return self.images
+    }
+
+    public func searchByKeyword(keyword: String, pageNo: Int) async throws -> [TouristSpot] {
+        return self.searchResults
     }
 }

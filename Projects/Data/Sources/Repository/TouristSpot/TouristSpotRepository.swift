@@ -63,4 +63,12 @@ public final class TouristSpotRepository: TouristSpotRepositoryProtocol {
         )
         return try dto.toEntities()
     }
+
+    public func searchByKeyword(keyword: String, pageNo: Int) async throws -> [TouristSpot] {
+        let dto = try await self.networkService.request(
+            endPoint: TouristSpotEndpoint.searchKeyword(keyword: keyword, pageNo: pageNo),
+            responseType: TouristSpotResponseDTO.self
+        )
+        return try dto.toEntities()
+    }
 }

@@ -20,4 +20,6 @@ public protocol TouristSpotUseCaseProtocol: Sendable {
     func fetchIntro(contentId: String, contentType: CategoryType) async throws -> TouristSpotIntro
 
     func fetchImages(contentId: String) async throws -> [TouristSpotImage]
+
+    func searchByKeyword(keyword: String, pageNo: Int) async throws -> [TouristSpot]
 }

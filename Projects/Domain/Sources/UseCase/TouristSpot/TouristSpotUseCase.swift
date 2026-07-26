@@ -45,4 +45,8 @@ public final class TouristSpotUseCase: TouristSpotUseCaseProtocol {
     public func fetchImages(contentId: String) async throws -> [TouristSpotImage] {
         return try await self.repository.fetchImages(contentId: contentId)
     }
+
+    public func searchByKeyword(keyword: String, pageNo: Int) async throws -> [TouristSpot] {
+        return try await self.repository.searchByKeyword(keyword: keyword, pageNo: pageNo)
+    }
 }

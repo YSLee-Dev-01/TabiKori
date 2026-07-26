@@ -15,10 +15,11 @@ enum TouristSpotEndpoint: Endpoint {
     case detail(contentId: String)
     case intro(contentId: String, contentType: CategoryType)
     case images(contentId: String)
+    case searchKeyword(keyword: String, pageNo: Int)
 
     var baseURL: String {
         switch self {
-        case .nearbySpots, .detail, .intro, .images: return "https://apis.data.go.kr"
+        case .nearbySpots, .detail, .intro, .images, .searchKeyword: return "https://apis.data.go.kr"
         }
     }
 
@@ -28,6 +29,7 @@ enum TouristSpotEndpoint: Endpoint {
         case .detail: return "/B551011/JpnService2/detailCommon2"
         case .intro: return "/B551011/JpnService2/detailIntro2"
         case .images: return "/B551011/JpnService2/detailImage2"
+        case .searchKeyword: return "/B551011/JpnService2/searchKeyword2"
         }
     }
 
@@ -78,6 +80,17 @@ enum TouristSpotEndpoint: Endpoint {
                 URLQueryItem(name: "pageNo", value: "1"),
                 URLQueryItem(name: "contentId", value: contentId),
                 URLQueryItem(name: "imageYN", value: "Y")
+            ]
+        case .searchKeyword(let keyword, let pageNo):
+            return [
+                URLQueryItem(name: "MobileOS", value: "IOS"),
+                URLQueryItem(name: "MobileApp", value: "TabiKori"),
+                URLQueryItem(name: "serviceKey", value: Secret.tourAPIKey),
+                URLQueryItem(name: "_type", value: "json"),
+                URLQueryItem(name: "arrange", value: "A"),
+                URLQueryItem(name: "numOfRows", value: "50"),
+                URLQueryItem(name: "pageNo", value: "\(pageNo)"),
+                URLQueryItem(name: "keyword", value: keyword)
             ]
         }
     }
