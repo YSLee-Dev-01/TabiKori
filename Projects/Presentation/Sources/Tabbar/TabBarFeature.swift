@@ -65,6 +65,10 @@ public struct TabBarFeature {
             case .home:
                 return .none
 
+            case .map(.searchResultTapped(let spot)):
+                state.path.append(.detail(DetailFeature.State(touristSpot: spot)))
+                return .none
+
             case .map:
                 return .none
 

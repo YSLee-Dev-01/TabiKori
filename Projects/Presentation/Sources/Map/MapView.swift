@@ -12,6 +12,7 @@ import UIKit
 import ComposableArchitecture
 import DesignSystem
 import Domain
+import Kingfisher
 import Resource
 
 public struct MapView: View {
@@ -88,6 +89,16 @@ public struct MapView: View {
     }
 }
 
+// MARK: - TouristSpot View Extension
+
+private extension TouristSpot {
+    var formattedDistance: String? {
+        guard let dist = self.distanceMeters else { return nil }
+        if dist >= 1000 { return String(format: "%.1fkm", dist / 1000) }
+        return "\(Int(dist))m"
+    }
+}
+
 // MARK: - View
 
 private extension MapView {
@@ -116,21 +127,7 @@ private extension MapView {
     func searchResultSheet() -> some View {
         VStack(spacing: 0) {
             if self.store.panelStage != .collapsed {
-                Spacer(minLength: 0)
-
-                VStack(spacing: 10) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 34))
-                        .foregroundStyle(TabiColor.tabiTextTertiary)
-                    TabiLabel(
-                        title: Strings.Map.searchEmptyDescription,
-                        style: .bodyS,
-                        color: .tabiTextTertiary,
-                        alignment: .center
-                    )
-                }
-
-                Spacer(minLength: 0)
+                self.searchResultContent()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -146,6 +143,178 @@ private extension MapView {
         .presentationBackgroundInteraction(.enabled(upThrough: .height(self.sheetHalfHeight)))
         .presentationCornerRadius(.tabiRadiusXl)
         .interactiveDismissDisabled()
+    }
+
+    @ViewBuilder
+    func searchResultContent() -> some View {
+        if self.store.searchQuery.isEmpty {
+            self.searchGuideState()
+        } else if self.store.isSearchLoading {
+            self.searchResultSkeletonList()
+        } else if self.store.searchResults.isEmpty {
+            self.searchResultEmptyState()
+        } else {
+            self.searchResultList()
+        }
+    }
+
+    func searchGuideState() -> some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+
+            VStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 34))
+                    .foregroundStyle(TabiColor.tabiTextTertiary)
+                TabiLabel(
+                    title: Strings.Map.searchEmptyDescription,
+                    style: .bodyS,
+                    color: .tabiTextTertiary,
+                    alignment: .center
+                )
+            }
+
+            Spacer(minLength: 0)
+        }
+    }
+
+    func searchResultEmptyState() -> some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+
+            VStack(spacing: 10) {
+                Image(systemName: "mappin.slash")
+                    .font(.system(size: 34))
+                    .foregroundStyle(TabiColor.tabiTextTertiary)
+
+                VStack(spacing: 3) {
+                    TabiLabel(title: Strings.Map.searchResultEmptyTitle, style: .bodySBold, color: .tabiTextSecondary)
+                    TabiLabel(
+                        title: Strings.Map.searchResultEmptyDescription,
+                        style: .captionM,
+                        color: .tabiTextTertiary,
+                        alignment: .center
+                    )
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+    }
+
+    func searchResultSkeletonList() -> some View {
+        ScrollView {
+            LazyVStack(spacing: 0) {
+                ForEach(0 ..< 6, id: \.self) { index in
+                    if index > 0 {
+                        Divider()
+                            .padding(.horizontal, 16)
+                    }
+                    self.searchResultSkeletonRow()
+                }
+            }
+        }
+        .scrollDisabled(true)
+        .allowsHitTesting(false)
+    }
+
+    func searchResultSkeletonRow() -> some View {
+        HStack(spacing: 12) {
+            RoundedRectangle(cornerRadius: .tabiRadiusMd)
+                .fill(TabiColor.tabiBorder.opacity(0.3))
+                .frame(width: 64, height: 64)
+
+            VStack(alignment: .leading, spacing: 6) {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(TabiColor.tabiBorder.opacity(0.3))
+                    .frame(width: 120, height: 16)
+                Capsule()
+                    .fill(TabiColor.tabiBorder.opacity(0.3))
+                    .frame(width: 55, height: 20)
+            }
+
+            Spacer()
+
+            RoundedRectangle(cornerRadius: 4)
+                .fill(TabiColor.tabiBorder.opacity(0.2))
+                .frame(width: 40, height: 14)
+        }
+        .padding(16)
+    }
+
+    func searchResultList() -> some View {
+        ScrollView {
+            LazyVStack(spacing: 0) {
+                ForEach(Array(self.store.searchResults.enumerated()), id: \.element.id) { index, spot in
+                    if index > 0 {
+                        Divider()
+                            .padding(.horizontal, 16)
+                    }
+                    self.searchResultRow(spot)
+                        .onAppear {
+                            guard spot.id == self.store.searchResults.last?.id else { return }
+                            self.store.send(.searchNextPageTriggered)
+                        }
+                }
+
+                if self.store.isSearchNextPageLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 20)
+                }
+            }
+        }
+    }
+
+    func searchResultRow(_ spot: TouristSpot) -> some View {
+        Button {
+            self.store.send(.searchResultTapped(spot))
+        } label: {
+            HStack(spacing: 12) {
+                KFImage(spot.thumbnailURL)
+                    .placeholder {
+                        Color.getTabiColor(.tabiBorder).opacity(0.25)
+                            .overlay {
+                                Image(systemName: "mappin.and.ellipse")
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(TabiColor.tabiTextTertiary)
+                            }
+                    }
+                    .scaledToFill()
+                    .frame(width: 64, height: 64)
+                    .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        TabiLabel(title: spot.japaneseTitle, style: .bodyMBold, color: .tabiTextPrimary, lineLimit: 1)
+
+                        if let korean = spot.koreanTitle {
+                            TabiLabel(title: korean, style: .captionM, color: .tabiTextSecondary, lineLimit: 1)
+                        }
+                    }
+
+                    TabiTag(spot.contentType.label, color: spot.contentType.color)
+                }
+
+                Spacer()
+
+                if let distance = spot.formattedDistance {
+                    self.distanceLabel(distance)
+                }
+            }
+            .padding(16)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(TabiPressStyle())
+    }
+
+    func distanceLabel(_ distance: String) -> some View {
+        HStack(spacing: 3) {
+            Image(systemName: "location.fill")
+                .font(.system(size: 10))
+                .foregroundStyle(TabiColor.tabiTextTertiary)
+            TabiLabel(title: distance, style: .captionM, color: .tabiTextTertiary)
+        }
     }
 
     func topBar() -> some View {

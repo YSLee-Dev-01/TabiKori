@@ -146,6 +146,10 @@ public extension Strings.Map {
     static let searchCancel = "キャンセル"
     /// 검색 안내 설명 (빈 상태)
     static let searchEmptyDescription = "地名やスポット名で検索できます"
+    /// 검색 결과 없음 제목
+    static let searchResultEmptyTitle = "検索結果が見つかりませんでした"
+    /// 검색 결과 없음 설명
+    static let searchResultEmptyDescription = "別のキーワードで検索してみてください"
 }
 
 public extension Strings.Detail {
