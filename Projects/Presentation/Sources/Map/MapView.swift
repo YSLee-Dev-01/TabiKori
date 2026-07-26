@@ -22,11 +22,11 @@ public struct MapView: View {
     @State private var topBarHeight: CGFloat = 0
     @State private var bottomSafeAreaInset: CGFloat = 0
     @GestureState private var panelDragTranslation: CGFloat = 0
-    
+
     fileprivate var collapsedPanelHeight: CGFloat { 50 }
-    fileprivate var halfPanelHeight: CGFloat { self.mapContainerHeight * 0.42 }
     fileprivate var fullPanelHeight: CGFloat { max(0, self.mapContainerHeight - self.topBarHeight) }
-    
+    fileprivate var halfPanelHeight: CGFloat { min(self.fullPanelHeight, self.mapContainerHeight * 0.42) }
+
     fileprivate var panelHeight: CGFloat {
         let base = self.panelHeight(for: self.store.panelStage)
         return min(self.fullPanelHeight, max(self.collapsedPanelHeight, base - self.panelDragTranslation))
@@ -96,41 +96,32 @@ private extension MapView {
     }
 
     func searchResultPanel() -> some View {
-        VStack(spacing: 0) {
-            self.panelGrabber()
+        GlassEffectContainer {
+            VStack(spacing: 0) {
+                self.panelGrabber()
 
-            Spacer(minLength: 0)
+                Spacer(minLength: 0)
 
-            VStack(spacing: 10) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 34))
-                    .foregroundStyle(TabiColor.tabiTextTertiary)
-                TabiLabel(
-                    title: Strings.Map.searchEmptyDescription,
-                    style: .bodyS,
-                    color: .tabiTextTertiary,
-                    alignment: .center
-                )
+                if self.store.panelStage != .collapsed {
+                    VStack(spacing: 10) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 34))
+                            .foregroundStyle(TabiColor.tabiTextTertiary)
+                        TabiLabel(
+                            title: Strings.Map.searchEmptyDescription,
+                            style: .bodyS,
+                            color: .tabiTextTertiary,
+                            alignment: .center
+                        )
+                    }
+
+                    Spacer(minLength: 0)
+                }
             }
-
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: self.panelHeight)
-        .background(TabiColor.tabiSurface)
-        .clipShape(
-            UnevenRoundedRectangle(
-                topLeadingRadius: .tabiRadiusXl,
-                bottomLeadingRadius: 0,
-                bottomTrailingRadius: 0,
-                topTrailingRadius: .tabiRadiusXl
-            )
-        )
-        .background(alignment: .bottom) {
-            Rectangle()
-                .fill(TabiColor.tabiSurface)
-                .frame(height: self.bottomSafeAreaInset)
-                .offset(y: self.bottomSafeAreaInset)
+            .frame(maxWidth: .infinity)
+            .frame(height: self.panelHeight + self.bottomSafeAreaInset, alignment: .top)
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: .tabiRadiusXl))
+            .padding(.horizontal, 15)
         }
         .ignoresSafeArea(.container, edges: [.top, .bottom])
     }
