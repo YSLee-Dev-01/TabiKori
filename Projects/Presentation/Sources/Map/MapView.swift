@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 import ComposableArchitecture
 import DesignSystem
@@ -20,16 +21,37 @@ public struct MapView: View {
     @Namespace private var searchFieldNamespace
     @State private var mapContainerHeight: CGFloat = 0
     @State private var topBarHeight: CGFloat = 0
-    @State private var bottomSafeAreaInset: CGFloat = 0
-    @GestureState private var panelDragTranslation: CGFloat = 0
+    @State private var keyboardHeight: CGFloat = 0
 
-    fileprivate var collapsedPanelHeight: CGFloat { 50 }
-    fileprivate var fullPanelHeight: CGFloat { max(0, self.mapContainerHeight - self.topBarHeight) }
-    fileprivate var halfPanelHeight: CGFloat { min(self.fullPanelHeight, self.mapContainerHeight * 0.42) }
+    fileprivate var baseFullHeight: CGFloat { max(0, self.mapContainerHeight - self.topBarHeight) }
+    fileprivate var baseHalfHeight: CGFloat { min(self.baseFullHeight, self.mapContainerHeight * 0.42) }
+    fileprivate var baseCollapsedHeight: CGFloat { min(self.baseHalfHeight, 140) }
 
-    fileprivate var panelHeight: CGFloat {
-        let base = self.panelHeight(for: self.store.panelStage)
-        return min(self.fullPanelHeight, max(self.collapsedPanelHeight, base - self.panelDragTranslation))
+    fileprivate var sheetFullHeight: CGFloat { self.baseFullHeight + self.keyboardHeight }
+    fileprivate var sheetHalfHeight: CGFloat { self.baseHalfHeight + self.keyboardHeight }
+    fileprivate var sheetCollapsedHeight: CGFloat { self.baseCollapsedHeight + self.keyboardHeight }
+
+    fileprivate var panelStageBinding: Binding<PresentationDetent> {
+        Binding(
+            get: {
+                switch self.store.panelStage {
+                case .collapsed: return .height(self.sheetCollapsedHeight)
+                case .half: return .height(self.sheetHalfHeight)
+                case .full: return .height(self.sheetFullHeight)
+                }
+            },
+            set: { newValue in
+                let stage: MapPanelStage
+                if newValue == .height(self.sheetCollapsedHeight) {
+                    stage = .collapsed
+                } else if newValue == .height(self.sheetHalfHeight) {
+                    stage = .half
+                } else {
+                    stage = .full
+                }
+                self.store.send(.panelDragEnded(stage))
+            }
+        )
     }
 
     public init(store: StoreOf<MapFeature>) {
@@ -37,35 +59,31 @@ public struct MapView: View {
     }
 
     public var body: some View {
-        ZStack(alignment: .bottom) {
-            ZStack(alignment: .top) {
-                self.mapBackground()
-                self.topBar()
-            }
-
-            if self.store.isSearching {
-                self.searchResultPanel()
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
+        ZStack(alignment: .top) {
+            self.mapBackground()
+            self.topBar()
         }
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.height
         } action: { newValue in
             self.mapContainerHeight = newValue
         }
-        .onGeometryChange(for: CGFloat.self) { proxy in
-            proxy.safeAreaInsets.bottom
-        } action: { newValue in
-            self.bottomSafeAreaInset = newValue
-        }
-        .animation(.tabiStandard, value: self.store.isSearching)
         .animation(.tabiStandard, value: self.store.searchQuery.isEmpty)
-        .animation(.tabiSpring, value: self.store.panelStage)
         .onChange(of: self.store.isSearching) { _, isSearching in
             self.isSearchFieldFocused = isSearching
         }
         .onAppear {
             self.store.send(.onAppear)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { notification in
+            guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+            self.keyboardHeight = max(0, UIScreen.main.bounds.height - frame.origin.y)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            self.keyboardHeight = 0
+        }
+        .sheet(isPresented: self.$store.isSearching) {
+            self.searchResultSheet()
         }
     }
 }
@@ -95,73 +113,39 @@ private extension MapView {
         }
     }
 
-    func searchResultPanel() -> some View {
-        GlassEffectContainer {
-            VStack(spacing: 0) {
-                self.panelGrabber()
-
+    func searchResultSheet() -> some View {
+        VStack(spacing: 0) {
+            if self.store.panelStage != .collapsed {
                 Spacer(minLength: 0)
 
-                if self.store.panelStage != .collapsed {
-                    VStack(spacing: 10) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 34))
-                            .foregroundStyle(TabiColor.tabiTextTertiary)
-                        TabiLabel(
-                            title: Strings.Map.searchEmptyDescription,
-                            style: .bodyS,
-                            color: .tabiTextTertiary,
-                            alignment: .center
-                        )
-                    }
-
-                    Spacer(minLength: 0)
+                VStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 34))
+                        .foregroundStyle(TabiColor.tabiTextTertiary)
+                    TabiLabel(
+                        title: Strings.Map.searchEmptyDescription,
+                        style: .bodyS,
+                        color: .tabiTextTertiary,
+                        alignment: .center
+                    )
                 }
+
+                Spacer(minLength: 0)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: self.panelHeight + self.bottomSafeAreaInset, alignment: .top)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: .tabiRadiusXl))
-            .padding(.horizontal, 15)
         }
-        .ignoresSafeArea(.container, edges: [.top, .bottom])
-    }
-
-    func panelGrabber() -> some View {
-        Capsule()
-            .fill(TabiColor.tabiBorder)
-            .frame(width: 36, height: 5)
-            .padding(.top, 8)
-            .padding(.bottom, 12)
-            .frame(maxWidth: .infinity)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture()
-                    .updating(self.$panelDragTranslation) { value, state, _ in
-                        state = value.translation.height
-                    }
-                    .onEnded { value in
-                        let base = self.panelHeight(for: self.store.panelStage)
-                        let projected = base - value.translation.height
-                        self.store.send(.panelDragEnded(self.nearestStage(to: projected)))
-                    }
-            )
-    }
-
-    func panelHeight(for stage: MapPanelStage) -> CGFloat {
-        switch stage {
-        case .full: return self.fullPanelHeight
-        case .half: return self.halfPanelHeight
-        case .collapsed: return self.collapsedPanelHeight
-        }
-    }
-
-    func nearestStage(to height: CGFloat) -> MapPanelStage {
-        let candidates: [(MapPanelStage, CGFloat)] = [
-            (.full, self.fullPanelHeight),
-            (.half, self.halfPanelHeight),
-            (.collapsed, self.collapsedPanelHeight)
-        ]
-        return candidates.min { abs($0.1 - height) < abs($1.1 - height) }?.0 ?? self.store.panelStage
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .presentationDetents(
+            [
+                .height(self.sheetCollapsedHeight),
+                .height(self.sheetHalfHeight),
+                .height(self.sheetFullHeight)
+            ],
+            selection: self.panelStageBinding
+        )
+        .presentationDragIndicator(.visible)
+        .presentationBackgroundInteraction(.enabled(upThrough: .height(self.sheetHalfHeight)))
+        .presentationCornerRadius(.tabiRadiusXl)
+        .interactiveDismissDisabled()
     }
 
     func topBar() -> some View {
@@ -247,11 +231,11 @@ private extension MapView {
             }
             .padding(.vertical, 8)
             .padding(.horizontal, 14)
-            .background(item.color.opacity(0.1))
+            .background(TabiColor.tabiSurface)
             .clipShape(Capsule())
             .overlay {
                 Capsule()
-                    .stroke(item.color.opacity(0.3), lineWidth: 1)
+                    .stroke(TabiColor.tabiBorder, lineWidth: 1)
             }
         }
         .buttonStyle(TabiPressStyle())
