@@ -101,6 +101,7 @@ public struct MapFeature: Sendable {
                 return self.searchEffect(keyword: state.searchQuery)
 
             case .searchResultTapped:
+                state.isSearching = false
                 return .none
 
             case .searchNextPageTriggered:
