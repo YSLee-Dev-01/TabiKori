@@ -51,16 +51,6 @@ public struct MapView: View {
         )
     }
 
-    fileprivate var isResultSheetPresented: Binding<Bool> {
-        Binding(
-            get: { self.store.mode == .result },
-            set: { newValue in
-                guard newValue == false else { return }
-                self.store.send(.searchCancelTapped)
-            }
-        )
-    }
-
     public init(store: StoreOf<MapFeature>) {
         self.store = store
     }
@@ -84,9 +74,6 @@ public struct MapView: View {
         .onChange(of: self.store.mode) { _, mode in
             self.isSearchFieldFocused = mode == .typing
         }
-        .onAppear {
-            self.store.send(.onAppear)
-        }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { notification in
             guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
             self.keyboardHeight = max(0, UIScreen.main.bounds.height - frame.origin.y)
@@ -94,8 +81,11 @@ public struct MapView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             self.keyboardHeight = 0
         }
-        .sheet(isPresented: self.isResultSheetPresented) {
+        .sheet(isPresented: .constant(self.store.mode == .result)) {
             self.searchResultSheet()
+        }
+        .onAppear {
+            self.store.send(.onAppear)
         }
     }
 }
@@ -139,6 +129,7 @@ private extension MapView {
         MapRecentSearchPlaceholderView(keyboardHeight: self.keyboardHeight)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(TabiColor.tabiBackground)
+            .clipShape(.rect(cornerRadius: .tabiRadiusXl))
             .padding(.top, self.topBarHeight)
             .ignoresSafeArea(.container, edges: .bottom)
     }
