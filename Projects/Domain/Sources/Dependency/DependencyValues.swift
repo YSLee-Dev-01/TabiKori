@@ -35,4 +35,9 @@ extension DependencyValues {
         get {self[NaverMapUseCaseDependencyKey.self]}
         set {self[NaverMapUseCaseDependencyKey.self] = newValue}
     }
+
+    public var searchHistoryUseCase: SearchHistoryUseCaseProtocol {
+        get {self[SearchHistoryUseCaseDependencyKey.self]}
+        set {self[SearchHistoryUseCaseDependencyKey.self] = newValue}
+    }
 }

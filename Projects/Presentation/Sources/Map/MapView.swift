@@ -141,12 +141,20 @@ private extension MapView {
     }
 
     func recentSearchPlaceholder() -> some View {
-        MapRecentSearchPlaceholderView(keyboardHeight: self.keyboardHeight)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(TabiColor.tabiBackground)
-            .clipShape(.rect(cornerRadius: .tabiRadiusXl))
-            .padding(.top, self.topBarHeight)
-            .ignoresSafeArea(.container, edges: .bottom)
+        Group {
+            if self.store.recentSearches.isEmpty {
+                MapRecentSearchPlaceholderView(keyboardHeight: self.keyboardHeight)
+            } else {
+                MapRecentSearchListView(histories: self.store.recentSearches) { history in
+                    self.store.send(.recentSearchTapped(history))
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(TabiColor.tabiBackground)
+        .clipShape(.rect(cornerRadius: .tabiRadiusXl))
+        .padding(.top, self.topBarHeight)
+        .ignoresSafeArea(.container, edges: .bottom)
     }
 
     func searchResultSheet() -> some View {

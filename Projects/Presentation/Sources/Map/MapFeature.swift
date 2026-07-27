@@ -19,6 +19,7 @@ public struct MapFeature: Sendable {
 
     @Dependency(\.locationUseCase) var locationUseCase
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
+    @Dependency(\.searchHistoryUseCase) var searchHistoryUseCase
 
     private let seoulCityHallLatitude = 37.5666102
     private let seoulCityHallLongitude = 126.9783881
@@ -38,6 +39,7 @@ public struct MapFeature: Sendable {
         var searchResultFitToken: Int = 0
         var isSearchLoading: Bool = false
         var isSearchNextPageLoading: Bool = false
+        var recentSearches: [SearchHistory] = []
         fileprivate var hasLoadedInitial: Bool = false
         fileprivate var searchPage: Int = 1
         fileprivate var hasMoreSearchResults: Bool = true
@@ -54,6 +56,7 @@ public struct MapFeature: Sendable {
         case mapDragged
         case searchSubmitted
         case searchResultTapped(TouristSpot)
+        case recentSearchTapped(SearchHistory)
         case searchNextPageTriggered
         case panelDragEnded(MapPanelStage)
         case requestLocationPermission
@@ -76,6 +79,7 @@ public struct MapFeature: Sendable {
             case .searchFieldTapped:
                 state.mode = .typing
                 state.panelStage = .half
+                state.recentSearches = self.searchHistoryUseCase.fetch()
                 return .none
 
             case .searchCancelTapped:
@@ -88,6 +92,7 @@ public struct MapFeature: Sendable {
 
             case .searchSubmitted:
                 guard state.searchQuery.isEmpty == false else { return .none }
+                self.searchHistoryUseCase.add(keyword: state.searchQuery)
                 state.mode = .result
                 state.panelStage = .half
                 state.searchResults = []
@@ -100,6 +105,10 @@ public struct MapFeature: Sendable {
                 state.mode = .map
                 state.isResultPaused = true
                 return .none
+
+            case .recentSearchTapped(let history):
+                state.searchQuery = history.keyword
+                return .send(.searchSubmitted)
 
             case .searchNextPageTriggered:
                 guard state.isSearchNextPageLoading == false,
