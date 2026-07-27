@@ -120,6 +120,7 @@ private extension MapView {
                     centerLatitude: self.store.centerLatitude,
                     centerLongitude: self.store.centerLongitude,
                     markers: self.store.searchResults.compactMap(\.toMapMarker),
+                    isClusteringEnabled: true,
                     showsLocationButton: self.store.showsUserLocation,
                     followsUserLocation: false,
                     boundsFitToken: self.store.searchResultFitToken,
