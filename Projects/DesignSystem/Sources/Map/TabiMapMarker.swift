@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct TabiMapMarker: Identifiable, Equatable {
+public struct TabiMapMarker: Identifiable, Equatable, Sendable {
     public let id: String
     public let latitude: Double
     public let longitude: Double

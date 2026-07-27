@@ -54,6 +54,8 @@ struct TouristSpotItemDTO: Decodable {
     let title: String
     let firstimage: String?
     let dist: String?
+    let mapx: String?
+    let mapy: String?
 }
 
 // MARK: - Mapping
@@ -78,12 +80,19 @@ private extension TouristSpotItemDTO {
             return nil
         }
 
+        let latitude = self.mapy?.toDouble()
+        let longitude = self.mapx?.toDouble()
+        if latitude == nil || longitude == nil {
+            AppLogger.network.log(.error, "⚠️ 좌표 파싱 실패 (contentid: \(self.contentid)): mapx=\(self.mapx ?? "nil"), mapy=\(self.mapy ?? "nil")")
+        }
+
         return TouristSpot(
             id: self.contentid,
             title: self.title,
             thumbnailURLString: self.firstimage,
             distanceMeters: self.dist?.toDouble(),
-            contentType: contentType
+            contentType: contentType,
+            coordinate: Coordinate(latitude: latitude ?? Coordinate.zero.latitude, longitude: longitude ?? Coordinate.zero.longitude)
         )
     }
 }

@@ -17,6 +17,9 @@ extension TabiMapView {
         private var clusterer: NMCClusterer<TabiClusteringKey>?
         private var clusteredKeys: [String: TabiClusteringKey] = [:]
         private var markerTitles: [String: String] = [:]
+        private var lastAppliedFitToken: Int?
+        private let singleMarkerFitZoomLevel: Double = 15
+        private let boundsFitPadding: CGFloat = 60
 
         init(
             onMapTapped: @escaping (Double, Double) -> Void,
@@ -50,7 +53,7 @@ extension TabiMapView.Coordinator: NMFMapViewCameraDelegate {
 // MARK: - Marker Sync
 
 extension TabiMapView.Coordinator {
-    func sync(markers: [TabiMapMarker], isClusteringEnabled: Bool, on mapView: NMFMapView) {
+    func sync(markers: [TabiMapMarker], isClusteringEnabled: Bool, boundsFitToken: Int, on mapView: NMFMapView) {
         if isClusteringEnabled {
             self.clearPlainMarkers()
             self.syncClusteredMarkers(markers, on: mapView)
@@ -58,6 +61,8 @@ extension TabiMapView.Coordinator {
             self.clearClusterer()
             self.syncPlainMarkers(markers, on: mapView)
         }
+
+        self.applyBoundsFitIfNeeded(token: boundsFitToken, markers: markers, on: mapView)
     }
 }
 
@@ -91,6 +96,32 @@ private extension TabiMapView.Coordinator {
             marker.mapView = nil
         }
         self.markerCache.removeAll()
+    }
+
+    func applyBoundsFitIfNeeded(token: Int, markers: [TabiMapMarker], on mapView: NMFMapView) {
+        guard token != self.lastAppliedFitToken else { return }
+        self.lastAppliedFitToken = token
+        guard markers.isEmpty == false else { return }
+
+        let singleMarkerFitZoomLevel = self.singleMarkerFitZoomLevel
+        let boundsFitPadding = self.boundsFitPadding
+
+        // NMFMapView는 UIView(→ UIResponder)를 상속해 moveCamera가 @MainActor로 격리됨.
+        // sync(...)는 UIViewRepresentable의 makeUIView/updateUIView(둘 다 메인 액터)에서만 호출되므로 안전함.
+        MainActor.assumeIsolated {
+            let cameraUpdate: NMFCameraUpdate
+            if markers.count == 1, let marker = markers.first {
+                cameraUpdate = NMFCameraUpdate(
+                    scrollTo: NMGLatLng(lat: marker.latitude, lng: marker.longitude),
+                    zoomTo: singleMarkerFitZoomLevel
+                )
+            } else {
+                let latLngs = markers.map { NMGLatLng(lat: $0.latitude, lng: $0.longitude) }
+                let bounds = NMGLatLngBounds(latLngs: latLngs)
+                cameraUpdate = NMFCameraUpdate(fit: bounds, padding: boundsFitPadding)
+            }
+            mapView.moveCamera(cameraUpdate)
+        }
     }
 
     func syncClusteredMarkers(_ markers: [TabiMapMarker], on mapView: NMFMapView) {

@@ -14,19 +14,22 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
     public let thumbnailURLString: String?
     public let distanceMeters: Double?
     public let contentType: CategoryType
+    public let coordinate: Coordinate
 
     public init(
         id: String,
         title: String,
         thumbnailURLString: String?,
         distanceMeters: Double?,
-        contentType: CategoryType
+        contentType: CategoryType,
+        coordinate: Coordinate
     ) {
         self.id = id
         self.title = title
         self.thumbnailURLString = thumbnailURLString
         self.distanceMeters = distanceMeters
         self.contentType = contentType
+        self.coordinate = coordinate
     }
     
     public var thumbnailURL: URL? {

@@ -21,6 +21,7 @@ public struct TabiMapView {
     private let onMapTapped: (Double, Double) -> Void
     private let onMarkerTapped: (String) -> Void
     private let onMapDragged: () -> Void
+    private let boundsFitToken: Int
 
     public init(
         centerLatitude: Double,
@@ -30,6 +31,7 @@ public struct TabiMapView {
         isClusteringEnabled: Bool = false,
         showsLocationButton: Bool = false,
         followsUserLocation: Bool = true,
+        boundsFitToken: Int = 0,
         onMapTapped: @escaping (Double, Double) -> Void,
         onMarkerTapped: @escaping (String) -> Void,
         onMapDragged: @escaping () -> Void = {}
@@ -41,6 +43,7 @@ public struct TabiMapView {
         self.isClusteringEnabled = isClusteringEnabled
         self.showsLocationButton = showsLocationButton
         self.followsUserLocation = followsUserLocation
+        self.boundsFitToken = boundsFitToken
         self.onMapTapped = onMapTapped
         self.onMarkerTapped = onMarkerTapped
         self.onMapDragged = onMapDragged
@@ -68,6 +71,7 @@ extension TabiMapView: UIViewRepresentable {
         context.coordinator.sync(
             markers: self.markers,
             isClusteringEnabled: self.isClusteringEnabled,
+            boundsFitToken: self.boundsFitToken,
             on: naverMapView.mapView
         )
 
@@ -81,6 +85,7 @@ extension TabiMapView: UIViewRepresentable {
         context.coordinator.sync(
             markers: self.markers,
             isClusteringEnabled: self.isClusteringEnabled,
+            boundsFitToken: self.boundsFitToken,
             on: uiView.mapView
         )
     }

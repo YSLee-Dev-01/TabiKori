@@ -35,6 +35,7 @@ public struct MapFeature: Sendable {
         var searchQuery: String = ""
         var panelStage: MapPanelStage = .half
         var searchResults: [TouristSpot] = []
+        var searchResultFitToken: Int = 0
         var isSearchLoading: Bool = false
         var isSearchNextPageLoading: Bool = false
         fileprivate var hasLoadedInitial: Bool = false
@@ -162,6 +163,9 @@ public struct MapFeature: Sendable {
                 state.searchResults = spots
                 state.isSearchLoading = false
                 state.hasMoreSearchResults = spots.count >= self.searchPageSize
+                if spots.contains(where: { $0.coordinate.isValid }) {
+                    state.searchResultFitToken += 1
+                }
                 return .none
 
             case .searchNextPageResultsResult(let spots):

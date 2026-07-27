@@ -98,6 +98,16 @@ private extension TouristSpot {
         if dist >= 1000 { return String(format: "%.1fkm", dist / 1000) }
         return "\(Int(dist))m"
     }
+
+    var toMapMarker: TabiMapMarker? {
+        guard self.coordinate.isValid else { return nil }
+        return TabiMapMarker(
+            id: self.id,
+            latitude: self.coordinate.latitude,
+            longitude: self.coordinate.longitude,
+            title: self.title
+        )
+    }
 }
 
 // MARK: - View
@@ -109,10 +119,15 @@ private extension MapView {
                 TabiMapView(
                     centerLatitude: self.store.centerLatitude,
                     centerLongitude: self.store.centerLongitude,
+                    markers: self.store.searchResults.compactMap(\.toMapMarker),
                     showsLocationButton: self.store.showsUserLocation,
                     followsUserLocation: false,
+                    boundsFitToken: self.store.searchResultFitToken,
                     onMapTapped: { _, _ in },
-                    onMarkerTapped: { _ in },
+                    onMarkerTapped: { id in
+                        guard let spot = self.store.searchResults.first(where: { $0.id == id }) else { return }
+                        self.store.send(.searchResultTapped(spot))
+                    },
                     onMapDragged: { self.store.send(.mapDragged) }
                 )
                 .ignoresSafeArea()

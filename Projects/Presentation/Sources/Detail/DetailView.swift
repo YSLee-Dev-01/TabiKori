@@ -200,7 +200,8 @@ private extension DetailView {
                     title: "景福宮（경복궁）",
                     thumbnailURLString: nil,
                     distanceMeters: 1200,
-                    contentType: .sightseeing
+                    contentType: .sightseeing,
+                    coordinate: Coordinate(latitude: 37.5788, longitude: 126.9770)
                 )
             ),
             reducer: { DetailFeature() },
