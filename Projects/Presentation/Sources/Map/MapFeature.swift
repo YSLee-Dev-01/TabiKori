@@ -31,7 +31,7 @@ public struct MapFeature: Sendable {
         var showsUserLocation: Bool = false
         var hasResolvedInitialCenter: Bool = false
         var locationStatus: LocationAuthorizationStatus = .undetermined
-        var isSearching: Bool = false
+        var mode: MapMode = .map
         var searchQuery: String = ""
         var panelStage: MapPanelStage = .half
         var searchResults: [TouristSpot] = []
@@ -40,6 +40,7 @@ public struct MapFeature: Sendable {
         fileprivate var hasLoadedInitial: Bool = false
         fileprivate var searchPage: Int = 1
         fileprivate var hasMoreSearchResults: Bool = true
+        fileprivate var isResultPaused: Bool = false
 
         public init() {}
     }
@@ -72,19 +73,12 @@ public struct MapFeature: Sendable {
                 return .none
 
             case .searchFieldTapped:
-                state.isSearching = true
+                state.mode = .typing
                 state.panelStage = .half
                 return .none
 
             case .searchCancelTapped:
-                state.isSearching = false
-                state.searchQuery = ""
-                state.panelStage = .half
-                state.searchResults = []
-                state.isSearchLoading = false
-                state.isSearchNextPageLoading = false
-                state.searchPage = 1
-                state.hasMoreSearchResults = true
+                self.resetSearchState(&state)
                 return .none
 
             case .mapDragged:
@@ -93,7 +87,8 @@ public struct MapFeature: Sendable {
 
             case .searchSubmitted:
                 guard state.searchQuery.isEmpty == false else { return .none }
-                state.panelStage = .full
+                state.mode = .result
+                state.panelStage = .half
                 state.searchResults = []
                 state.isSearchLoading = true
                 state.searchPage = 1
@@ -101,7 +96,8 @@ public struct MapFeature: Sendable {
                 return self.searchEffect(keyword: state.searchQuery)
 
             case .searchResultTapped:
-                state.isSearching = false
+                state.mode = .map
+                state.isResultPaused = true
                 return .none
 
             case .searchNextPageTriggered:
@@ -117,6 +113,11 @@ public struct MapFeature: Sendable {
                 return .none
 
             case .onAppear:
+                if state.isResultPaused {
+                    state.isResultPaused = false
+                    state.mode = .result
+                }
+
                 guard state.hasLoadedInitial == false else { return .none }
                 state.hasLoadedInitial = true
                 state.locationStatus = self.locationUseCase.checkAuthorization()
@@ -222,5 +223,17 @@ private extension MapFeature {
                 AppLogger.view.log(.error, "키워드 검색 다음 페이지 조회 실패: \(error.localizedDescription)")
             }
         }
+    }
+
+    func resetSearchState(_ state: inout State) {
+        state.mode = .map
+        state.searchQuery = ""
+        state.panelStage = .half
+        state.searchResults = []
+        state.isSearchLoading = false
+        state.isSearchNextPageLoading = false
+        state.searchPage = 1
+        state.hasMoreSearchResults = true
+        state.isResultPaused = false
     }
 }

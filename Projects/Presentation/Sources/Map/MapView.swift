@@ -28,29 +28,35 @@ public struct MapView: View {
     fileprivate var baseHalfHeight: CGFloat { min(self.baseFullHeight, self.mapContainerHeight * 0.42) }
     fileprivate var baseCollapsedHeight: CGFloat { min(self.baseHalfHeight, 140) }
 
-    fileprivate var sheetFullHeight: CGFloat { self.baseFullHeight + self.keyboardHeight }
-    fileprivate var sheetHalfHeight: CGFloat { self.baseHalfHeight + self.keyboardHeight }
-    fileprivate var sheetCollapsedHeight: CGFloat { self.baseCollapsedHeight + self.keyboardHeight }
-
     fileprivate var panelStageBinding: Binding<PresentationDetent> {
         Binding(
             get: {
                 switch self.store.panelStage {
-                case .collapsed: return .height(self.sheetCollapsedHeight)
-                case .half: return .height(self.sheetHalfHeight)
-                case .full: return .height(self.sheetFullHeight)
+                case .collapsed: return .height(self.baseCollapsedHeight)
+                case .half: return .height(self.baseHalfHeight)
+                case .full: return .height(self.baseFullHeight)
                 }
             },
             set: { newValue in
                 let stage: MapPanelStage
-                if newValue == .height(self.sheetCollapsedHeight) {
+                if newValue == .height(self.baseCollapsedHeight) {
                     stage = .collapsed
-                } else if newValue == .height(self.sheetHalfHeight) {
+                } else if newValue == .height(self.baseHalfHeight) {
                     stage = .half
                 } else {
                     stage = .full
                 }
                 self.store.send(.panelDragEnded(stage))
+            }
+        )
+    }
+
+    fileprivate var isResultSheetPresented: Binding<Bool> {
+        Binding(
+            get: { self.store.mode == .result },
+            set: { newValue in
+                guard newValue == false else { return }
+                self.store.send(.searchCancelTapped)
             }
         )
     }
@@ -63,15 +69,20 @@ public struct MapView: View {
         ZStack(alignment: .top) {
             self.mapBackground()
             self.topBar()
+
+            if self.store.mode == .typing {
+                self.recentSearchPlaceholder()
+            }
         }
+        .ignoresSafeArea(.keyboard, edges: .bottom)
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.height
         } action: { newValue in
             self.mapContainerHeight = newValue
         }
         .animation(.tabiStandard, value: self.store.searchQuery.isEmpty)
-        .onChange(of: self.store.isSearching) { _, isSearching in
-            self.isSearchFieldFocused = isSearching
+        .onChange(of: self.store.mode) { _, mode in
+            self.isSearchFieldFocused = mode == .typing
         }
         .onAppear {
             self.store.send(.onAppear)
@@ -83,7 +94,7 @@ public struct MapView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             self.keyboardHeight = 0
         }
-        .sheet(isPresented: self.$store.isSearching) {
+        .sheet(isPresented: self.isResultSheetPresented) {
             self.searchResultSheet()
         }
     }
@@ -124,23 +135,29 @@ private extension MapView {
         }
     }
 
+    func recentSearchPlaceholder() -> some View {
+        MapRecentSearchPlaceholderView(keyboardHeight: self.keyboardHeight)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(TabiColor.tabiBackground)
+            .padding(.top, self.topBarHeight)
+            .ignoresSafeArea(.container, edges: .bottom)
+    }
+
     func searchResultSheet() -> some View {
         VStack(spacing: 0) {
-            if self.store.panelStage != .collapsed {
-                self.searchResultContent()
-            }
+            self.searchResultContent()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .presentationDetents(
             [
-                .height(self.sheetCollapsedHeight),
-                .height(self.sheetHalfHeight),
-                .height(self.sheetFullHeight)
+                .height(self.baseCollapsedHeight),
+                .height(self.baseHalfHeight),
+                .height(self.baseFullHeight)
             ],
             selection: self.panelStageBinding
         )
         .presentationDragIndicator(.visible)
-        .presentationBackgroundInteraction(.enabled(upThrough: .height(self.sheetHalfHeight)))
+        .presentationBackgroundInteraction(.enabled(upThrough: .height(self.baseHalfHeight)))
         .presentationCornerRadius(.tabiRadiusXl)
         .interactiveDismissDisabled()
     }
@@ -324,7 +341,17 @@ private extension MapView {
             )
 
             HStack(spacing: 12) {
-                if self.store.isSearching {
+                switch self.store.mode {
+                case .map:
+                    TabiSearchField(
+                        placeholder: Strings.Map.searchPlaceholder,
+                        style: .glass
+                    ) {
+                        self.store.send(.searchFieldTapped)
+                    }
+                    .matchedGeometryEffect(id: "mapSearchField", in: self.searchFieldNamespace)
+
+                case .typing:
                     TabiSearchField(
                         placeholder: Strings.Map.searchPlaceholder,
                         text: self.$store.searchQuery,
@@ -334,24 +361,23 @@ private extension MapView {
                     )
                     .matchedGeometryEffect(id: "mapSearchField", in: self.searchFieldNamespace)
 
-                    Button {
-                        self.store.send(.searchCancelTapped)
-                    } label: {
-                        TabiLabel(title: Strings.Map.searchCancel, style: .bodyM, color: .tabiTextSecondary)
-                    }
-                } else {
+                    self.searchCancelButton()
+
+                case .result:
                     TabiSearchField(
-                        placeholder: Strings.Map.searchPlaceholder,
+                        placeholder: self.store.searchQuery.isEmpty ? Strings.Map.searchPlaceholder : self.store.searchQuery,
                         style: .glass
                     ) {
                         self.store.send(.searchFieldTapped)
                     }
                     .matchedGeometryEffect(id: "mapSearchField", in: self.searchFieldNamespace)
+
+                    self.searchCancelButton()
                 }
             }
             .padding(.horizontal, 20)
 
-            if !self.store.isSearching {
+            if self.store.mode == .map {
                 self.categoryChips()
             }
         }
@@ -372,6 +398,14 @@ private extension MapView {
             proxy.size.height
         } action: { newValue in
             self.topBarHeight = newValue
+        }
+    }
+
+    func searchCancelButton() -> some View {
+        Button {
+            self.store.send(.searchCancelTapped)
+        } label: {
+            TabiLabel(title: Strings.Map.searchCancel, style: .bodyM, color: .tabiTextSecondary)
         }
     }
 

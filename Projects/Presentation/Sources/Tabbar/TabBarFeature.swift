@@ -59,7 +59,7 @@ public struct TabBarFeature {
 
             case .home(.searchBarTapped):
                 state.selectedTab = .map
-                state.mapState.isSearching = true
+                state.mapState.mode = .typing
                 return .none
 
             case .home:
