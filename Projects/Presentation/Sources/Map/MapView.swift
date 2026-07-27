@@ -23,6 +23,7 @@ public struct MapView: View {
     @State private var mapContainerHeight: CGFloat = 0
     @State private var topBarHeight: CGFloat = 0
     @State private var keyboardHeight: CGFloat = 0
+    @State private var lastTappedSpotID: String?
 
     fileprivate var baseFullHeight: CGFloat { max(0, self.mapContainerHeight - self.topBarHeight) }
     fileprivate var baseHalfHeight: CGFloat { min(self.baseFullHeight, self.mapContainerHeight * 0.42) }
@@ -127,7 +128,7 @@ private extension MapView {
                     onMapTapped: { _, _ in },
                     onMarkerTapped: { id in
                         guard let spot = self.store.searchResults.first(where: { $0.id == id }) else { return }
-                        self.store.send(.searchResultTapped(spot))
+                        self.selectSearchResult(spot)
                     },
                     onMapDragged: { self.store.send(.mapDragged) }
                 )
@@ -275,24 +276,34 @@ private extension MapView {
     }
 
     func searchResultList() -> some View {
-        ScrollView {
-            LazyVStack(spacing: 0) {
-                ForEach(Array(self.store.searchResults.enumerated()), id: \.element.id) { index, spot in
-                    if index > 0 {
-                        Divider()
-                            .padding(.horizontal, 16)
-                    }
-                    self.searchResultRow(spot)
-                        .onAppear {
-                            guard spot.id == self.store.searchResults.last?.id else { return }
-                            self.store.send(.searchNextPageTriggered)
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(Array(self.store.searchResults.enumerated()), id: \.element.id) { index, spot in
+                        if index > 0 {
+                            Divider()
+                                .padding(.horizontal, 16)
                         }
-                }
+                        self.searchResultRow(spot)
+                            .id(spot.id)
+                            .onAppear {
+                                guard spot.id == self.store.searchResults.last?.id else { return }
+                                self.store.send(.searchNextPageTriggered)
+                            }
+                    }
 
-                if self.store.isSearchNextPageLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 20)
+                    if self.store.isSearchNextPageLoading {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 20)
+                    }
+                }
+            }
+            .onAppear {
+                guard let id = self.lastTappedSpotID else { return }
+                // sheet가 재생성되는 시점에 동기 scrollTo를 호출하면 "state changes lost" 레이스 컨디션이 발생해 한 틱 지연
+                DispatchQueue.main.async {
+                    proxy.scrollTo(id, anchor: .top)
                 }
             }
         }
@@ -300,7 +311,7 @@ private extension MapView {
 
     func searchResultRow(_ spot: TouristSpot) -> some View {
         Button {
-            self.store.send(.searchResultTapped(spot))
+            self.selectSearchResult(spot)
         } label: {
             HStack(spacing: 12) {
                 KFImage(spot.thumbnailURL)
@@ -372,7 +383,10 @@ private extension MapView {
                         text: self.$store.searchQuery,
                         focus: self.$isSearchFieldFocused,
                         style: .glass,
-                        onSubmit: { self.store.send(.searchSubmitted) }
+                        onSubmit: {
+                            self.lastTappedSpotID = nil
+                            self.store.send(.searchSubmitted)
+                        }
                     )
                     .matchedGeometryEffect(id: "mapSearchField", in: self.searchFieldNamespace)
 
@@ -418,6 +432,7 @@ private extension MapView {
 
     func searchCancelButton() -> some View {
         Button {
+            self.lastTappedSpotID = nil
             self.store.send(.searchCancelTapped)
         } label: {
             TabiLabel(title: Strings.Map.searchCancel, style: .bodyM, color: .tabiTextSecondary)
@@ -457,5 +472,10 @@ private extension MapView {
             }
         }
         .buttonStyle(TabiPressStyle())
+    }
+
+    func selectSearchResult(_ spot: TouristSpot) {
+        self.lastTappedSpotID = spot.id
+        self.store.send(.searchResultTapped(spot))
     }
 }
