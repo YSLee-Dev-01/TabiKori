@@ -12,4 +12,20 @@ public extension String {
     func toDouble() -> Double? {
         return Double(self.replacingOccurrences(of: ",", with: ""))
     }
+
+    var removingHangul: String {
+        let hangulPattern = "[\\uAC00-\\uD7A3\\u1100-\\u11FF\\u3130-\\u318F]"
+        guard let hangulRegex = try? NSRegularExpression(pattern: hangulPattern) else { return self }
+        let hangulRange = NSRange(self.startIndex..., in: self)
+        let withoutHangul = hangulRegex.stringByReplacingMatches(in: self, range: hangulRange, withTemplate: "")
+
+        let emptyParenPattern = "\\(\\s*\\)|（\\s*）"
+        guard let parenRegex = try? NSRegularExpression(pattern: emptyParenPattern) else {
+            return withoutHangul.trimmingCharacters(in: .whitespaces)
+        }
+        let parenRange = NSRange(withoutHangul.startIndex..., in: withoutHangul)
+        let withoutEmptyParens = parenRegex.stringByReplacingMatches(in: withoutHangul, range: parenRange, withTemplate: "")
+
+        return withoutEmptyParens.trimmingCharacters(in: .whitespaces)
+    }
 }

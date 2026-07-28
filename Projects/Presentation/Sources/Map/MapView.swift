@@ -10,6 +10,7 @@ import SwiftUI
 import UIKit
 
 import ComposableArchitecture
+import Core
 import DesignSystem
 import Domain
 import Kingfisher
@@ -108,7 +109,7 @@ private extension TouristSpot {
             id: self.id,
             latitude: self.coordinate.latitude,
             longitude: self.coordinate.longitude,
-            title: self.title
+            title: self.title.removingHangul
         )
     }
 }
@@ -123,7 +124,7 @@ private extension MapView {
                     centerLatitude: self.store.centerLatitude,
                     centerLongitude: self.store.centerLongitude,
                     markers: self.store.searchResults.compactMap(\.toMapMarker),
-                    isClusteringEnabled: true,
+                    isClusteringEnabled: false,
                     showsLocationButton: self.store.showsUserLocation,
                     followsUserLocation: false,
                     boundsFitToken: self.store.searchResultFitToken,

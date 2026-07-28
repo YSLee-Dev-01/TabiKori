@@ -8,6 +8,7 @@
 
 import SwiftUI
 
+import Core
 import DesignSystem
 import Domain
 import Resource
@@ -28,7 +29,7 @@ struct DetailMapTabView: View {
                         id: self.touristSpotID,
                         latitude: self.coordinate.latitude,
                         longitude: self.coordinate.longitude,
-                        title: self.title
+                        title: self.title.removingHangul
                     )
                 ],
                 onMapTapped: { _, _ in },

@@ -6,7 +6,7 @@
 //  Copyright © 2026 yslee. All rights reserved.
 //
 
-import NMapsMap
+@preconcurrency import NMapsMap
 
 extension TabiMapView {
     public final class Coordinator: NSObject {
@@ -69,6 +69,9 @@ extension TabiMapView.Coordinator {
 // MARK: - Method
 
 private extension TabiMapView.Coordinator {
+    static let markerSizeScale: CGFloat = 0.7
+    static let captionTextSize: CGFloat = 10
+
     func syncPlainMarkers(_ markers: [TabiMapMarker], on mapView: NMFMapView) {
         let newIDs = Set(markers.map(\.id))
         let staleIDs = Set(self.markerCache.keys).subtracting(newIDs)
@@ -81,7 +84,10 @@ private extension TabiMapView.Coordinator {
         for marker in markers where self.markerCache[marker.id] == nil {
             let nmfMarker = NMFMarker()
             nmfMarker.position = NMGLatLng(lat: marker.latitude, lng: marker.longitude)
+            nmfMarker.width = NMF_MARKER_IMAGE_DEFAULT.imageWidth * Self.markerSizeScale
+            nmfMarker.height = NMF_MARKER_IMAGE_DEFAULT.imageHeight * Self.markerSizeScale
             nmfMarker.captionText = marker.title
+            nmfMarker.captionTextSize = Self.captionTextSize
             nmfMarker.touchHandler = { [weak self] _ in
                 self?.onMarkerTapped(marker.id)
                 return true
