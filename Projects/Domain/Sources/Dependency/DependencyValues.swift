@@ -40,4 +40,9 @@ extension DependencyValues {
         get {self[SearchHistoryUseCaseDependencyKey.self]}
         set {self[SearchHistoryUseCaseDependencyKey.self] = newValue}
     }
+
+    public var bookmarkUseCase: BookmarkUseCaseProtocol {
+        get {self[BookmarkUseCaseDependencyKey.self]}
+        set {self[BookmarkUseCaseDependencyKey.self] = newValue}
+    }
 }

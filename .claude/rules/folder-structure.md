@@ -79,6 +79,9 @@ Data/Sources/
 │   ├── TabiUserDefault.swift
 │   ├── TabiUserDefaultKey.swift
 │   └── TabiUserDefaultProtocol.swift
+├── SwiftData/
+│   ├── {Name}Model.swift          # @Model 클래스 (스키마 정의)
+│   └── {Name}ModelContainer.swift # ModelContainer 싱글턴 보관
 ├── Extension/
 │   └── {Type}+.swift
 ├── Secret.xcconfig                # gitignored, 실제 API 키

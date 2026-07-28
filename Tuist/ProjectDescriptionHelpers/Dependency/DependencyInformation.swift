@@ -41,7 +41,7 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
         .domain: [.tca],
         .app: [.tca, .firebaseDatabase, .firebaseAnalytics],
         .data: [.firebaseDatabase],
-        .designSystem: [.naverMap]
+        .designSystem: [.naverMap, .kingfisher]
     ]
 }
 

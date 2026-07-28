@@ -15,6 +15,7 @@ public enum Strings {
     public enum Region {}
     public enum Detail {}
     public enum Map {}
+    public enum Bookmark {}
 }
 
 public extension Strings.Common {
@@ -154,6 +155,21 @@ public extension Strings.Map {
     static let recentSearchPlaceholderDescription = "最近の検索履歴がここに表示されます"
     /// 최근검색 타이틀
     static let recentSearchTitle = "最近の検索"
+}
+
+public extension Strings.Bookmark {
+    /// 화면 타이틀
+    static let title = "保存済み"
+    /// 저장 개수 타이틀 (%d: 개수)
+    nonisolated(unsafe) static let savedCountTitle: ((Int) -> String) = {
+        "\($0)件のスポットを保存中"
+    }
+    /// 빈 상태 제목
+    static let emptyTitle = "保存したスポットがありません"
+    /// 빈 상태 설명
+    static let emptyDescription = "気になるスポットのハートを押して保存してみましょう"
+    /// 삭제 (스와이프 액션)
+    static let delete = "削除"
 }
 
 public extension Strings.Detail {

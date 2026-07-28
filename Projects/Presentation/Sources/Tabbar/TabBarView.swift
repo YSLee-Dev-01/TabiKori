@@ -46,7 +46,7 @@ public struct TabBarView: View {
                     }
                     .tag(AppTab.plan)
 
-                Text(AppTab.bookmark.title)
+                BookmarkView(store: self.store.scope(state: \.bookmarkState, action: \.bookmark))
                     .tabItem {
                         Image(systemName: AppTab.bookmark.systemImage)
                     }

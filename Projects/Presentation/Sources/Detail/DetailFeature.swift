@@ -32,6 +32,7 @@ public struct DetailFeature {
 
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
     @Dependency(\.naverMapUseCase) var naverMapUseCase
+    @Dependency(\.bookmarkUseCase) var bookmarkUseCase
 
     @ObservableState
     public struct State: Equatable {
@@ -80,6 +81,7 @@ public struct DetailFeature {
         case detailResult(TouristSpotDetail?)
         case introResult(TouristSpotIntro?)
         case imagesResult([TouristSpotImage]?)
+        case isBookmarkedResult(Bool)
     }
 
     public init() {}
@@ -95,7 +97,8 @@ public struct DetailFeature {
                 return .merge(
                     self.fetchDetailEffect(contentId: state.touristSpot.id),
                     self.fetchIntroEffect(contentId: state.touristSpot.id, contentType: state.touristSpot.contentType),
-                    self.fetchImagesEffect(contentId: state.touristSpot.id)
+                    self.fetchImagesEffect(contentId: state.touristSpot.id),
+                    self.fetchIsBookmarkedEffect(contentId: state.touristSpot.id)
                 )
 
             case .tabSelected(let tab):
@@ -103,8 +106,13 @@ public struct DetailFeature {
                 return .none
 
             case .saveButtonTapped:
-                state.isSaved.toggle()
-                return .none
+                if state.isSaved {
+                    state.isSaved = false
+                    return self.removeBookmarkEffect(contentId: state.touristSpot.id)
+                } else {
+                    state.isSaved = true
+                    return self.addBookmarkEffect(spot: state.touristSpot)
+                }
 
             case .photoCellTapped:
                 return .none
@@ -138,6 +146,10 @@ public struct DetailFeature {
                 if state.images.isEmpty, state.selectedTab == .photos {
                     state.selectedTab = .info
                 }
+                return .none
+
+            case .isBookmarkedResult(let isSaved):
+                state.isSaved = isSaved
                 return .none
 
             case .binding:
@@ -185,6 +197,38 @@ private extension DetailFeature {
                 guard !Task.isCancelled else { return }
                 AppLogger.view.log(.error, "관광지 이미지 조회 실패: \(error.localizedDescription)")
                 await send(.imagesResult(nil))
+            }
+        }
+    }
+
+    func fetchIsBookmarkedEffect(contentId: String) -> Effect<Action> {
+        .run { [bookmarkUseCase = self.bookmarkUseCase] send in
+            do {
+                let isSaved = try await bookmarkUseCase.isBookmarked(contentId: contentId)
+                await send(.isBookmarkedResult(isSaved))
+            } catch {
+                guard !Task.isCancelled else { return }
+                AppLogger.view.log(.error, "북마크 여부 조회 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func addBookmarkEffect(spot: TouristSpot) -> Effect<Action> {
+        .run { [bookmarkUseCase = self.bookmarkUseCase] _ in
+            do {
+                try await bookmarkUseCase.add(spot)
+            } catch {
+                AppLogger.view.log(.error, "북마크 저장 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func removeBookmarkEffect(contentId: String) -> Effect<Action> {
+        .run { [bookmarkUseCase = self.bookmarkUseCase] _ in
+            do {
+                try await bookmarkUseCase.remove(contentId: contentId)
+            } catch {
+                AppLogger.view.log(.error, "북마크 삭제 실패: \(error.localizedDescription)")
             }
         }
     }

@@ -19,11 +19,10 @@ public struct TabBarFeature {
         var homeState: HomeFeature.State = .init()
         var mapState: MapFeature.State = .init()
         var planState: PlanState = .init()
-        var bookmarkState: BookmarkState = .init()
+        var bookmarkState: BookmarkFeature.State = .init()
 
         // 임시
         public struct PlanState: Equatable { public init() {} }
-        public struct BookmarkState: Equatable { public init() {} }
 
         var path = StackState<StackPath.State>()
 
@@ -34,6 +33,7 @@ public struct TabBarFeature {
         case tabSelected(AppTab)
         case home(HomeFeature.Action)
         case map(MapFeature.Action)
+        case bookmark(BookmarkFeature.Action)
         case path(StackActionOf<StackPath>)
     }
 
@@ -45,6 +45,9 @@ public struct TabBarFeature {
         }
         Scope(state: \.mapState, action: \.map) {
             MapFeature()
+        }
+        Scope(state: \.bookmarkState, action: \.bookmark) {
+            BookmarkFeature()
         }
 
         Reduce { state, action in
@@ -70,6 +73,13 @@ public struct TabBarFeature {
                 return .none
 
             case .map:
+                return .none
+
+            case .bookmark(.spotTapped(let spot)):
+                state.path.append(.detail(DetailFeature.State(touristSpot: spot)))
+                return .none
+
+            case .bookmark:
                 return .none
 
             case .path(.element(id: let id, action: .detail(.photoCellTapped(let index)))):
