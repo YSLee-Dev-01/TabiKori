@@ -36,22 +36,23 @@ public struct HomeView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 20) {
-                    TabiSearchField(placeholder: Strings.Map.searchPlaceholder) {
-                        self.store.send(.searchBarTapped)
-                    }
-                    .staggeredAppear(index: 0)
-
                     if self.store.locationStatus == .allowed && self.store.currentRegion.isKorea {
                         self.inKoreaBanner()
                             .staggeredAppear(index: 0)
+                        
+                        TabiSearchField(placeholder: Strings.Map.searchPlaceholder) {
+                            self.store.send(.searchBarTapped)
+                        }
+                        .staggeredAppear(index: 1)
+                        
                         self.exchangeRateCard()
-                            .staggeredAppear(index: 1)
-                        self.categoryView()
                             .staggeredAppear(index: 2)
-                        self.nearbyTouristSpotBanner()
+                        self.categoryView()
                             .staggeredAppear(index: 3)
-                        self.nearbyRestaurantBanner()
+                        self.nearbyTouristSpotBanner()
                             .staggeredAppear(index: 4)
+                        self.nearbyRestaurantBanner()
+                            .staggeredAppear(index: 5)
                     } else {
                         if self.store.locationStatus == .allowed {
                             self.inJapanBanner()
@@ -60,13 +61,17 @@ public struct HomeView: View {
                             self.locationPermissionBanner()
                                 .staggeredAppear(index: 0)
                         }
+                        TabiSearchField(placeholder: Strings.Map.searchPlaceholder) {
+                            self.store.send(.searchBarTapped)
+                        }
+                        .staggeredAppear(index: 1)
                         self.categoryView()
-                            .staggeredAppear(index: 1)
-                        self.recommendedRegionBanner()
                             .staggeredAppear(index: 2)
+                        self.recommendedRegionBanner()
+                            .staggeredAppear(index: 3)
                     }
                     self.recommendedEventBanner()
-                        .staggeredAppear(index: 5)
+                        .staggeredAppear(index: 6)
                 }
                 .animation(.tabiStandard, value: self.store.locationStatus)
                 .animation(.tabiStandard, value: self.store.currentRegion.isKorea)
