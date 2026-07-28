@@ -43,7 +43,6 @@ public struct MapFeature: Sendable {
         fileprivate var hasLoadedInitial: Bool = false
         fileprivate var searchPage: Int = 1
         fileprivate var hasMoreSearchResults: Bool = true
-        fileprivate var isResultPaused: Bool = false
 
         public init() {}
     }
@@ -104,7 +103,6 @@ public struct MapFeature: Sendable {
 
             case .searchResultTapped:
                 state.mode = .map
-                state.isResultPaused = true
                 return .none
 
             case .recentSearchTapped(let history):
@@ -129,11 +127,6 @@ public struct MapFeature: Sendable {
                 return .none
 
             case .onAppear:
-                if state.isResultPaused {
-                    state.isResultPaused = false
-                    state.mode = .result
-                }
-
                 guard state.hasLoadedInitial == false else { return .none }
                 state.hasLoadedInitial = true
                 state.locationStatus = self.locationUseCase.checkAuthorization()
@@ -253,6 +246,5 @@ private extension MapFeature {
         state.isSearchNextPageLoading = false
         state.searchPage = 1
         state.hasMoreSearchResults = true
-        state.isResultPaused = false
     }
 }
