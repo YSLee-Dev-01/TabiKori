@@ -27,7 +27,7 @@ public enum TabiImage: String {
     case regionJeonju = "regionJeonju"
 }
 
-public enum TabiIcon: String {
+public enum TabiIcon: String, Sendable {
 
     // MARK: - Category Icon
 

@@ -8,6 +8,8 @@
 
 @preconcurrency import NMapsMap
 
+import Resource
+
 extension TabiMapView {
     public final class Coordinator: NSObject {
         private let onMapTapped: (Double, Double) -> Void
@@ -17,6 +19,7 @@ extension TabiMapView {
         private var clusterer: NMCClusterer<TabiClusteringKey>?
         private var clusteredKeys: [String: TabiClusteringKey] = [:]
         private var markerTitles: [String: String] = [:]
+        private var markerAppearances: [String: (icon: TabiIcon, color: TabiColor)] = [:]
         private var lastAppliedFitToken: Int?
         private let singleMarkerFitZoomLevel: Double = 15
         private let boundsFitPadding: CGFloat = 60
@@ -69,7 +72,7 @@ extension TabiMapView.Coordinator {
 // MARK: - Method
 
 private extension TabiMapView.Coordinator {
-    static let markerSizeScale: CGFloat = 0.7
+    static let markerSize: CGFloat = 30
     static let captionTextSize: CGFloat = 10
 
     func syncPlainMarkers(_ markers: [TabiMapMarker], on mapView: NMFMapView) {
@@ -84,8 +87,12 @@ private extension TabiMapView.Coordinator {
         for marker in markers where self.markerCache[marker.id] == nil {
             let nmfMarker = NMFMarker()
             nmfMarker.position = NMGLatLng(lat: marker.latitude, lng: marker.longitude)
-            nmfMarker.width = NMF_MARKER_IMAGE_DEFAULT.imageWidth * Self.markerSizeScale
-            nmfMarker.height = NMF_MARKER_IMAGE_DEFAULT.imageHeight * Self.markerSizeScale
+            nmfMarker.width = Self.markerSize
+            nmfMarker.height = Self.markerSize
+            // NMFMarker는 UI 오버레이라 sync(...)가 호출되는 makeUIView/updateUIView(메인 액터)에서만 안전함
+            MainActor.assumeIsolated {
+                nmfMarker.iconImage = TabiMapMarkerImageFactory.image(icon: marker.icon, color: marker.color)
+            }
             nmfMarker.captionText = marker.title
             nmfMarker.captionTextSize = Self.captionTextSize
             nmfMarker.touchHandler = { [weak self] _ in
@@ -144,6 +151,7 @@ private extension TabiMapView.Coordinator {
             for id in staleIDs {
                 self.clusteredKeys.removeValue(forKey: id)
                 self.markerTitles.removeValue(forKey: id)
+                self.markerAppearances.removeValue(forKey: id)
             }
         }
 
@@ -158,6 +166,7 @@ private extension TabiMapView.Coordinator {
             )
             self.clusteredKeys[marker.id] = key
             self.markerTitles[marker.id] = marker.title
+            self.markerAppearances[marker.id] = (marker.icon, marker.color)
             keyTagMap[key] = marker.id as NSString
         }
         clusterer.addAll(keyTagMap)
@@ -167,7 +176,8 @@ private extension TabiMapView.Coordinator {
         let builder = NMCBuilder<TabiClusteringKey>()
         builder.leafMarkerUpdater = TabiLeafMarkerUpdater(
             onMarkerTapped: self.onMarkerTapped,
-            titleProvider: { [weak self] id in self?.markerTitles[id] }
+            titleProvider: { [weak self] id in self?.markerTitles[id] },
+            appearanceProvider: { [weak self] id in self?.markerAppearances[id] }
         )
         return builder.build()
     }
@@ -187,10 +197,16 @@ private final class TabiLeafMarkerUpdater: NSObject {
     private let defaultUpdater = NMCDefaultLeafMarkerUpdater()
     private let onMarkerTapped: (String) -> Void
     private let titleProvider: (String) -> String?
+    private let appearanceProvider: (String) -> (icon: TabiIcon, color: TabiColor)?
 
-    init(onMarkerTapped: @escaping (String) -> Void, titleProvider: @escaping (String) -> String?) {
+    init(
+        onMarkerTapped: @escaping (String) -> Void,
+        titleProvider: @escaping (String) -> String?,
+        appearanceProvider: @escaping (String) -> (icon: TabiIcon, color: TabiColor)?
+    ) {
         self.onMarkerTapped = onMarkerTapped
         self.titleProvider = titleProvider
+        self.appearanceProvider = appearanceProvider
     }
 }
 
@@ -202,6 +218,14 @@ extension TabiLeafMarkerUpdater: NMCLeafMarkerUpdater {
 
         guard let markerID = info.tag as? String else { return }
         marker.captionText = self.titleProvider(markerID) ?? ""
+
+        if let appearance = self.appearanceProvider(markerID) {
+            // NMFMarker는 UI 오버레이라 NMCClusterer가 이 콜백을 메인 스레드에서만 호출함
+            MainActor.assumeIsolated {
+                marker.iconImage = TabiMapMarkerImageFactory.image(icon: appearance.icon, color: appearance.color)
+            }
+        }
+
         marker.touchHandler = { [weak self] _ in
             self?.onMarkerTapped(markerID)
             return true

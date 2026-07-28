@@ -168,6 +168,7 @@ private extension DetailView {
             DetailMapTabView(
                 touristSpotID: self.store.touristSpot.id,
                 title: self.store.touristSpot.title,
+                contentType: self.store.touristSpot.contentType,
                 coordinate: self.store.detail.coordinate,
                 onViewInMapTapped: { self.store.send(.mapSearchButtonTapped) }
             )

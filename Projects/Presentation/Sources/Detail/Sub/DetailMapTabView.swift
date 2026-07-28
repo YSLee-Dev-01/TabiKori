@@ -16,6 +16,7 @@ import Resource
 struct DetailMapTabView: View {
     let touristSpotID: String
     let title: String
+    let contentType: CategoryType
     let coordinate: Coordinate
     let onViewInMapTapped: () -> Void
 
@@ -29,7 +30,9 @@ struct DetailMapTabView: View {
                         id: self.touristSpotID,
                         latitude: self.coordinate.latitude,
                         longitude: self.coordinate.longitude,
-                        title: self.title.removingHangul
+                        title: self.title.removingHangul,
+                        icon: self.contentType.icon,
+                        color: self.contentType.color
                     )
                 ],
                 onMapTapped: { _, _ in },
