@@ -46,11 +46,11 @@ public struct TabBarView: View {
                     }
                     .tag(AppTab.plan)
 
-                Text(AppTab.save.title)
+                Text(AppTab.bookmark.title)
                     .tabItem {
-                        Image(systemName: AppTab.save.systemImage)
+                        Image(systemName: AppTab.bookmark.systemImage)
                     }
-                    .tag(AppTab.save)
+                    .tag(AppTab.bookmark)
             }
             .tint(Color.getTabiColor(.tabiPrimary))
         } destination: { store in

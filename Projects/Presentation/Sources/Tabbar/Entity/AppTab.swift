@@ -14,14 +14,14 @@ public enum AppTab: CaseIterable, Equatable {
     case home
     case map
     case plan
-    case save
+    case bookmark
 
     var title: String {
         switch self {
         case .home: return Strings.Tabbar.home
         case .map: return Strings.Tabbar.map
         case .plan: return Strings.Tabbar.plan
-        case .save: return Strings.Tabbar.save
+        case .bookmark: return Strings.Tabbar.bookmark
         }
     }
 
@@ -30,7 +30,7 @@ public enum AppTab: CaseIterable, Equatable {
         case .home: return "house"
         case .map: return "map"
         case .plan: return "calendar"
-        case .save: return "bookmark"
+        case .bookmark: return "bookmark"
         }
     }
 }

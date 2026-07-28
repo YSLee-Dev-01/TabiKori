@@ -134,7 +134,7 @@ public extension Strings.Tabbar {
     /// 여행 계획
     static let plan = "旅程"
     /// 저장
-    static let save = "保存"
+    static let bookmark = "保存"
 }
 
 public extension Strings.Map {

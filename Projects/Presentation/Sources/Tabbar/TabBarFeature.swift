@@ -19,11 +19,11 @@ public struct TabBarFeature {
         var homeState: HomeFeature.State = .init()
         var mapState: MapFeature.State = .init()
         var planState: PlanState = .init()
-        var saveState: SaveState = .init()
+        var bookmarkState: BookmarkState = .init()
 
         // 임시
         public struct PlanState: Equatable { public init() {} }
-        public struct SaveState: Equatable { public init() {} }
+        public struct BookmarkState: Equatable { public init() {} }
 
         var path = StackState<StackPath.State>()
 
