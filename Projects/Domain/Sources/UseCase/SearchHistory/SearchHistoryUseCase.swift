@@ -37,4 +37,10 @@ public final class SearchHistoryUseCase: SearchHistoryUseCaseProtocol {
         }
         self.repository.save(histories)
     }
+
+    public func remove(keyword: String) {
+        var histories = self.repository.fetch()
+        histories.removeAll { $0.keyword == keyword }
+        self.repository.save(histories)
+    }
 }

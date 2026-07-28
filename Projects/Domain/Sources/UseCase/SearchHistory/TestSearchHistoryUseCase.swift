@@ -14,6 +14,7 @@ public final class TestSearchHistoryUseCase: SearchHistoryUseCaseProtocol, @unch
 
     public var histories: [SearchHistory] = []
     public var addedKeyword: String?
+    public var removedKeyword: String?
 
     // MARK: - Init
 
@@ -27,5 +28,10 @@ public final class TestSearchHistoryUseCase: SearchHistoryUseCaseProtocol, @unch
 
     public func add(keyword: String) {
         self.addedKeyword = keyword
+    }
+
+    public func remove(keyword: String) {
+        self.removedKeyword = keyword
+        self.histories.removeAll { $0.keyword == keyword }
     }
 }

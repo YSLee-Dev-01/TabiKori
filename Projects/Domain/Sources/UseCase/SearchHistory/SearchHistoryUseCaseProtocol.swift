@@ -11,4 +11,5 @@ import Foundation
 public protocol SearchHistoryUseCaseProtocol: Sendable {
     func fetch() -> [SearchHistory]
     func add(keyword: String)
+    func remove(keyword: String)
 }

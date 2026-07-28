@@ -57,6 +57,7 @@ public struct MapFeature: Sendable {
         case searchSubmitted
         case searchResultTapped(TouristSpot)
         case recentSearchTapped(SearchHistory)
+        case recentSearchDeleteTapped(SearchHistory)
         case searchNextPageTriggered
         case panelDragEnded(MapPanelStage)
         case requestLocationPermission
@@ -109,6 +110,11 @@ public struct MapFeature: Sendable {
             case .recentSearchTapped(let history):
                 state.searchQuery = history.keyword
                 return .send(.searchSubmitted)
+
+            case .recentSearchDeleteTapped(let history):
+                self.searchHistoryUseCase.remove(keyword: history.keyword)
+                state.recentSearches = self.searchHistoryUseCase.fetch()
+                return .none
 
             case .searchNextPageTriggered:
                 guard state.isSearchNextPageLoading == false,

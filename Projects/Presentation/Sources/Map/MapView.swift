@@ -63,6 +63,7 @@ public struct MapView: View {
 
             if self.store.mode == .typing {
                 self.recentSearchPlaceholder()
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
@@ -72,6 +73,7 @@ public struct MapView: View {
             self.mapContainerHeight = newValue
         }
         .animation(.tabiStandard, value: self.store.searchQuery.isEmpty)
+        .animation(.tabiStandard, value: self.store.mode)
         .onChange(of: self.store.mode) { _, mode in
             self.isSearchFieldFocused = mode == .typing
         }
@@ -147,9 +149,15 @@ private extension MapView {
             if self.store.recentSearches.isEmpty {
                 MapRecentSearchPlaceholderView(keyboardHeight: self.keyboardHeight)
             } else {
-                MapRecentSearchListView(histories: self.store.recentSearches) { history in
-                    self.store.send(.recentSearchTapped(history))
-                }
+                MapRecentSearchListView(
+                    histories: self.store.recentSearches,
+                    onTapped: { history in
+                        self.store.send(.recentSearchTapped(history))
+                    },
+                    onDeleteTapped: { history in
+                        self.store.send(.recentSearchDeleteTapped(history))
+                    }
+                )
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

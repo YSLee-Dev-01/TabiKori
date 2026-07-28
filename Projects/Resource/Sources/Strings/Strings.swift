@@ -152,6 +152,8 @@ public extension Strings.Map {
     static let searchResultEmptyDescription = "別のキーワードで検索してみてください"
     /// 최근 검색 기록 placeholder 설명 (임시)
     static let recentSearchPlaceholderDescription = "最近の検索履歴がここに表示されます"
+    /// 최근검색 타이틀
+    static let recentSearchTitle = "最近の検索"
 }
 
 public extension Strings.Detail {
