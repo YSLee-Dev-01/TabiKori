@@ -13,7 +13,6 @@ import ComposableArchitecture
 import Core
 import DesignSystem
 import Domain
-import Kingfisher
 import Resource
 
 public struct MapView: View {
@@ -97,12 +96,6 @@ public struct MapView: View {
 // MARK: - TouristSpot View Extension
 
 private extension TouristSpot {
-    var formattedDistance: String? {
-        guard let dist = self.distanceMeters else { return nil }
-        if dist >= 1000 { return String(format: "%.1fkm", dist / 1000) }
-        return "\(Int(dist))m"
-    }
-
     var toMapMarker: TabiMapMarker? {
         guard self.coordinate.isValid else { return nil }
         return TabiMapMarker(
@@ -295,12 +288,14 @@ private extension MapView {
                             Divider()
                                 .padding(.horizontal, 16)
                         }
-                        self.searchResultRow(spot)
-                            .id(spot.id)
-                            .onAppear {
-                                guard spot.id == self.store.searchResults.last?.id else { return }
-                                self.store.send(.searchNextPageTriggered)
-                            }
+                        MapSearchResultRowView(spot: spot) {
+                            self.selectSearchResult(spot)
+                        }
+                        .id(spot.id)
+                        .onAppear {
+                            guard spot.id == self.store.searchResults.last?.id else { return }
+                            self.store.send(.searchNextPageTriggered)
+                        }
                     }
 
                     if self.store.isSearchNextPageLoading {
@@ -317,57 +312,6 @@ private extension MapView {
                     proxy.scrollTo(id, anchor: .top)
                 }
             }
-        }
-    }
-
-    func searchResultRow(_ spot: TouristSpot) -> some View {
-        Button {
-            self.selectSearchResult(spot)
-        } label: {
-            HStack(spacing: 12) {
-                KFImage(spot.thumbnailURL)
-                    .placeholder {
-                        Color.getTabiColor(.tabiBorder).opacity(0.25)
-                            .overlay {
-                                Image(systemName: "mappin.and.ellipse")
-                                    .font(.system(size: 16))
-                                    .foregroundStyle(TabiColor.tabiTextTertiary)
-                            }
-                    }
-                    .scaledToFill()
-                    .frame(width: 64, height: 64)
-                    .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
-
-                VStack(alignment: .leading, spacing: 4) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        TabiLabel(title: spot.japaneseTitle, style: .bodyMBold, color: .tabiTextPrimary, lineLimit: 1)
-
-                        if let korean = spot.koreanTitle {
-                            TabiLabel(title: korean, style: .captionM, color: .tabiTextSecondary, lineLimit: 1)
-                        }
-                    }
-
-                    TabiTag(spot.contentType.label, color: spot.contentType.color)
-                }
-
-                Spacer()
-
-                if let distance = spot.formattedDistance {
-                    self.distanceLabel(distance)
-                }
-            }
-            .padding(16)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(TabiPressStyle())
-    }
-
-    func distanceLabel(_ distance: String) -> some View {
-        HStack(spacing: 3) {
-            Image(systemName: "location.fill")
-                .font(.system(size: 10))
-                .foregroundStyle(TabiColor.tabiTextTertiary)
-            TabiLabel(title: distance, style: .captionM, color: .tabiTextTertiary)
         }
     }
 
