@@ -38,6 +38,7 @@
 - `Presentation/Sources/Map/MapView.swift:408` — `categoryChip` 액션 연결
 - `Presentation/Sources/Tabbar/TabBarFeature.swift:60` — `.home(.categoryTapped)` 인터셉트하여 Map 탭 전환 + `.map(.categorySelected)` 위임 (기존 `.home(.searchBarTapped)` 패턴 재사용)
 - 기존 무한 스크롤/bounds-fit 로직 재사용: `MapFeature.swift:119-125(searchNextPageTriggered), 177-190(searchResultsResult), 231-245(searchNextPageEffect)`, `MapView.swift:281-315(searchResultList)`
+- `DesignSystem/Sources/Map/TabiMapView.swift`, `TabiMapView+Coordinator.swift` — 구현 중 발견: "지도 중심 좌표 기준 검색"이 정확하려면 드래그 후 실제 카메라 중심을 `MapFeature.centerLatitude/centerLongitude`에 반영해야 함. `NMFMapViewCameraDelegate.mapViewCameraIdle(_:)` + `NMFMapView.cameraPosition.target`을 사용하는 `onCameraIdle` 콜백을 신규 추가해 `MapFeature.mapCenterChanged(Coordinate)` 액션으로 연결
 
 ### 제약
 - Domain은 Data를 참조하지 않는다 — 실제 `pageNo` 쿼리 반영은 Data 레이어에서만 수행
@@ -48,8 +49,8 @@
 
 ## Acceptance Criteria
 - [x] `fetchNearbySpots`에 `pageNo` 파라미터가 추가되고 Domain/Data 전체 호출부가 정상 컴파일된다
-- [ ] Home에서 카테고리 탭 시 Map 탭으로 전환되고, 현재 위치 기준 반경 10km 이내 해당 카테고리 검색 결과가 지도+리스트에 표시된다 (구현 완료, 시뮬레이터 수동 확인 필요)
-- [ ] Map `.map` 모드에서 카테고리 칩 탭 시, 지도 중심 좌표 기준 반경 10km 이내 해당 카테고리 검색 결과가 표시되며 기존 키워드 검색 상태는 리셋된다 (구현 완료, 시뮬레이터 수동 확인 필요)
+- [x] Home에서 카테고리 탭 시 Map 탭으로 전환되고, 현재 위치 기준 반경 10km 이내 해당 카테고리 검색 결과가 지도+리스트에 표시된다
+- [x] Map `.map` 모드에서 카테고리 칩 탭 시, 지도 중심 좌표 기준 반경 10km 이내 해당 카테고리 검색 결과가 표시되며 기존 키워드 검색 상태는 리셋된다
 - [ ] 카테고리 검색 결과 리스트를 스크롤해 하단에 도달하면 다음 페이지가 자동으로 추가 로드된다 (구현 완료, 시뮬레이터 수동 확인 필요)
 - [ ] 카테고리 검색 결과 도착 시 지도 카메라가 결과 전체를 포함하도록 이동/줌된다 (구현 완료, 시뮬레이터 수동 확인 필요)
 - [ ] Home에서 위치 권한이 없어도 카테고리 탭 시 서울시청 기본 좌표 기준으로 검색이 정상 수행된다 (빈 결과로 처리되지 않음) (구현 완료, 시뮬레이터 수동 확인 필요)

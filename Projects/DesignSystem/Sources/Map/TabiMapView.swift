@@ -21,6 +21,7 @@ public struct TabiMapView {
     private let onMapTapped: (Double, Double) -> Void
     private let onMarkerTapped: (String) -> Void
     private let onMapDragged: () -> Void
+    private let onCameraIdle: (Double, Double) -> Void
     private let boundsFitToken: Int
 
     public init(
@@ -34,7 +35,8 @@ public struct TabiMapView {
         boundsFitToken: Int = 0,
         onMapTapped: @escaping (Double, Double) -> Void,
         onMarkerTapped: @escaping (String) -> Void,
-        onMapDragged: @escaping () -> Void = {}
+        onMapDragged: @escaping () -> Void = {},
+        onCameraIdle: @escaping (Double, Double) -> Void = { _, _ in }
     ) {
         self.centerLatitude = centerLatitude
         self.centerLongitude = centerLongitude
@@ -47,6 +49,7 @@ public struct TabiMapView {
         self.onMapTapped = onMapTapped
         self.onMarkerTapped = onMarkerTapped
         self.onMapDragged = onMapDragged
+        self.onCameraIdle = onCameraIdle
     }
 }
 
@@ -54,7 +57,12 @@ public struct TabiMapView {
 
 extension TabiMapView: UIViewRepresentable {
     public func makeCoordinator() -> Coordinator {
-        Coordinator(onMapTapped: self.onMapTapped, onMarkerTapped: self.onMarkerTapped, onMapDragged: self.onMapDragged)
+        Coordinator(
+            onMapTapped: self.onMapTapped,
+            onMarkerTapped: self.onMarkerTapped,
+            onMapDragged: self.onMapDragged,
+            onCameraIdle: self.onCameraIdle
+        )
     }
 
     public func makeUIView(context: Context) -> NMFNaverMapView {

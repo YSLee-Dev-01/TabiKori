@@ -15,6 +15,7 @@ extension TabiMapView {
         private let onMapTapped: (Double, Double) -> Void
         private let onMarkerTapped: (String) -> Void
         private let onMapDragged: () -> Void
+        private let onCameraIdle: (Double, Double) -> Void
         private var markerCache: [String: NMFMarker] = [:]
         private var clusterer: NMCClusterer<TabiClusteringKey>?
         private var clusteredKeys: [String: TabiClusteringKey] = [:]
@@ -27,11 +28,13 @@ extension TabiMapView {
         init(
             onMapTapped: @escaping (Double, Double) -> Void,
             onMarkerTapped: @escaping (String) -> Void,
-            onMapDragged: @escaping () -> Void
+            onMapDragged: @escaping () -> Void,
+            onCameraIdle: @escaping (Double, Double) -> Void
         ) {
             self.onMapTapped = onMapTapped
             self.onMarkerTapped = onMarkerTapped
             self.onMapDragged = onMapDragged
+            self.onCameraIdle = onCameraIdle
         }
     }
 }
@@ -50,6 +53,11 @@ extension TabiMapView.Coordinator: NMFMapViewCameraDelegate {
     public func mapView(_ mapView: NMFMapView, cameraWillChangeByReason reason: Int, animated: Bool) {
         guard reason == NMFMapChangedByGesture else { return }
         self.onMapDragged()
+    }
+
+    public func mapViewCameraIdle(_ mapView: NMFMapView) {
+        let target = mapView.cameraPosition.target
+        self.onCameraIdle(target.lat, target.lng)
     }
 }
 
