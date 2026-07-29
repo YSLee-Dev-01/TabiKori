@@ -39,6 +39,7 @@ public struct MapFeature: Sendable {
         var isSearchLoading: Bool = false
         var isSearchNextPageLoading: Bool = false
         var recentSearches: [SearchHistory] = []
+        var isCategorySearchActive: Bool { self.activeCategory != nil }
         fileprivate var hasLoadedInitial: Bool = false
         fileprivate var searchPage: Int = 1
         fileprivate var hasMoreSearchResults: Bool = true
@@ -54,6 +55,7 @@ public struct MapFeature: Sendable {
         case searchFieldTapped
         case searchCancelTapped
         case mapDragged
+        case mapCenterChanged(Coordinate)
         case searchSubmitted
         case categorySelected(CategoryType, coordinate: Coordinate?)
         case searchResultTapped(TouristSpot)
@@ -90,6 +92,11 @@ public struct MapFeature: Sendable {
 
             case .mapDragged:
                 state.panelStage = .collapsed
+                return .none
+
+            case .mapCenterChanged(let coordinate):
+                state.centerLatitude = coordinate.latitude
+                state.centerLongitude = coordinate.longitude
                 return .none
 
             case .searchSubmitted:

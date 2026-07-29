@@ -128,7 +128,10 @@ private extension MapView {
                         guard let spot = self.store.searchResults.first(where: { $0.id == id }) else { return }
                         self.selectSearchResult(spot)
                     },
-                    onMapDragged: { self.store.send(.mapDragged) }
+                    onMapDragged: { self.store.send(.mapDragged) },
+                    onCameraIdle: { latitude, longitude in
+                        self.store.send(.mapCenterChanged(Coordinate(latitude: latitude, longitude: longitude)))
+                    }
                 )
                 .ignoresSafeArea()
             } else {
@@ -157,7 +160,7 @@ private extension MapView {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TabiColor.tabiBackground)
+        .background(Color.white)
         .clipShape(.rect(cornerRadius: .tabiRadiusXl))
         .padding(.top, self.topBarHeight)
         .ignoresSafeArea(.container, edges: .bottom)
@@ -184,7 +187,7 @@ private extension MapView {
 
     @ViewBuilder
     func searchResultContent() -> some View {
-        if self.store.searchQuery.isEmpty {
+        if self.store.searchQuery.isEmpty && self.store.isCategorySearchActive == false {
             self.searchGuideState()
         } else if self.store.isSearchLoading {
             self.searchResultSkeletonList()
