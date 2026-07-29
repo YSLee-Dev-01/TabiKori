@@ -56,10 +56,15 @@ private struct LiveNaverMapUseCase: NaverMapUseCaseProtocol {
     }
 
     func makeShareURL(query: String) -> URL? {
+        let allowedCharacters = CharacterSet.urlPathAllowed.subtracting(CharacterSet(charactersIn: "/"))
+        guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: allowedCharacters) else {
+            AppLogger.core.log(.error, "네이버 지도 공유 URL 인코딩 실패: query=\(query)")
+            return nil
+        }
         var components = URLComponents()
         components.scheme = NaverMapShareURLConstant.scheme
         components.host = NaverMapShareURLConstant.host
-        components.path = "\(NaverMapShareURLConstant.searchPathPrefix)\(query)"
+        components.percentEncodedPath = "\(NaverMapShareURLConstant.searchPathPrefix)\(encodedQuery)"
         guard let url = components.url else {
             AppLogger.core.log(.error, "네이버 지도 공유 URL 생성 실패: query=\(query)")
             return nil

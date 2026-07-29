@@ -13,9 +13,3 @@ public protocol NaverMapUseCaseProtocol: Sendable {
     func routeToDestination(coordinate: Coordinate, destinationName: String) async
     func makeShareURL(query: String) -> URL?
 }
-
-public enum NaverMapShareURLConstant {
-    public static let scheme = "https"
-    public static let host = "map.naver.com"
-    public static let searchPathPrefix = "/p/search/"
-}

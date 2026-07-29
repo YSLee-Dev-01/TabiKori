@@ -80,7 +80,6 @@ public struct DetailFeature {
         case mapSearchButtonTapped
         case routeDirectionsButtonTapped
         case detailResult(TouristSpotDetail?)
-        case shareTextResult(String)
         case introResult(TouristSpotIntro?)
         case imagesResult([TouristSpotImage]?)
         case isBookmarkedResult(Bool)
@@ -134,10 +133,8 @@ public struct DetailFeature {
                 state.isLoading = !state.hasReceivedAllResults
                 guard let detail else { return .none }
                 state.detail = detail
-                return self.makeShareTextEffect(spot: state.touristSpot, address: detail.address)
-
-            case .shareTextResult(let shareText):
-                state.shareText = shareText
+                let shareURL = self.naverMapUseCase.makeShareURL(query: state.touristSpot.japaneseTitle)
+                state.shareText = Self.makeShareText(spot: state.touristSpot, address: detail.address, shareURL: shareURL)
                 return .none
 
             case .introResult(let intro):
@@ -237,14 +234,6 @@ private extension DetailFeature {
             } catch {
                 AppLogger.view.log(.error, "북마크 삭제 실패: \(error.localizedDescription)")
             }
-        }
-    }
-
-    func makeShareTextEffect(spot: TouristSpot, address: String) -> Effect<Action> {
-        .run { [naverMapUseCase = self.naverMapUseCase] send in
-            let shareURL = naverMapUseCase.makeShareURL(query: spot.japaneseTitle)
-            let shareText = Self.makeShareText(spot: spot, address: address, shareURL: shareURL)
-            await send(.shareTextResult(shareText))
         }
     }
 
