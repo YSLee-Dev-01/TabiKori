@@ -116,7 +116,7 @@ private extension DetailView {
                     Image(systemName: "location.fill")
                         .font(.system(size: 10))
                         .foregroundStyle(TabiColor.tabiTextTertiary)
-                    TabiLabel(title: self.store.detail.address, style: .captionM, color: .tabiTextTertiary)
+                    TabiLabel(title: self.store.detail.address, style: .captionM, color: .tabiTextTertiary, alignment: .trailing)
                 }
             }
             .padding(.top, 12)
