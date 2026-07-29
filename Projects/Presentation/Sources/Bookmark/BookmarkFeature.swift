@@ -84,11 +84,12 @@ private extension BookmarkFeature {
     }
 
     func removeBookmarkEffect(contentId: String) -> Effect<Action> {
-        .run { [bookmarkUseCase = self.bookmarkUseCase] _ in
+        .run { [bookmarkUseCase = self.bookmarkUseCase] send in
             do {
                 try await bookmarkUseCase.remove(contentId: contentId)
             } catch {
                 AppLogger.view.log(.error, "북마크 삭제 실패: \(error.localizedDescription)")
+                await send(.onAppear)
             }
         }
     }

@@ -40,7 +40,13 @@ private extension BookmarkView {
         GeometryReader { proxy in
             List {
                 Section {
-                    if self.store.filteredBookmarks.isEmpty {
+                    if self.store.isLoading {
+                        ProgressView()
+                            .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                            .frame(maxWidth: .infinity)
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                    } else if self.store.filteredBookmarks.isEmpty {
                         BookmarkEmptyState()
                             .frame(height: max(proxy.size.height - self.headerHeight, 0))
                             .listRowInsets(EdgeInsets())

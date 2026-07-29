@@ -110,9 +110,11 @@ public struct DetailFeature {
                 if state.isSaved {
                     state.isSaved = false
                     return self.removeBookmarkEffect(contentId: state.touristSpot.id)
+                        .cancellable(id: CancelID.bookmarkToggle, cancelInFlight: true)
                 } else {
                     state.isSaved = true
                     return self.addBookmarkEffect(spot: state.touristSpot)
+                        .cancellable(id: CancelID.bookmarkToggle, cancelInFlight: true)
                 }
 
             case .photoCellTapped:
@@ -161,6 +163,12 @@ public struct DetailFeature {
             }
         }
     }
+}
+
+// MARK: - CancelID
+
+private enum CancelID {
+    case bookmarkToggle
 }
 
 // MARK: - Method
@@ -218,21 +226,25 @@ private extension DetailFeature {
     }
 
     func addBookmarkEffect(spot: TouristSpot) -> Effect<Action> {
-        .run { [bookmarkUseCase = self.bookmarkUseCase] _ in
+        .run { [bookmarkUseCase = self.bookmarkUseCase] send in
             do {
                 try await bookmarkUseCase.add(spot)
+                await send(.isBookmarkedResult(true))
             } catch {
                 AppLogger.view.log(.error, "북마크 저장 실패: \(error.localizedDescription)")
+                await send(.isBookmarkedResult(false))
             }
         }
     }
 
     func removeBookmarkEffect(contentId: String) -> Effect<Action> {
-        .run { [bookmarkUseCase = self.bookmarkUseCase] _ in
+        .run { [bookmarkUseCase = self.bookmarkUseCase] send in
             do {
                 try await bookmarkUseCase.remove(contentId: contentId)
+                await send(.isBookmarkedResult(false))
             } catch {
                 AppLogger.view.log(.error, "북마크 삭제 실패: \(error.localizedDescription)")
+                await send(.isBookmarkedResult(true))
             }
         }
     }

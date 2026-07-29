@@ -93,6 +93,9 @@ public struct TabBarFeature {
             case .bookmark:
                 return .none
 
+            case .path(.element(id: _, action: .detail(.isBookmarkedResult))):
+                return .send(.bookmark(.onAppear))
+
             case .path(.element(id: let id, action: .detail(.photoCellTapped(let index)))):
                 guard case .detail(let detailState) = state.path[id: id] else { return .none }
                 state.path.append(.photoViewer(PhotoViewerFeature.State(
