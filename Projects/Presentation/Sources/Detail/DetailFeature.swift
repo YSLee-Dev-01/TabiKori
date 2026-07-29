@@ -44,6 +44,7 @@ public struct DetailFeature {
         var isSaved: Bool = false
         var currentImageIndex: Int = 0
         var isLoading: Bool = false
+        var shareText: String?
         fileprivate var hasStartedLoading: Bool = false
         fileprivate var hasReceivedDetail: Bool = false
         fileprivate var hasReceivedIntro: Bool = false
@@ -131,6 +132,7 @@ public struct DetailFeature {
                 if let detail { state.detail = detail }
                 state.hasReceivedDetail = true
                 state.isLoading = !state.hasReceivedAllResults
+                state.shareText = self.makeShareText(spot: state.touristSpot, address: state.detail.address)
                 return .none
 
             case .introResult(let intro):
@@ -231,6 +233,20 @@ private extension DetailFeature {
                 AppLogger.view.log(.error, "북마크 삭제 실패: \(error.localizedDescription)")
             }
         }
+    }
+
+    func makeShareText(spot: TouristSpot, address: String) -> String {
+        var lines: [String] = []
+        if let koreanTitle = spot.koreanTitle {
+            lines.append("🏯 \(spot.japaneseTitle)（\(koreanTitle)）")
+        } else {
+            lines.append("🏯 \(spot.japaneseTitle)")
+        }
+        lines.append("📍 \(address)")
+        if let shareURL = self.naverMapUseCase.makeShareURL(query: spot.japaneseTitle) {
+            lines.append("🔗 \(shareURL.absoluteString)")
+        }
+        return lines.joined(separator: "\n")
     }
 }
 

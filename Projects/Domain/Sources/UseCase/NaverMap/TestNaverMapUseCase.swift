@@ -15,6 +15,7 @@ public final class TestNaverMapUseCase: NaverMapUseCaseProtocol, @unchecked Send
     public var searchedQuery: String?
     public var routedCoordinate: Coordinate?
     public var routedDestinationName: String?
+    public var sharedQuery: String?
 
     // MARK: - Init
 
@@ -29,5 +30,14 @@ public final class TestNaverMapUseCase: NaverMapUseCaseProtocol, @unchecked Send
     public func routeToDestination(coordinate: Coordinate, destinationName: String) async {
         self.routedCoordinate = coordinate
         self.routedDestinationName = destinationName
+    }
+
+    public func makeShareURL(query: String) -> URL? {
+        self.sharedQuery = query
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "map.naver.com"
+        components.path = "/p/search/\(query)"
+        return components.url
     }
 }

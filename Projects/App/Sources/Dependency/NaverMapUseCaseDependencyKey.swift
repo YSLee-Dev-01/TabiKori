@@ -54,6 +54,18 @@ private struct LiveNaverMapUseCase: NaverMapUseCaseProtocol {
         }
         await self.open(deepLink: url)
     }
+
+    func makeShareURL(query: String) -> URL? {
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "map.naver.com"
+        components.path = "/p/search/\(query)"
+        guard let url = components.url else {
+            AppLogger.core.log(.error, "네이버 지도 공유 URL 생성 실패: query=\(query)")
+            return nil
+        }
+        return url
+    }
 }
 
 // MARK: - Method

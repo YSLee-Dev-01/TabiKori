@@ -11,4 +11,5 @@ import Foundation
 public protocol NaverMapUseCaseProtocol: Sendable {
     func searchPlace(query: String) async
     func routeToDestination(coordinate: Coordinate, destinationName: String) async
+    func makeShareURL(query: String) -> URL?
 }

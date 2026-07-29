@@ -67,11 +67,11 @@ struct DetailView: View {
                     .tint(Color.getTabiColor(.tabiPrimary))
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                    } label: {
+                    ShareLink(item: self.store.shareText ?? "") {
                         Image(systemName: "square.and.arrow.up")
                     }
                     .tint(Color.getTabiColor(.tabiPrimary))
+                    .disabled(self.store.isLoading || self.store.shareText == nil)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
