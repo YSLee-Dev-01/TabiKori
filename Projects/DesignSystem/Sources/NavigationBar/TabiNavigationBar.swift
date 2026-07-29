@@ -28,9 +28,8 @@ public struct TabiNavigationBar<Trailing: View>: View {
     public var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 5) {
-                if let subtitle = self.subtitle {
-                    TabiLabel(title: subtitle, style: .bodyMBold, color: .tabiTextPrimary)
-                }
+                TabiLabel(title: self.subtitle ?? "", style: .bodyMBold, color: .tabiTextPrimary)
+                    .opacity(self.subtitle == nil ? 0 : 1)
                 TabiLabel(title: self.title, style: .titleL, color: .tabiTextPrimary)
             }
 

@@ -16,6 +16,7 @@ import Resource
 public struct BookmarkView: View {
 
     @Bindable private var store: StoreOf<BookmarkFeature>
+    @State private var headerHeight: CGFloat = 0
 
     public init(store: StoreOf<BookmarkFeature>) {
         self.store = store
@@ -38,48 +39,61 @@ public struct BookmarkView: View {
 
 private extension BookmarkView {
     func bookmarkList() -> some View {
-        List {
-            Section {
-                if self.store.filteredBookmarks.isEmpty {
-                    BookmarkEmptyState()
-                } else {
-                    ForEach(self.store.filteredBookmarks) { bookmark in
-                        TabiSpotRow(
-                            thumbnailURL: bookmark.touristSpot.thumbnailURL,
-                            japaneseTitle: bookmark.touristSpot.japaneseTitle,
-                            koreanTitle: bookmark.touristSpot.koreanTitle,
-                            tagTitle: bookmark.touristSpot.contentType.label,
-                            tagColor: bookmark.touristSpot.contentType.color,
-                            distance: nil,
-                            onTap: { self.store.send(.spotTapped(bookmark.touristSpot)) }
-                        )
-                        .listRowInsets(EdgeInsets())
-                        .listRowSeparator(.hidden)
-                        .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) {
-                                self.store.send(.deleteSwiped(contentId: bookmark.id))
-                            } label: {
-                                Label(Strings.Bookmark.delete, systemImage: "trash")
+        GeometryReader { proxy in
+            List {
+                Section {
+                    if self.store.filteredBookmarks.isEmpty {
+                        BookmarkEmptyState()
+                            .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                    } else {
+                        ForEach(self.store.filteredBookmarks) { bookmark in
+                            TabiSpotRow(
+                                thumbnailURL: bookmark.touristSpot.thumbnailURL,
+                                japaneseTitle: bookmark.touristSpot.japaneseTitle,
+                                koreanTitle: bookmark.touristSpot.koreanTitle,
+                                tagTitle: bookmark.touristSpot.contentType.label,
+                                tagColor: bookmark.touristSpot.contentType.color,
+                                distance: nil,
+                                onTap: { self.store.send(.spotTapped(bookmark.touristSpot)) }
+                            )
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                            .swipeActions(edge: .trailing) {
+                                Button(role: .destructive) {
+                                    self.store.send(.deleteSwiped(contentId: bookmark.id))
+                                } label: {
+                                    Label(Strings.Bookmark.delete, systemImage: "trash")
+                                }
                             }
                         }
                     }
-                }
-            } header: {
-                BookmarkCategoryFilterBar(
-                    selectedCategory: self.store.selectedCategory
-                ) { category in
-                    self.store.send(.categoryFilterTapped(category))
-                }
+                } header: {
+                    VStack(alignment: .leading, spacing: 8) {
+                        BookmarkCategoryFilterBar(
+                            selectedCategory: self.store.selectedCategory
+                        ) { category in
+                            self.store.send(.categoryFilterTapped(category))
+                        }
 
-                TabiLabel(
-                    title: Strings.Bookmark.savedCountTitle(self.store.bookmarks.count),
-                    style: .captionMBold,
-                    color: .tabiTextSecondary
-                )
-                .frame(maxWidth: .infinity, alignment: .leading)
+                        TabiLabel(
+                            title: Strings.Bookmark.savedCountTitle(self.store.bookmarks.count),
+                            style: .captionMBold,
+                            color: .tabiTextSecondary
+                        )
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .onGeometryChange(for: CGFloat.self) { headerProxy in
+                        headerProxy.size.height
+                    } action: { newValue in
+                        self.headerHeight = newValue
+                    }
+                }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .animation(.tabiStandard, value: self.store.selectedCategory)
         }
-        .listStyle(.plain)
-        .scrollContentBackground(.hidden)
     }
 }

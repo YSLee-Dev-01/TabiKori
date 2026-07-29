@@ -35,5 +35,6 @@ struct BookmarkEmptyState: View {
 
             Spacer(minLength: 0)
         }
+        .frame(maxWidth: .infinity)
     }
 }
