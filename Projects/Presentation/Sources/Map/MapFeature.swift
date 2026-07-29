@@ -22,12 +22,12 @@ public struct MapFeature: Sendable {
     @Dependency(\.searchHistoryUseCase) var searchHistoryUseCase
 
     private let searchPageSize = 50
-    private let categorySearchRadiusMeters = TouristSpotSearchRadius.nearbyMeters
 
     @ObservableState
     public struct State: Equatable {
         var centerLatitude: Double = Coordinate.seoulCityHall.latitude
         var centerLongitude: Double = Coordinate.seoulCityHall.longitude
+        var centerRadiusMeters: Double = Double(TouristSpotSearchRadius.nearbyMeters)
         var showsUserLocation: Bool = false
         var hasResolvedInitialCenter: Bool = false
         var locationStatus: LocationAuthorizationStatus = .undetermined
@@ -46,6 +46,7 @@ public struct MapFeature: Sendable {
         fileprivate var hasMoreSearchResults: Bool = true
         fileprivate var activeCategory: CategoryType?
         fileprivate var activeCategoryCoordinate: Coordinate?
+        fileprivate var activeCategoryRadiusMeters: Int?
 
         public init() {}
     }
@@ -56,7 +57,7 @@ public struct MapFeature: Sendable {
         case searchFieldTapped
         case searchCancelTapped
         case mapDragged
-        case mapCenterChanged(Coordinate)
+        case mapCenterChanged(Coordinate, radiusMeters: Double)
         case searchSubmitted
         case categorySelected(CategoryType, coordinate: Coordinate?)
         case searchResultTapped(TouristSpot)
@@ -95,9 +96,10 @@ public struct MapFeature: Sendable {
                 state.panelStage = .collapsed
                 return .none
 
-            case .mapCenterChanged(let coordinate):
+            case .mapCenterChanged(let coordinate, let radiusMeters):
                 state.centerLatitude = coordinate.latitude
                 state.centerLongitude = coordinate.longitude
+                state.centerRadiusMeters = radiusMeters
                 return .none
 
             case .searchSubmitted:
@@ -115,16 +117,20 @@ public struct MapFeature: Sendable {
 
             case .categorySelected(let category, let coordinate):
                 let resolvedCoordinate = coordinate ?? Coordinate(latitude: state.centerLatitude, longitude: state.centerLongitude)
+                let resolvedRadiusMeters = coordinate == nil
+                    ? self.clampedRadiusMeters(state.centerRadiusMeters)
+                    : TouristSpotSearchRadius.nearbyMeters
                 state.searchQuery = ""
                 state.activeCategory = category
                 state.activeCategoryCoordinate = resolvedCoordinate
+                state.activeCategoryRadiusMeters = resolvedRadiusMeters
                 state.mode = .result
                 state.panelStage = .half
                 state.searchResults = []
                 state.isSearchLoading = true
                 state.searchPage = 1
                 state.hasMoreSearchResults = true
-                return self.categorySearchEffect(category: category, coordinate: resolvedCoordinate)
+                return self.categorySearchEffect(category: category, coordinate: resolvedCoordinate, radiusMeters: resolvedRadiusMeters)
 
             case .searchResultTapped:
                 state.mode = .map
@@ -143,10 +149,12 @@ public struct MapFeature: Sendable {
                 guard state.isSearchNextPageLoading == false,
                       state.hasMoreSearchResults else { return .none }
 
-                if let category = state.activeCategory, let coordinate = state.activeCategoryCoordinate {
+                if let category = state.activeCategory,
+                   let coordinate = state.activeCategoryCoordinate,
+                   let radiusMeters = state.activeCategoryRadiusMeters {
                     state.isSearchNextPageLoading = true
                     state.searchPage += 1
-                    return self.categoryNextPageEffect(category: category, coordinate: coordinate, pageNo: state.searchPage)
+                    return self.categoryNextPageEffect(category: category, coordinate: coordinate, radiusMeters: radiusMeters, pageNo: state.searchPage)
                 }
 
                 guard state.searchQuery.isEmpty == false else { return .none }
@@ -269,13 +277,13 @@ private extension MapFeature {
         }
     }
 
-    func categorySearchEffect(category: CategoryType, coordinate: Coordinate) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase, radius = self.categorySearchRadiusMeters] send in
+    func categorySearchEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int) -> Effect<Action> {
+        .run { [touristSpotUseCase = self.touristSpotUseCase] send in
             do {
                 let results = try await touristSpotUseCase.fetchNearbySpots(
                     contentType: category,
                     coordinate: coordinate,
-                    radiusMeters: radius,
+                    radiusMeters: radiusMeters,
                     pageNo: 1
                 )
                 await send(.searchResultsResult(results))
@@ -290,13 +298,13 @@ private extension MapFeature {
         }
     }
 
-    func categoryNextPageEffect(category: CategoryType, coordinate: Coordinate, pageNo: Int) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase, radius = self.categorySearchRadiusMeters] send in
+    func categoryNextPageEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int, pageNo: Int) -> Effect<Action> {
+        .run { [touristSpotUseCase = self.touristSpotUseCase] send in
             do {
                 let results = try await touristSpotUseCase.fetchNearbySpots(
                     contentType: category,
                     coordinate: coordinate,
-                    radiusMeters: radius,
+                    radiusMeters: radiusMeters,
                     pageNo: pageNo
                 )
                 await send(.searchNextPageResultsResult(results))
@@ -311,6 +319,14 @@ private extension MapFeature {
         }
     }
 
+    func clampedRadiusMeters(_ radiusMeters: Double) -> Int {
+        let clamped = min(
+            max(radiusMeters, Double(TouristSpotSearchRadius.minMeters)),
+            Double(TouristSpotSearchRadius.maxMeters)
+        )
+        return Int(clamped.rounded())
+    }
+
     func resetSearchState(_ state: inout State) {
         state.mode = .map
         state.searchQuery = ""
@@ -322,5 +338,6 @@ private extension MapFeature {
         state.hasMoreSearchResults = true
         state.activeCategory = nil
         state.activeCategoryCoordinate = nil
+        state.activeCategoryRadiusMeters = nil
     }
 }

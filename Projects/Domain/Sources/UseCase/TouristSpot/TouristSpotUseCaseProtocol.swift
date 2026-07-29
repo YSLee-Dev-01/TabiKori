@@ -10,6 +10,8 @@ import Foundation
 
 public enum TouristSpotSearchRadius {
     public static let nearbyMeters = 10000
+    public static let minMeters = 500
+    public static let maxMeters = 15000
 }
 
 public protocol TouristSpotUseCaseProtocol: Sendable {

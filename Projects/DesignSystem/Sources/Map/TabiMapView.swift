@@ -21,7 +21,7 @@ public struct TabiMapView {
     private let onMapTapped: (Double, Double) -> Void
     private let onMarkerTapped: (String) -> Void
     private let onMapDragged: () -> Void
-    private let onCameraIdle: (Double, Double) -> Void
+    private let onCameraIdle: (Double, Double, Double) -> Void
     private let boundsFitToken: Int
 
     public init(
@@ -36,7 +36,7 @@ public struct TabiMapView {
         onMapTapped: @escaping (Double, Double) -> Void,
         onMarkerTapped: @escaping (String) -> Void,
         onMapDragged: @escaping () -> Void = {},
-        onCameraIdle: @escaping (Double, Double) -> Void = { _, _ in }
+        onCameraIdle: @escaping (Double, Double, Double) -> Void = { _, _, _ in }
     ) {
         self.centerLatitude = centerLatitude
         self.centerLongitude = centerLongitude

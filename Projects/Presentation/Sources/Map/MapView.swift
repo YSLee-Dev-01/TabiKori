@@ -129,8 +129,8 @@ private extension MapView {
                         self.selectSearchResult(spot)
                     },
                     onMapDragged: { self.store.send(.mapDragged) },
-                    onCameraIdle: { latitude, longitude in
-                        self.store.send(.mapCenterChanged(Coordinate(latitude: latitude, longitude: longitude)))
+                    onCameraIdle: { latitude, longitude, radiusMeters in
+                        self.store.send(.mapCenterChanged(Coordinate(latitude: latitude, longitude: longitude), radiusMeters: radiusMeters))
                     }
                 )
                 .ignoresSafeArea()
