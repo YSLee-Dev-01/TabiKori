@@ -16,6 +16,7 @@ public final class TestNaverMapUseCase: NaverMapUseCaseProtocol, @unchecked Send
     public var routedCoordinate: Coordinate?
     public var routedDestinationName: String?
     public var sharedQuery: String?
+    public var stubShareURL: URL? = URL(string: "\(NaverMapShareURLConstant.scheme)://\(NaverMapShareURLConstant.host)\(NaverMapShareURLConstant.searchPathPrefix)stub")
 
     // MARK: - Init
 
@@ -34,10 +35,6 @@ public final class TestNaverMapUseCase: NaverMapUseCaseProtocol, @unchecked Send
 
     public func makeShareURL(query: String) -> URL? {
         self.sharedQuery = query
-        var components = URLComponents()
-        components.scheme = "https"
-        components.host = "map.naver.com"
-        components.path = "/p/search/\(query)"
-        return components.url
+        return self.stubShareURL
     }
 }

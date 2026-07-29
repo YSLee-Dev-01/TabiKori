@@ -57,9 +57,9 @@ private struct LiveNaverMapUseCase: NaverMapUseCaseProtocol {
 
     func makeShareURL(query: String) -> URL? {
         var components = URLComponents()
-        components.scheme = "https"
-        components.host = "map.naver.com"
-        components.path = "/p/search/\(query)"
+        components.scheme = NaverMapShareURLConstant.scheme
+        components.host = NaverMapShareURLConstant.host
+        components.path = "\(NaverMapShareURLConstant.searchPathPrefix)\(query)"
         guard let url = components.url else {
             AppLogger.core.log(.error, "네이버 지도 공유 URL 생성 실패: query=\(query)")
             return nil

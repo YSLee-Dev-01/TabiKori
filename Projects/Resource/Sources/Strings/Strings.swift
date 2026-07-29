@@ -207,4 +207,10 @@ public extension Strings.Detail {
     static let viewInMap = "地図で見る"
     /// 지도 준비 중
     static let mapComingSoon = "地図準備中"
+    /// 공유 텍스트 - 장소명 접두사
+    static let shareTitlePrefix = "🏯"
+    /// 공유 텍스트 - 주소 접두사
+    static let shareAddressPrefix = "📍"
+    /// 공유 텍스트 - 링크 접두사
+    static let shareLinkPrefix = "🔗"
 }

@@ -44,7 +44,7 @@ public struct DetailFeature {
         var isSaved: Bool = false
         var currentImageIndex: Int = 0
         var isLoading: Bool = false
-        var shareText: String?
+        var shareText: String? = nil
         fileprivate var hasStartedLoading: Bool = false
         fileprivate var hasReceivedDetail: Bool = false
         fileprivate var hasReceivedIntro: Bool = false
@@ -80,6 +80,7 @@ public struct DetailFeature {
         case mapSearchButtonTapped
         case routeDirectionsButtonTapped
         case detailResult(TouristSpotDetail?)
+        case shareTextResult(String)
         case introResult(TouristSpotIntro?)
         case imagesResult([TouristSpotImage]?)
         case isBookmarkedResult(Bool)
@@ -129,10 +130,14 @@ public struct DetailFeature {
                 }
 
             case .detailResult(let detail):
-                if let detail { state.detail = detail }
                 state.hasReceivedDetail = true
                 state.isLoading = !state.hasReceivedAllResults
-                state.shareText = self.makeShareText(spot: state.touristSpot, address: state.detail.address)
+                guard let detail else { return .none }
+                state.detail = detail
+                return self.makeShareTextEffect(spot: state.touristSpot, address: detail.address)
+
+            case .shareTextResult(let shareText):
+                state.shareText = shareText
                 return .none
 
             case .introResult(let intro):
@@ -235,16 +240,24 @@ private extension DetailFeature {
         }
     }
 
-    func makeShareText(spot: TouristSpot, address: String) -> String {
+    func makeShareTextEffect(spot: TouristSpot, address: String) -> Effect<Action> {
+        .run { [naverMapUseCase = self.naverMapUseCase] send in
+            let shareURL = naverMapUseCase.makeShareURL(query: spot.japaneseTitle)
+            let shareText = Self.makeShareText(spot: spot, address: address, shareURL: shareURL)
+            await send(.shareTextResult(shareText))
+        }
+    }
+
+    static func makeShareText(spot: TouristSpot, address: String, shareURL: URL?) -> String {
         var lines: [String] = []
         if let koreanTitle = spot.koreanTitle {
-            lines.append("🏯 \(spot.japaneseTitle)（\(koreanTitle)）")
+            lines.append("\(Strings.Detail.shareTitlePrefix) \(spot.japaneseTitle)（\(koreanTitle)）")
         } else {
-            lines.append("🏯 \(spot.japaneseTitle)")
+            lines.append("\(Strings.Detail.shareTitlePrefix) \(spot.japaneseTitle)")
         }
-        lines.append("📍 \(address)")
-        if let shareURL = self.naverMapUseCase.makeShareURL(query: spot.japaneseTitle) {
-            lines.append("🔗 \(shareURL.absoluteString)")
+        lines.append("\(Strings.Detail.shareAddressPrefix) \(address)")
+        if let shareURL {
+            lines.append("\(Strings.Detail.shareLinkPrefix) \(shareURL.absoluteString)")
         }
         return lines.joined(separator: "\n")
     }
