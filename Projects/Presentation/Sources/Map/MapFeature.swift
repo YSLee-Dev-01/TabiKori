@@ -39,14 +39,17 @@ public struct MapFeature: Sendable {
         var isSearchLoading: Bool = false
         var isSearchNextPageLoading: Bool = false
         var recentSearches: [SearchHistory] = []
+        var hasMapMovedSinceSearch: Bool = false
         var isCategorySearchActive: Bool { self.activeCategory != nil }
         var activeCategoryLabel: String? { self.activeCategory?.label }
+        var showsResearchButton: Bool { self.mode == .result && self.isCategorySearchActive && self.hasMapMovedSinceSearch }
         fileprivate var hasLoadedInitial: Bool = false
         fileprivate var searchPage: Int = 1
         fileprivate var hasMoreSearchResults: Bool = true
         fileprivate var activeCategory: CategoryType?
         fileprivate var activeCategoryCoordinate: Coordinate?
         fileprivate var activeCategoryRadiusMeters: Int?
+        fileprivate var isTrackingUserDrag: Bool = false
 
         public init() {}
     }
@@ -60,6 +63,7 @@ public struct MapFeature: Sendable {
         case mapCenterChanged(Coordinate, radiusMeters: Double)
         case searchSubmitted
         case categorySelected(CategoryType, coordinate: Coordinate?)
+        case researchAtCurrentLocationTapped
         case searchResultTapped(TouristSpot)
         case recentSearchTapped(SearchHistory)
         case recentSearchDeleteTapped(SearchHistory)
@@ -70,6 +74,7 @@ public struct MapFeature: Sendable {
         case coordinateResult(Coordinate)
         case fallbackToSeoul
         case searchResultsResult([TouristSpot])
+        case researchResultsResult([TouristSpot])
         case searchNextPageResultsResult([TouristSpot])
     }
 
@@ -94,12 +99,17 @@ public struct MapFeature: Sendable {
 
             case .mapDragged:
                 state.panelStage = .collapsed
+                state.isTrackingUserDrag = true
                 return .none
 
             case .mapCenterChanged(let coordinate, let radiusMeters):
                 state.centerLatitude = coordinate.latitude
                 state.centerLongitude = coordinate.longitude
                 state.centerRadiusMeters = radiusMeters
+                if state.isTrackingUserDrag, state.mode == .result, state.isCategorySearchActive {
+                    state.hasMapMovedSinceSearch = true
+                }
+                state.isTrackingUserDrag = false
                 return .none
 
             case .searchSubmitted:
@@ -113,6 +123,7 @@ public struct MapFeature: Sendable {
                 state.isSearchLoading = true
                 state.searchPage = 1
                 state.hasMoreSearchResults = true
+                state.hasMapMovedSinceSearch = false
                 return self.searchEffect(keyword: state.searchQuery)
 
             case .categorySelected(let category, let coordinate):
@@ -130,7 +141,21 @@ public struct MapFeature: Sendable {
                 state.isSearchLoading = true
                 state.searchPage = 1
                 state.hasMoreSearchResults = true
+                state.hasMapMovedSinceSearch = false
                 return self.categorySearchEffect(category: category, coordinate: resolvedCoordinate, radiusMeters: resolvedRadiusMeters)
+
+            case .researchAtCurrentLocationTapped:
+                let resolvedCoordinate = Coordinate(latitude: state.centerLatitude, longitude: state.centerLongitude)
+                let resolvedRadiusMeters = self.clampedRadiusMeters(state.centerRadiusMeters)
+                guard let category = state.activeCategory else { return .none }
+                state.activeCategoryCoordinate = resolvedCoordinate
+                state.activeCategoryRadiusMeters = resolvedRadiusMeters
+                state.searchResults = []
+                state.isSearchLoading = true
+                state.searchPage = 1
+                state.hasMoreSearchResults = true
+                state.hasMapMovedSinceSearch = false
+                return self.categoryResearchEffect(category: category, coordinate: resolvedCoordinate, radiusMeters: resolvedRadiusMeters)
 
             case .searchResultTapped:
                 state.mode = .map
@@ -216,6 +241,12 @@ public struct MapFeature: Sendable {
                 }
                 return .none
 
+            case .researchResultsResult(let spots):
+                state.searchResults = spots
+                state.isSearchLoading = false
+                state.hasMoreSearchResults = spots.count >= self.searchPageSize
+                return .none
+
             case .searchNextPageResultsResult(let spots):
                 state.searchResults.append(contentsOf: spots)
                 state.isSearchNextPageLoading = false
@@ -298,6 +329,27 @@ private extension MapFeature {
         }
     }
 
+    func categoryResearchEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int) -> Effect<Action> {
+        .run { [touristSpotUseCase = self.touristSpotUseCase] send in
+            do {
+                let results = try await touristSpotUseCase.fetchNearbySpots(
+                    contentType: category,
+                    coordinate: coordinate,
+                    radiusMeters: radiusMeters,
+                    pageNo: 1
+                )
+                await send(.researchResultsResult(results))
+            } catch {
+                guard !Task.isCancelled else {
+                    AppLogger.view.log(.debug, "위치 재검색 취소됨")
+                    return
+                }
+                await send(.researchResultsResult([]))
+                AppLogger.view.log(.error, "위치 재검색 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
     func categoryNextPageEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int, pageNo: Int) -> Effect<Action> {
         .run { [touristSpotUseCase = self.touristSpotUseCase] send in
             do {
@@ -339,5 +391,7 @@ private extension MapFeature {
         state.activeCategory = nil
         state.activeCategoryCoordinate = nil
         state.activeCategoryRadiusMeters = nil
+        state.hasMapMovedSinceSearch = false
+        state.isTrackingUserDrag = false
     }
 }

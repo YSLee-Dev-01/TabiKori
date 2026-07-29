@@ -155,6 +155,8 @@ public extension Strings.Map {
     static let recentSearchPlaceholderDescription = "最近の検索履歴がここに表示されます"
     /// 최근검색 타이틀
     static let recentSearchTitle = "最近の検索"
+    /// 위치 재검색 버튼
+    static let researchAtCurrentLocation = "このエリアで再検索"
 }
 
 public extension Strings.Bookmark {

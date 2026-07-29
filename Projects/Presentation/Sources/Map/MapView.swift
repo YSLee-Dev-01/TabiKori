@@ -59,7 +59,9 @@ public struct MapView: View {
     public var body: some View {
         ZStack(alignment: .top) {
             self.mapBackground()
-            self.topBar()
+                .safeAreaBar(edge: .top) {
+                    self.topBar()
+                }
 
             if self.store.mode == .typing {
                 self.recentSearchPlaceholder()
@@ -74,6 +76,7 @@ public struct MapView: View {
         }
         .animation(.tabiStandard, value: self.store.searchQuery.isEmpty)
         .animation(.tabiStandard, value: self.store.mode)
+        .animation(.tabiStandard, value: self.store.showsResearchButton)
         .onChange(of: self.store.mode) { _, mode in
             self.isSearchFieldFocused = mode == .typing
         }
@@ -367,9 +370,14 @@ private extension MapView {
             if self.store.mode == .map {
                 self.categoryChips()
             }
+
+            if self.store.showsResearchButton {
+                self.researchButton()
+                    .padding(.horizontal, 20)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
         }
         .padding(.bottom, 16)
-        .safeAreaPadding(.top)
         .background {
             LinearGradient(
                 colors: [
@@ -385,6 +393,20 @@ private extension MapView {
             proxy.size.height
         } action: { newValue in
             self.topBarHeight = newValue
+        }
+    }
+
+    func researchButton() -> some View {
+        HStack {
+            Spacer()
+            TabiButton(
+                Strings.Map.researchAtCurrentLocation,
+                style: .glass(on: .surface),
+                isLoading: self.store.isSearchLoading
+            ) {
+                self.store.send(.researchAtCurrentLocationTapped)
+            }
+            Spacer()
         }
     }
 
