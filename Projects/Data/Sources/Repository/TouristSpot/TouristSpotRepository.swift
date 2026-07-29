@@ -27,13 +27,15 @@ public final class TouristSpotRepository: TouristSpotRepositoryProtocol {
     public func fetchNearbySpots(
         contentType: CategoryType,
         coordinate: Coordinate,
-        radiusMeters: Int
+        radiusMeters: Int,
+        pageNo: Int
     ) async throws -> [TouristSpot] {
         let dto = try await self.networkService.request(
             endPoint: TouristSpotEndpoint.nearbySpots(
                 contentType: contentType,
                 coordinate: coordinate,
-                radiusMeters: radiusMeters
+                radiusMeters: radiusMeters,
+                pageNo: pageNo
             ),
             responseType: TouristSpotResponseDTO.self
         )

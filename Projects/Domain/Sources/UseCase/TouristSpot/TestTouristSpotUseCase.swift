@@ -27,7 +27,8 @@ public final class TestTouristSpotUseCase: TouristSpotUseCaseProtocol, @unchecke
     public func fetchNearbySpots(
         contentType: CategoryType,
         coordinate: Coordinate,
-        radiusMeters: Int
+        radiusMeters: Int,
+        pageNo: Int
     ) async throws -> [TouristSpot] {
         return self.nearbySpots
     }

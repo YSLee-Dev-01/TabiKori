@@ -21,7 +21,7 @@ public struct HomeFeature: Sendable {
     @Dependency(\.exchangeRateUseCase) var exchangeRateUseCase
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
 
-    private let nearbySpotRadiusMeters = 10000
+    private let nearbySpotRadiusMeters = TouristSpotSearchRadius.nearbyMeters
 
     @ObservableState
     public struct State: Equatable {
@@ -54,6 +54,8 @@ public struct HomeFeature: Sendable {
         case planCreateButtonTapped
         case nearbySpotTapped(TouristSpot)
         case searchBarTapped
+        case categoryTapped(CategoryType)
+        case categoryCoordinateResolved(CategoryType, Coordinate)
     }
 
     public init() {}
@@ -171,9 +173,34 @@ public struct HomeFeature: Sendable {
 
             case .searchBarTapped:
                 return .none
+
+            case .categoryTapped(let category):
+                return .run { [locationUseCase = self.locationUseCase] send in
+                    do {
+                        let coordinate = try await locationUseCase.fetchCurrentCoordinate()
+                        await send(.categoryCoordinateResolved(category, coordinate))
+                    } catch {
+                        guard !Task.isCancelled else {
+                            AppLogger.view.log(.debug, "카테고리 검색 좌표 조회 취소됨")
+                            return
+                        }
+                        AppLogger.view.log(.error, "카테고리 검색 좌표 조회 실패: \(error.localizedDescription)")
+                        await send(.categoryCoordinateResolved(category, .seoulCityHall))
+                    }
+                }
+                .cancellable(id: CancelID.categoryCoordinate, cancelInFlight: true)
+
+            case .categoryCoordinateResolved:
+                return .none
             }
         }
     }
+}
+
+// MARK: - CancelID
+
+private enum CancelID {
+    case categoryCoordinate
 }
 
 // MARK: - Method
@@ -191,12 +218,14 @@ private extension HomeFeature {
                 async let touristSpots = touristSpotUseCase.fetchNearbySpots(
                     contentType: .sightseeing,
                     coordinate: coordinate,
-                    radiusMeters: radius
+                    radiusMeters: radius,
+                    pageNo: 1
                 )
                 async let restaurants = touristSpotUseCase.fetchNearbySpots(
                     contentType: .food,
                     coordinate: coordinate,
-                    radiusMeters: radius
+                    radiusMeters: radius,
+                    pageNo: 1
                 )
 
                 await send(.nearbyTouristSpotsResult(try await touristSpots))

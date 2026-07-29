@@ -67,6 +67,14 @@ public struct TabBarFeature {
                 state.mapState.mode = .typing
                 return .none
 
+            case .home(.categoryTapped):
+                state.selectedTab = .map
+                return .none
+
+            case .home(.categoryCoordinateResolved(let category, let coordinate)):
+                guard state.selectedTab == .map else { return .none }
+                return .send(.map(.categorySelected(category, coordinate: coordinate)))
+
             case .home:
                 return .none
 

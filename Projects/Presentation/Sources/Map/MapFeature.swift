@@ -21,14 +21,13 @@ public struct MapFeature: Sendable {
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
     @Dependency(\.searchHistoryUseCase) var searchHistoryUseCase
 
-    private let seoulCityHallLatitude = 37.5666102
-    private let seoulCityHallLongitude = 126.9783881
     private let searchPageSize = 50
+    private let categorySearchRadiusMeters = TouristSpotSearchRadius.nearbyMeters
 
     @ObservableState
     public struct State: Equatable {
-        var centerLatitude: Double = 37.5666102
-        var centerLongitude: Double = 126.9783881
+        var centerLatitude: Double = Coordinate.seoulCityHall.latitude
+        var centerLongitude: Double = Coordinate.seoulCityHall.longitude
         var showsUserLocation: Bool = false
         var hasResolvedInitialCenter: Bool = false
         var locationStatus: LocationAuthorizationStatus = .undetermined
@@ -43,6 +42,8 @@ public struct MapFeature: Sendable {
         fileprivate var hasLoadedInitial: Bool = false
         fileprivate var searchPage: Int = 1
         fileprivate var hasMoreSearchResults: Bool = true
+        fileprivate var activeCategory: CategoryType?
+        fileprivate var activeCategoryCoordinate: Coordinate?
 
         public init() {}
     }
@@ -54,6 +55,7 @@ public struct MapFeature: Sendable {
         case searchCancelTapped
         case mapDragged
         case searchSubmitted
+        case categorySelected(CategoryType, coordinate: Coordinate?)
         case searchResultTapped(TouristSpot)
         case recentSearchTapped(SearchHistory)
         case recentSearchDeleteTapped(SearchHistory)
@@ -93,6 +95,8 @@ public struct MapFeature: Sendable {
             case .searchSubmitted:
                 guard state.searchQuery.isEmpty == false else { return .none }
                 self.searchHistoryUseCase.add(keyword: state.searchQuery)
+                state.activeCategory = nil
+                state.activeCategoryCoordinate = nil
                 state.mode = .result
                 state.panelStage = .half
                 state.searchResults = []
@@ -100,6 +104,19 @@ public struct MapFeature: Sendable {
                 state.searchPage = 1
                 state.hasMoreSearchResults = true
                 return self.searchEffect(keyword: state.searchQuery)
+
+            case .categorySelected(let category, let coordinate):
+                let resolvedCoordinate = coordinate ?? Coordinate(latitude: state.centerLatitude, longitude: state.centerLongitude)
+                state.searchQuery = ""
+                state.activeCategory = category
+                state.activeCategoryCoordinate = resolvedCoordinate
+                state.mode = .result
+                state.panelStage = .half
+                state.searchResults = []
+                state.isSearchLoading = true
+                state.searchPage = 1
+                state.hasMoreSearchResults = true
+                return self.categorySearchEffect(category: category, coordinate: resolvedCoordinate)
 
             case .searchResultTapped:
                 state.mode = .map
@@ -116,8 +133,15 @@ public struct MapFeature: Sendable {
 
             case .searchNextPageTriggered:
                 guard state.isSearchNextPageLoading == false,
-                      state.hasMoreSearchResults,
-                      state.searchQuery.isEmpty == false else { return .none }
+                      state.hasMoreSearchResults else { return .none }
+
+                if let category = state.activeCategory, let coordinate = state.activeCategoryCoordinate {
+                    state.isSearchNextPageLoading = true
+                    state.searchPage += 1
+                    return self.categoryNextPageEffect(category: category, coordinate: coordinate, pageNo: state.searchPage)
+                }
+
+                guard state.searchQuery.isEmpty == false else { return .none }
                 state.isSearchNextPageLoading = true
                 state.searchPage += 1
                 return self.searchNextPageEffect(keyword: state.searchQuery, pageNo: state.searchPage)
@@ -161,8 +185,8 @@ public struct MapFeature: Sendable {
                 return .none
 
             case .fallbackToSeoul:
-                state.centerLatitude = self.seoulCityHallLatitude
-                state.centerLongitude = self.seoulCityHallLongitude
+                state.centerLatitude = Coordinate.seoulCityHall.latitude
+                state.centerLongitude = Coordinate.seoulCityHall.longitude
                 state.showsUserLocation = false
                 state.hasResolvedInitialCenter = true
                 return .none
@@ -237,6 +261,48 @@ private extension MapFeature {
         }
     }
 
+    func categorySearchEffect(category: CategoryType, coordinate: Coordinate) -> Effect<Action> {
+        .run { [touristSpotUseCase = self.touristSpotUseCase, radius = self.categorySearchRadiusMeters] send in
+            do {
+                let results = try await touristSpotUseCase.fetchNearbySpots(
+                    contentType: category,
+                    coordinate: coordinate,
+                    radiusMeters: radius,
+                    pageNo: 1
+                )
+                await send(.searchResultsResult(results))
+            } catch {
+                guard !Task.isCancelled else {
+                    AppLogger.view.log(.debug, "카테고리 검색 취소됨")
+                    return
+                }
+                await send(.searchResultsResult([]))
+                AppLogger.view.log(.error, "카테고리 검색 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func categoryNextPageEffect(category: CategoryType, coordinate: Coordinate, pageNo: Int) -> Effect<Action> {
+        .run { [touristSpotUseCase = self.touristSpotUseCase, radius = self.categorySearchRadiusMeters] send in
+            do {
+                let results = try await touristSpotUseCase.fetchNearbySpots(
+                    contentType: category,
+                    coordinate: coordinate,
+                    radiusMeters: radius,
+                    pageNo: pageNo
+                )
+                await send(.searchNextPageResultsResult(results))
+            } catch {
+                guard !Task.isCancelled else {
+                    AppLogger.view.log(.debug, "카테고리 검색 다음 페이지 조회 취소됨")
+                    return
+                }
+                await send(.searchNextPageResultsResult([]))
+                AppLogger.view.log(.error, "카테고리 검색 다음 페이지 조회 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
     func resetSearchState(_ state: inout State) {
         state.mode = .map
         state.searchQuery = ""
@@ -246,5 +312,7 @@ private extension MapFeature {
         state.isSearchNextPageLoading = false
         state.searchPage = 1
         state.hasMoreSearchResults = true
+        state.activeCategory = nil
+        state.activeCategoryCoordinate = nil
     }
 }

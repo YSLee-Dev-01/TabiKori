@@ -11,7 +11,7 @@ import Foundation
 import Domain
 
 enum TouristSpotEndpoint: Endpoint {
-    case nearbySpots(contentType: CategoryType, coordinate: Coordinate, radiusMeters: Int)
+    case nearbySpots(contentType: CategoryType, coordinate: Coordinate, radiusMeters: Int, pageNo: Int)
     case detail(contentId: String)
     case intro(contentId: String, contentType: CategoryType)
     case images(contentId: String)
@@ -35,7 +35,7 @@ enum TouristSpotEndpoint: Endpoint {
 
     var queryItems: [URLQueryItem] {
         switch self {
-        case .nearbySpots(let contentType, let coordinate, let radiusMeters):
+        case .nearbySpots(let contentType, let coordinate, let radiusMeters, let pageNo):
             return [
                 URLQueryItem(name: "MobileOS", value: "IOS"),
                 URLQueryItem(name: "MobileApp", value: "TabiKori"),
@@ -43,7 +43,7 @@ enum TouristSpotEndpoint: Endpoint {
                 URLQueryItem(name: "_type", value: "json"),
                 URLQueryItem(name: "arrange", value: "E"),
                 URLQueryItem(name: "numOfRows", value: "50"),
-                URLQueryItem(name: "pageNo", value: "1"),
+                URLQueryItem(name: "pageNo", value: "\(pageNo)"),
                 URLQueryItem(name: "contentTypeId", value: contentType.apiCode),
                 URLQueryItem(name: "mapX", value: "\(coordinate.longitude)"),
                 URLQueryItem(name: "mapY", value: "\(coordinate.latitude)"),

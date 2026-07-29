@@ -12,7 +12,8 @@ public protocol TouristSpotRepositoryProtocol: Sendable {
     func fetchNearbySpots(
         contentType: CategoryType,
         coordinate: Coordinate,
-        radiusMeters: Int
+        radiusMeters: Int,
+        pageNo: Int
     ) async throws -> [TouristSpot]
 
     func fetchDetail(contentId: String) async throws -> TouristSpotDetail

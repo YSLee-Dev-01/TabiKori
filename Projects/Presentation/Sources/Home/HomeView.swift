@@ -537,6 +537,7 @@ fileprivate extension HomeView {
 
     func categoryItemButton(_ item: CategoryType) -> some View {
         Button {
+            self.store.send(.categoryTapped(item))
         } label: {
             VStack(spacing: 6) {
                 RoundedRectangle(cornerRadius: .tabiRadiusMd)

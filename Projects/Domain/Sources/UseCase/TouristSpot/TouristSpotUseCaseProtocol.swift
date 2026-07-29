@@ -8,11 +8,16 @@
 
 import Foundation
 
+public enum TouristSpotSearchRadius {
+    public static let nearbyMeters = 10000
+}
+
 public protocol TouristSpotUseCaseProtocol: Sendable {
     func fetchNearbySpots(
         contentType: CategoryType,
         coordinate: Coordinate,
-        radiusMeters: Int
+        radiusMeters: Int,
+        pageNo: Int
     ) async throws -> [TouristSpot]
 
     func fetchDetail(contentId: String) async throws -> TouristSpotDetail

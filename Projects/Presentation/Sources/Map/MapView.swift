@@ -408,6 +408,7 @@ private extension MapView {
 
     func categoryChip(_ item: CategoryType) -> some View {
         Button {
+            self.store.send(.categorySelected(item, coordinate: nil))
         } label: {
             HStack(spacing: 6) {
                 Image(item.icon)

@@ -25,12 +25,14 @@ public final class TouristSpotUseCase: TouristSpotUseCaseProtocol {
     public func fetchNearbySpots(
         contentType: CategoryType,
         coordinate: Coordinate,
-        radiusMeters: Int
+        radiusMeters: Int,
+        pageNo: Int
     ) async throws -> [TouristSpot] {
         return try await self.repository.fetchNearbySpots(
             contentType: contentType,
             coordinate: coordinate,
-            radiusMeters: radiusMeters
+            radiusMeters: radiusMeters,
+            pageNo: pageNo
         )
     }
 
