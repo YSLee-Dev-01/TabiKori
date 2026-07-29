@@ -10,16 +10,16 @@ import Foundation
 import SwiftData
 
 @Model
-public final class BookmarkModel {
-    public var contentId: String
-    public var title: String
-    public var thumbnailURLString: String?
-    public var contentTypeRaw: String
-    public var latitude: Double
-    public var longitude: Double
-    public var savedAt: Date
+final class BookmarkModel {
+    @Attribute(.unique) var contentId: String
+    var title: String
+    var thumbnailURLString: String?
+    var contentTypeRaw: String
+    var latitude: Double
+    var longitude: Double
+    var savedAt: Date
 
-    public init(
+    init(
         contentId: String,
         title: String,
         thumbnailURLString: String?,
