@@ -36,7 +36,6 @@ struct BookmarkCategoryFilterBar: View {
                     }
                 }
             }
-            .padding(.horizontal, 20)
         }
         .scrollIndicators(.hidden)
     }
