@@ -40,6 +40,7 @@ public struct MapFeature: Sendable {
         var isSearchNextPageLoading: Bool = false
         var recentSearches: [SearchHistory] = []
         var isCategorySearchActive: Bool { self.activeCategory != nil }
+        var activeCategoryLabel: String? { self.activeCategory?.label }
         fileprivate var hasLoadedInitial: Bool = false
         fileprivate var searchPage: Int = 1
         fileprivate var hasMoreSearchResults: Bool = true

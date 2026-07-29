@@ -352,7 +352,7 @@ private extension MapView {
 
                 case .result:
                     TabiSearchField(
-                        placeholder: self.store.searchQuery.isEmpty ? Strings.Map.searchPlaceholder : self.store.searchQuery,
+                        placeholder: self.store.activeCategoryLabel ?? (self.store.searchQuery.isEmpty ? Strings.Map.searchPlaceholder : self.store.searchQuery),
                         style: .glass
                     ) {
                         self.store.send(.searchFieldTapped)
