@@ -23,11 +23,7 @@ public struct BookmarkView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            if self.store.filteredBookmarks.isEmpty {
-                BookmarkEmptyState()
-            } else {
-                self.bookmarkList()
-            }
+            self.bookmarkList()
         }
         .safeAreaBar(edge: .top) {
             TabiNavigationBar(title: Strings.Bookmark.title)
@@ -44,23 +40,27 @@ private extension BookmarkView {
     func bookmarkList() -> some View {
         List {
             Section {
-                ForEach(self.store.filteredBookmarks) { bookmark in
-                    TabiSpotRow(
-                        thumbnailURL: bookmark.touristSpot.thumbnailURL,
-                        japaneseTitle: bookmark.touristSpot.japaneseTitle,
-                        koreanTitle: bookmark.touristSpot.koreanTitle,
-                        tagTitle: bookmark.touristSpot.contentType.label,
-                        tagColor: bookmark.touristSpot.contentType.color,
-                        distance: nil,
-                        onTap: { self.store.send(.spotTapped(bookmark.touristSpot)) }
-                    )
-                    .listRowInsets(EdgeInsets())
-                    .listRowSeparator(.hidden)
-                    .swipeActions(edge: .trailing) {
-                        Button(role: .destructive) {
-                            self.store.send(.deleteSwiped(contentId: bookmark.id))
-                        } label: {
-                            Label(Strings.Bookmark.delete, systemImage: "trash")
+                if self.store.filteredBookmarks.isEmpty {
+                    BookmarkEmptyState()
+                } else {
+                    ForEach(self.store.filteredBookmarks) { bookmark in
+                        TabiSpotRow(
+                            thumbnailURL: bookmark.touristSpot.thumbnailURL,
+                            japaneseTitle: bookmark.touristSpot.japaneseTitle,
+                            koreanTitle: bookmark.touristSpot.koreanTitle,
+                            tagTitle: bookmark.touristSpot.contentType.label,
+                            tagColor: bookmark.touristSpot.contentType.color,
+                            distance: nil,
+                            onTap: { self.store.send(.spotTapped(bookmark.touristSpot)) }
+                        )
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                self.store.send(.deleteSwiped(contentId: bookmark.id))
+                            } label: {
+                                Label(Strings.Bookmark.delete, systemImage: "trash")
+                            }
                         }
                     }
                 }
