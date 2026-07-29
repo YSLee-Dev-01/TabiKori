@@ -21,17 +21,15 @@ public struct BookmarkView: View {
     public init(store: StoreOf<BookmarkFeature>) {
         self.store = store
     }
-
+    
     public var body: some View {
-        VStack(spacing: 0) {
-            self.bookmarkList()
-        }
-        .safeAreaBar(edge: .top) {
-            TabiNavigationBar(title: Strings.Bookmark.title)
-        }
-        .onAppear {
-            self.store.send(.onAppear)
-        }
+        self.bookmarkList()
+            .safeAreaBar(edge: .top) {
+                TabiNavigationBar(title: Strings.Bookmark.title)
+            }
+            .onAppear {
+                self.store.send(.onAppear)
+            }
     }
 }
 
@@ -93,6 +91,7 @@ private extension BookmarkView {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+            .contentMargins(.top, 0, for: .scrollContent)
             .animation(.tabiStandard, value: self.store.selectedCategory)
         }
     }
