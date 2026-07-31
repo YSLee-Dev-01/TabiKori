@@ -16,6 +16,7 @@ public enum Strings {
     public enum Detail {}
     public enum Map {}
     public enum Bookmark {}
+    public enum Plan {}
 }
 
 public extension Strings.Common {
@@ -125,6 +126,10 @@ public extension Strings.Region {
     static let gangneungKo = "강릉"
     /// 전주 (한국어)
     static let jeonjuKo = "전주"
+    /// 기타
+    static let etc = "その他"
+    /// 기타 (한국어)
+    static let etcKo = "기타"
 }
 
 public extension Strings.Tabbar {
@@ -174,6 +179,66 @@ public extension Strings.Bookmark {
     static let emptyDescription = "気になるスポットのハートを押して保存してみましょう"
     /// 삭제 (스와이프 액션)
     static let delete = "削除"
+}
+
+public extension Strings.Plan {
+    /// 화면 타이틀
+    static let title = "日程"
+    /// 신규작성 버튼
+    static let newPlanButton = "新規作成"
+    /// 진행중 섹션 타이틀
+    static let ongoingSectionTitle = "進行中の日程"
+    /// 다가오는 섹션 타이틀
+    static let upcomingSectionTitle = "今後の日程"
+    /// 지난 섹션 타이틀
+    static let pastSectionTitle = "過去の日程"
+    /// 기간 배지 (%d: 일수)
+    nonisolated(unsafe) static let durationBadge: ((Int) -> String) = {
+        "\($0)日間"
+    }
+    /// 일자 칩 (%d: 일차)
+    nonisolated(unsafe) static let dayChipTitle: ((Int) -> String) = {
+        "\($0)日目"
+    }
+    /// 합계 스팟 (Detail 미구현으로 항상 0 고정)
+    static let totalSpotCountFixed = "合計 0スポット"
+    /// 탭하여 상세를 표시 안내 문구
+    static let tapToViewDetail = "タップして詳細を表示"
+    /// 빈 상태 제목
+    static let emptyTitle = "登録された日程がありません"
+    /// 빈 상태 설명
+    static let emptyDescription = "右上の「新規作成」から旅行の日程を追加してみましょう"
+
+    /// 추가 화면 타이틀
+    static let addScreenTitle = "新しい日程を作成"
+    /// 일정명 라벨
+    static let nameLabel = "日程名"
+    /// 일정명 placeholder
+    static let namePlaceholder = "例：ソウル春旅行 2026"
+    /// 도시 라벨
+    static let cityLabel = "都市"
+    /// 기타 지역명 placeholder
+    static let customRegionPlaceholder = "地域名を入力"
+    /// 아이콘(이모지) 라벨
+    static let emojiLabel = "アイコン"
+    /// 아이콘(이모지) placeholder
+    static let emojiPlaceholder = "絵文字を入力"
+    /// 날짜 라벨
+    static let dateLabel = "日付"
+    /// 출발 라벨
+    static let departureLabel = "出発"
+    /// 귀국 라벨
+    static let returnLabel = "帰国"
+    /// 날짜 미선택 placeholder
+    static let datePlaceholder = "---"
+    /// 확인(작성) 버튼
+    static let confirmButton = "日程を作成する"
+    /// 저장 실패 알림 타이틀
+    static let saveFailedAlertTitle = "保存に失敗しました"
+    /// 저장 실패 알림 메시지
+    static let saveFailedAlertMessage = "もう一度お試しください"
+    /// 알림 확인 버튼
+    static let alertConfirm = "確認"
 }
 
 public extension Strings.Detail {
