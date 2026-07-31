@@ -12,6 +12,7 @@ import ComposableArchitecture
 public enum StackPath {
     case detail(DetailFeature)
     case photoViewer(PhotoViewerFeature)
+    case planDetail(PlanDetailFeature)
 }
 
 extension StackPath.State: Equatable {}

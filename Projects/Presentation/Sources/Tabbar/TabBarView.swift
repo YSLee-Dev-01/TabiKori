@@ -40,7 +40,7 @@ public struct TabBarView: View {
                     }
                     .tag(AppTab.map)
 
-                Text(AppTab.plan.title)
+                PlanView(store: self.store.scope(state: \.planState, action: \.plan))
                     .tabItem {
                         Image(systemName: AppTab.plan.systemImage)
                     }
@@ -59,6 +59,8 @@ public struct TabBarView: View {
                 DetailView(store: store, namespace: self.heroNamespace)
             case .photoViewer(let store):
                 PhotoViewerView(store: store)
+            case .planDetail(let store):
+                PlanDetailView(store: store)
             }
         }
     }
