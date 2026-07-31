@@ -45,4 +45,9 @@ extension DependencyValues {
         get {self[BookmarkUseCaseDependencyKey.self]}
         set {self[BookmarkUseCaseDependencyKey.self] = newValue}
     }
+
+    public var travelPlanUseCase: TravelPlanUseCaseProtocol {
+        get {self[TravelPlanUseCaseDependencyKey.self]}
+        set {self[TravelPlanUseCaseDependencyKey.self] = newValue}
+    }
 }
