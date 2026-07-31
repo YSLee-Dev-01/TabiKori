@@ -112,6 +112,32 @@ private extension TouristSpot {
     }
 }
 
+// MARK: - MapSearchLoadingDots
+
+private struct MapSearchLoadingDots: View {
+    @State private var isAnimating = false
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(0 ..< 3, id: \.self) { index in
+                Circle()
+                    .fill(TabiColor.tabiPrimary)
+                    .frame(width: 5, height: 5)
+                    .opacity(self.isAnimating ? 1.0 : 0.3)
+                    .animation(
+                        .easeInOut(duration: 0.6)
+                            .repeatForever(autoreverses: true)
+                            .delay(Double(index) * 0.2),
+                        value: self.isAnimating
+                    )
+            }
+        }
+        .onAppear {
+            self.isAnimating = true
+        }
+    }
+}
+
 // MARK: - View
 
 private extension MapView {
@@ -371,7 +397,11 @@ private extension MapView {
                 self.categoryChips()
             }
 
-            if self.store.showsResearchButton {
+            if self.store.mode == .result && self.store.isSearchLoading {
+                self.searchLoadingIndicator()
+                    .padding(.horizontal, 20)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            } else if self.store.showsResearchButton {
                 self.researchButton()
                     .padding(.horizontal, 20)
                     .transition(.move(edge: .top).combined(with: .opacity))
@@ -401,11 +431,24 @@ private extension MapView {
             Spacer()
             TabiButton(
                 Strings.Map.researchAtCurrentLocation,
-                style: .glass(on: .surface),
-                isLoading: self.store.isSearchLoading
+                style: .glass(on: .surface)
             ) {
                 self.store.send(.researchAtCurrentLocationTapped)
             }
+            Spacer()
+        }
+    }
+
+    func searchLoadingIndicator() -> some View {
+        HStack {
+            Spacer()
+            HStack(spacing: 8) {
+                TabiLabel(title: Strings.Map.loading, style: .bodyMBold, color: .tabiPrimary)
+                MapSearchLoadingDots()
+            }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 20)
+            .glassEffect(.regular, in: .rect(cornerRadius: .tabiRadiusSm))
             Spacer()
         }
     }

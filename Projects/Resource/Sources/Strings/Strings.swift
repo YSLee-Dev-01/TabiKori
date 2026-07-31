@@ -157,6 +157,8 @@ public extension Strings.Map {
     static let recentSearchTitle = "最近の検索"
     /// 위치 재검색 버튼
     static let researchAtCurrentLocation = "このエリアで再検索"
+    /// 검색 로딩 표시
+    static let loading = "読み込み中"
 }
 
 public extension Strings.Bookmark {
