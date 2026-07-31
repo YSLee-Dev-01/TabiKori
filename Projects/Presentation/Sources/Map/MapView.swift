@@ -29,29 +29,6 @@ public struct MapView: View {
     fileprivate var baseHalfHeight: CGFloat { min(self.baseFullHeight, self.mapContainerHeight * 0.42) }
     fileprivate var baseCollapsedHeight: CGFloat { min(self.baseHalfHeight, 140) }
 
-    fileprivate var panelStageBinding: Binding<PresentationDetent> {
-        Binding(
-            get: {
-                switch self.store.panelStage {
-                case .collapsed: return .height(self.baseCollapsedHeight)
-                case .half: return .height(self.baseHalfHeight)
-                case .full: return .height(self.baseFullHeight)
-                }
-            },
-            set: { newValue in
-                let stage: MapPanelStage
-                if newValue == .height(self.baseCollapsedHeight) {
-                    stage = .collapsed
-                } else if newValue == .height(self.baseHalfHeight) {
-                    stage = .half
-                } else {
-                    stage = .full
-                }
-                self.store.send(.panelDragEnded(stage))
-            }
-        )
-    }
-
     public init(store: StoreOf<MapFeature>) {
         self.store = store
     }
@@ -62,17 +39,18 @@ public struct MapView: View {
                 .safeAreaBar(edge: .top) {
                     self.topBar()
                 }
-
-            if self.store.mode == .typing {
-                self.recentSearchPlaceholder()
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.height
         } action: { newValue in
             self.mapContainerHeight = newValue
+        }
+        .overlay(alignment: .bottom) {
+            if self.store.mode == .typing || self.store.mode == .result {
+                self.searchPanel()
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
         .animation(.tabiStandard, value: self.store.searchQuery.isEmpty)
         .animation(.tabiStandard, value: self.store.mode)
@@ -86,9 +64,6 @@ public struct MapView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             self.keyboardHeight = 0
-        }
-        .sheet(isPresented: .constant(self.store.mode == .result)) {
-            self.searchResultSheet()
         }
         .onAppear {
             self.store.send(.onAppear)
@@ -172,7 +147,7 @@ private extension MapView {
         }
     }
 
-    func recentSearchPlaceholder() -> some View {
+    func recentSearchContent() -> some View {
         Group {
             if self.store.recentSearches.isEmpty {
                 MapRecentSearchPlaceholderView(keyboardHeight: self.keyboardHeight)
@@ -189,29 +164,23 @@ private extension MapView {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.white)
-        .clipShape(.rect(cornerRadius: .tabiRadiusXl))
-        .padding(.top, self.topBarHeight)
-        .ignoresSafeArea(.container, edges: .bottom)
     }
 
-    func searchResultSheet() -> some View {
-        VStack(spacing: 0) {
-            self.searchResultContent()
+    func searchPanel() -> some View {
+        MapSearchPanelView(
+            stage: self.store.panelStage,
+            collapsedHeight: self.baseCollapsedHeight,
+            halfHeight: self.baseHalfHeight,
+            fullHeight: self.baseFullHeight,
+            onStageChanged: { stage in self.store.send(.panelDragEnded(stage)) },
+            onDismiss: { self.cancelSearch() }
+        ) {
+            if self.store.mode == .typing {
+                self.recentSearchContent()
+            } else {
+                self.searchResultContent()
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .presentationDetents(
-            [
-                .height(self.baseCollapsedHeight),
-                .height(self.baseHalfHeight),
-                .height(self.baseFullHeight)
-            ],
-            selection: self.panelStageBinding
-        )
-        .presentationDragIndicator(.visible)
-        .presentationBackgroundInteraction(.enabled(upThrough: .height(self.baseHalfHeight)))
-        .presentationCornerRadius(.tabiRadiusXl)
-        .interactiveDismissDisabled()
     }
 
     @ViewBuilder
@@ -455,8 +424,7 @@ private extension MapView {
 
     func searchCancelButton() -> some View {
         Button {
-            self.lastTappedSpotID = nil
-            self.store.send(.searchCancelTapped)
+            self.cancelSearch()
         } label: {
             TabiLabel(title: Strings.Map.searchCancel, style: .bodyM, color: .tabiTextSecondary)
         }
@@ -501,5 +469,14 @@ private extension MapView {
     func selectSearchResult(_ spot: TouristSpot) {
         self.lastTappedSpotID = spot.id
         self.store.send(.searchResultTapped(spot))
+    }
+}
+
+// MARK: - Method
+
+private extension MapView {
+    func cancelSearch() {
+        self.lastTappedSpotID = nil
+        self.store.send(.searchCancelTapped)
     }
 }
