@@ -521,12 +521,14 @@ fileprivate extension HomeView {
         Button {
         } label: {
             VStack(alignment: .leading, spacing: 4) {
-                Image(region.image)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 160, height: 120)
-                    .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
-                    .padding(.bottom, 4)
+                if let image = region.image {
+                    Image(image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 160, height: 120)
+                        .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
+                        .padding(.bottom, 4)
+                }
 
                 TabiLabel(title: region.jaTitle, style: .bodyMBold, color: .tabiTextPrimary)
                 TabiLabel(title: region.koTitle, style: .captionM, color: .tabiTextSecondary)
