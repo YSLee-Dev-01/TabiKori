@@ -24,4 +24,11 @@ extension Date {
         formatter.dateFormat = isThisYear ? "MM.dd (HH:mm)" : "yyyy.MM.dd (HH:mm)"
         return formatter.string(from: self)
     }
+
+    var planPeriodDateTitle: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.dateFormat = "MM/dd"
+        return formatter.string(from: self)
+    }
 }

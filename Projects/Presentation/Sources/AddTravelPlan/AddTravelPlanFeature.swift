@@ -1,0 +1,143 @@
+//
+//  AddTravelPlanFeature.swift
+//  Presentation
+//
+//  Created by 이윤수 on 7/31/26.
+//  Copyright © 2026 yslee. All rights reserved.
+//
+
+import Foundation
+
+import ComposableArchitecture
+import Core
+import Domain
+import Resource
+
+// MARK: - AddTravelPlanFeature
+
+@Reducer
+public struct AddTravelPlanFeature: Sendable {
+
+    @Dependency(\.travelPlanUseCase) var travelPlanUseCase
+    @Dependency(\.dismiss) var dismiss
+
+    @ObservableState
+    public struct State: Equatable {
+        var title: String = ""
+        var selectedRegion: KoreanRegion? = nil
+        var customRegionText: String = ""
+        var emojiText: String = ""
+        var startDate: Date? = nil
+        var endDate: Date? = nil
+        fileprivate var hasCustomEmoji: Bool = false
+        @Presents var alert: AlertState<Action.Alert>?
+
+        var isConfirmEnabled: Bool {
+            guard !self.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
+            guard let region = self.selectedRegion else { return false }
+            if region == .etc, self.customRegionText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return false
+            }
+            guard self.startDate != nil, self.endDate != nil else { return false }
+            return true
+        }
+
+        public init() {}
+    }
+
+    public enum Action: BindableAction, Equatable {
+        case binding(BindingAction<State>)
+        case closeTapped
+        case regionSelected(KoreanRegion)
+        case confirmTapped
+        case saveResult(Bool)
+        case alert(PresentationAction<Alert>)
+
+        public enum Alert: Equatable {}
+    }
+
+    public init() {}
+
+    public var body: some Reducer<State, Action> {
+        BindingReducer()
+        Reduce { state, action in
+            switch action {
+            case .binding(\.emojiText):
+                state.hasCustomEmoji = true
+                return .none
+
+            case .binding:
+                return .none
+
+            case .closeTapped:
+                return .run { [dismiss = self.dismiss] _ in await dismiss() }
+
+            case .regionSelected(let region):
+                state.selectedRegion = region
+                if region != .etc {
+                    state.customRegionText = ""
+                }
+                if !state.hasCustomEmoji {
+                    state.emojiText = region.emoji ?? ""
+                }
+                return .none
+
+            case .confirmTapped:
+                guard
+                    state.isConfirmEnabled,
+                    let region = state.selectedRegion,
+                    let startDate = state.startDate,
+                    let endDate = state.endDate,
+                    startDate <= endDate
+                else { return .none }
+
+                let customRegionText = state.customRegionText.trimmingCharacters(in: .whitespacesAndNewlines)
+                let plan = TravelPlan(
+                    id: UUID(),
+                    title: state.title.trimmingCharacters(in: .whitespacesAndNewlines),
+                    region: region,
+                    customRegionText: region == .etc ? customRegionText : nil,
+                    customEmoji: state.emojiText.isEmpty ? nil : state.emojiText,
+                    startDate: startDate,
+                    endDate: endDate
+                )
+                return self.saveEffect(plan: plan)
+
+            case .saveResult(true):
+                return .none
+
+            case .saveResult(false):
+                state.alert = AlertState {
+                    TextState(Strings.Plan.saveFailedAlertTitle)
+                } actions: {
+                    ButtonState {
+                        TextState(Strings.Plan.alertConfirm)
+                    }
+                } message: {
+                    TextState(Strings.Plan.saveFailedAlertMessage)
+                }
+                return .none
+
+            case .alert:
+                return .none
+            }
+        }
+        .ifLet(\.$alert, action: \.alert)
+    }
+}
+
+// MARK: - Method
+
+private extension AddTravelPlanFeature {
+    func saveEffect(plan: TravelPlan) -> Effect<Action> {
+        .run { [travelPlanUseCase = self.travelPlanUseCase] send in
+            do {
+                try await travelPlanUseCase.add(plan)
+                await send(.saveResult(true))
+            } catch {
+                AppLogger.view.log(.error, "일정 저장 실패: \(error.localizedDescription)")
+                await send(.saveResult(false))
+            }
+        }
+    }
+}
