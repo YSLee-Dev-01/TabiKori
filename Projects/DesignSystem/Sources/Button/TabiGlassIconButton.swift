@@ -35,11 +35,18 @@ public struct TabiGlassIconButton: View {
 
     private let systemName: String
     private let size: Size
+    private let foregroundColor: TabiColor
     private let action: () -> Void
 
-    public init(systemName: String, size: Size = .md, action: @escaping () -> Void) {
+    public init(
+        systemName: String,
+        size: Size = .md,
+        foregroundColor: TabiColor = .tabiPrimary,
+        action: @escaping () -> Void
+    ) {
         self.systemName = systemName
         self.size = size
+        self.foregroundColor = foregroundColor
         self.action = action
     }
 
@@ -49,7 +56,7 @@ public struct TabiGlassIconButton: View {
                 .resizable()
                 .frame(width: self.size.iconSize, height: self.size.iconSize)
                 .padding(self.size.padding)
-                .foregroundStyle(Color.getTabiColor(.tabiPrimary))
+                .foregroundStyle(Color.getTabiColor(self.foregroundColor))
                 .glassEffect()
                 .overlay(
                     Color.getTabiColor(.tabiPrimary)
