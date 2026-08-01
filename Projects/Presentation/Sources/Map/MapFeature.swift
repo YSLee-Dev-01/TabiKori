@@ -89,7 +89,7 @@ public struct MapFeature: Sendable {
 
             case .searchFieldTapped:
                 state.mode = .typing
-                state.panelStage = .half
+                state.panelStage = .full
                 state.recentSearches = self.searchHistoryUseCase.fetch()
                 return .none
 

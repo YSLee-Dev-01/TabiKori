@@ -14,8 +14,8 @@ import Resource
 private enum MapSearchPanelLayout {
     static let dragHandleSize = CGSize(width: 36, height: 4)
     static let dragHandleTouchPadding: CGFloat = 20
-    static let dismissThresholdRatio: CGFloat = 0.65
-    static let dismissVelocityWeight: CGFloat = 0.2
+    static let fastFlickVelocityThreshold: CGFloat = 800
+    static let minimumMeaningfulDrag: CGFloat = 12
 }
 
 struct MapSearchPanelView<Content: View>: View {
@@ -28,11 +28,14 @@ struct MapSearchPanelView<Content: View>: View {
     private let fullHeight: CGFloat
     private let onStageChanged: (MapPanelStage) -> Void
     private let onDismiss: () -> Void
+    private let onDragStarted: () -> Void
+    private let onDragEnded: () -> Void
     private let content: Content
 
     @State private var displayedStage: MapPanelStage
     @State private var dragOffset: CGFloat = 0
     @State private var settleTrigger: Int = 0
+    @State private var isDragging: Bool = false
 
     private var baseHeight: CGFloat {
         switch self.displayedStage {
@@ -46,6 +49,10 @@ struct MapSearchPanelView<Content: View>: View {
         max(0, self.baseHeight - self.dragOffset)
     }
 
+    private var hiddenOffset: CGFloat {
+        max(0, self.fullHeight - self.currentHeight)
+    }
+
     // MARK: - Init
 
     init(
@@ -55,6 +62,8 @@ struct MapSearchPanelView<Content: View>: View {
         fullHeight: CGFloat,
         onStageChanged: @escaping (MapPanelStage) -> Void,
         onDismiss: @escaping () -> Void,
+        onDragStarted: @escaping () -> Void = {},
+        onDragEnded: @escaping () -> Void = {},
         @ViewBuilder content: () -> Content
     ) {
         self.stage = stage
@@ -63,6 +72,8 @@ struct MapSearchPanelView<Content: View>: View {
         self.fullHeight = fullHeight
         self.onStageChanged = onStageChanged
         self.onDismiss = onDismiss
+        self.onDragStarted = onDragStarted
+        self.onDragEnded = onDragEnded
         self.content = content()
         self._displayedStage = State(initialValue: stage)
     }
@@ -75,12 +86,13 @@ struct MapSearchPanelView<Content: View>: View {
             self.content
         }
         .frame(maxWidth: .infinity)
-        .frame(height: self.currentHeight)
+        .frame(height: self.fullHeight, alignment: .top)
         .background {
             UnevenRoundedRectangle(topLeadingRadius: .tabiRadiusXl, topTrailingRadius: .tabiRadiusXl)
                 .fill(TabiColor.tabiSurface)
                 .ignoresSafeArea(.container, edges: .bottom)
         }
+        .offset(y: self.hiddenOffset)
         .animation(.tabiSpring, value: self.displayedStage)
         .animation(.tabiSpring, value: self.settleTrigger)
         .onChange(of: self.stage) { _, newValue in
@@ -105,11 +117,16 @@ private extension MapSearchPanelView {
     func dragGesture() -> some Gesture {
         DragGesture()
             .onChanged { value in
+                if self.isDragging == false {
+                    self.isDragging = true
+                    self.onDragStarted()
+                }
                 self.dragOffset = value.translation.height
             }
             .onEnded { value in
-                let projectedTranslation = value.translation.height + value.velocity.height * MapSearchPanelLayout.dismissVelocityWeight
-                self.handleDragEnded(projectedTranslation: projectedTranslation)
+                self.isDragging = false
+                self.onDragEnded()
+                self.handleDragEnded(translation: value.translation.height, velocity: value.velocity.height)
             }
     }
 }
@@ -117,27 +134,76 @@ private extension MapSearchPanelView {
 // MARK: - Method
 
 private extension MapSearchPanelView {
-    func handleDragEnded(projectedTranslation: CGFloat) {
-        let finalHeight = max(0, self.baseHeight - projectedTranslation)
+    func handleDragEnded(translation: CGFloat, velocity: CGFloat) {
         self.dragOffset = 0
 
-        guard finalHeight >= self.collapsedHeight * MapSearchPanelLayout.dismissThresholdRatio else {
+        if translation > 0 {
+            self.handleDownwardDragEnded(translation: translation, velocity: velocity)
+        } else {
+            self.handleUpwardDragEnded(translation: translation, velocity: velocity)
+        }
+    }
+
+    func handleUpwardDragEnded(translation: CGFloat, velocity: CGFloat) {
+        guard velocity > -MapSearchPanelLayout.fastFlickVelocityThreshold else {
+            let nextStage = self.nextHigherStage(from: self.displayedStage) ?? self.displayedStage
+            self.displayedStage = nextStage
+            self.settleTrigger += 1
+            self.onStageChanged(nextStage)
+            return
+        }
+
+        guard translation <= -MapSearchPanelLayout.minimumMeaningfulDrag else {
+            self.settleTrigger += 1
+            return
+        }
+
+        guard let nextStage = self.nextHigherStage(from: self.displayedStage) else {
+            self.settleTrigger += 1
+            return
+        }
+
+        self.displayedStage = nextStage
+        self.settleTrigger += 1
+        self.onStageChanged(nextStage)
+    }
+
+    func handleDownwardDragEnded(translation: CGFloat, velocity: CGFloat) {
+        guard velocity < MapSearchPanelLayout.fastFlickVelocityThreshold else {
             self.settleTrigger += 1
             self.onDismiss()
             return
         }
 
-        let stages: [(stage: MapPanelStage, height: CGFloat)] = [
-            (.collapsed, self.collapsedHeight),
-            (.half, self.halfHeight),
-            (.full, self.fullHeight)
-        ]
-        let nearestStage = stages.min { lhs, rhs in
-            abs(lhs.height - finalHeight) < abs(rhs.height - finalHeight)
-        }?.stage ?? self.displayedStage
+        guard translation >= MapSearchPanelLayout.minimumMeaningfulDrag else {
+            self.settleTrigger += 1
+            return
+        }
 
-        self.displayedStage = nearestStage
+        guard let nextStage = self.nextLowerStage(from: self.displayedStage) else {
+            self.settleTrigger += 1
+            self.onDismiss()
+            return
+        }
+
+        self.displayedStage = nextStage
         self.settleTrigger += 1
-        self.onStageChanged(nearestStage)
+        self.onStageChanged(nextStage)
+    }
+
+    func nextLowerStage(from stage: MapPanelStage) -> MapPanelStage? {
+        switch stage {
+        case .full: return .half
+        case .half: return .collapsed
+        case .collapsed: return nil
+        }
+    }
+
+    func nextHigherStage(from stage: MapPanelStage) -> MapPanelStage? {
+        switch stage {
+        case .collapsed: return .half
+        case .half: return .full
+        case .full: return nil
+        }
     }
 }

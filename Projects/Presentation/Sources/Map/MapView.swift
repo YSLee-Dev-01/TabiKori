@@ -24,6 +24,7 @@ public struct MapView: View {
     @State private var topBarHeight: CGFloat = 0
     @State private var keyboardHeight: CGFloat = 0
     @State private var lastTappedSpotID: String?
+    @State private var isPanelDragging: Bool = false
 
     fileprivate var baseFullHeight: CGFloat { max(0, self.mapContainerHeight - self.topBarHeight) }
     fileprivate var baseHalfHeight: CGFloat { min(self.baseFullHeight, self.mapContainerHeight * 0.42) }
@@ -56,10 +57,12 @@ public struct MapView: View {
             self.isSearchFieldFocused = mode == .typing
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { notification in
+            guard self.isPanelDragging == false else { return }
             guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
             self.keyboardHeight = max(0, UIScreen.main.bounds.height - frame.origin.y)
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            guard self.isPanelDragging == false else { return }
             self.keyboardHeight = 0
         }
         .onAppear {
@@ -139,7 +142,7 @@ private extension MapView {
                             self.store.send(.mapCenterChanged(Coordinate(latitude: latitude, longitude: longitude), radiusMeters: radiusMeters))
                         }
                     )
-                    .ignoresSafeArea(edges: [.top, .horizontal])
+                    .ignoresSafeArea()
                 } else {
                     ProgressView()
                 }
@@ -181,7 +184,12 @@ private extension MapView {
             halfHeight: self.baseHalfHeight,
             fullHeight: self.baseFullHeight,
             onStageChanged: { stage in self.store.send(.panelDragEnded(stage)) },
-            onDismiss: { self.cancelSearch() }
+            onDismiss: { self.cancelSearch() },
+            onDragStarted: {
+                self.isPanelDragging = true
+                self.isSearchFieldFocused = false
+            },
+            onDragEnded: { self.isPanelDragging = false }
         ) {
             if self.store.mode == .typing {
                 self.recentSearchContent()
