@@ -16,7 +16,7 @@ struct AddPlanDateRangeView: View {
     @Binding var endDate: Date?
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 24) {
             HStack(spacing: 12) {
                 self.dateBox(label: Strings.Plan.departureLabel, date: self.startDate)
                 self.dateBox(label: Strings.Plan.returnLabel, date: self.endDate)

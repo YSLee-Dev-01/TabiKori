@@ -123,10 +123,12 @@ private extension TabiRangeCalendar {
             )
             .frame(height: 36)
             .background {
-                if self.isEndpoint(day) {
+                if self.isStartDate(day) {
                     Circle().fill(TabiColor.tabiPrimary)
+                } else if self.isEndDate(day) {
+                    Circle().fill(TabiColor.tabiSecondary)
                 } else if self.isInRange(day) {
-                    Rectangle().fill(TabiColor.tabiPrimaryLight.opacity(0.3))
+                    Circle().fill(TabiColor.tabiPrimaryLight.opacity(0.3))
                 }
             }
         }
@@ -182,9 +184,17 @@ private extension TabiRangeCalendar {
     }
 
     func isEndpoint(_ day: Date) -> Bool {
-        if let start = self.startDate, self.calendar.isDate(day, inSameDayAs: start) { return true }
-        if let end = self.endDate, self.calendar.isDate(day, inSameDayAs: end) { return true }
-        return false
+        self.isStartDate(day) || self.isEndDate(day)
+    }
+
+    func isStartDate(_ day: Date) -> Bool {
+        guard let start = self.startDate else { return false }
+        return self.calendar.isDate(day, inSameDayAs: start)
+    }
+
+    func isEndDate(_ day: Date) -> Bool {
+        guard let end = self.endDate else { return false }
+        return self.calendar.isDate(day, inSameDayAs: end)
     }
 
     func isInRange(_ day: Date) -> Bool {

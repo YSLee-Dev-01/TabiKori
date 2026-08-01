@@ -23,13 +23,17 @@ public struct AddTravelPlanView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                self.header()
                 self.nameField()
                 self.regionSection()
                 self.emojiField()
                 self.dateSection()
             }
             .padding(20)
+        }
+        .safeAreaBar(edge: .top) {
+            TabiNavigationBar(title: Strings.Plan.addScreenTitle) {
+                self.closeButton()
+            }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             AddPlanBottomCTAView(isEnabled: self.store.isConfirmEnabled) {
@@ -44,21 +48,17 @@ public struct AddTravelPlanView: View {
 // MARK: - View
 
 private extension AddTravelPlanView {
-    func header() -> some View {
-        HStack {
-            TabiLabel(title: Strings.Plan.addScreenTitle, style: .titleM, color: .tabiTextPrimary)
-            Spacer()
-            Button {
-                self.store.send(.closeTapped)
-            } label: {
-                Image(systemName: "xmark")
-                    .foregroundStyle(TabiColor.tabiTextSecondary)
-                    .frame(width: 32, height: 32)
-                    .background(TabiColor.tabiSurface)
-                    .clipShape(Circle())
-            }
-            .buttonStyle(TabiPressStyle())
+    func closeButton() -> some View {
+        Button {
+            self.store.send(.closeTapped)
+        } label: {
+            Image(systemName: "xmark")
+                .foregroundStyle(TabiColor.tabiTextSecondary)
+                .frame(width: 32, height: 32)
+                .background(TabiColor.tabiSurface)
+                .clipShape(Circle())
         }
+        .buttonStyle(TabiPressStyle())
     }
 
     func nameField() -> some View {
@@ -82,7 +82,7 @@ private extension AddTravelPlanView {
     func emojiField() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             TabiLabel(title: Strings.Plan.emojiLabel, style: .bodyMBold, color: .tabiTextPrimary)
-            TabiTextField(placeholder: Strings.Plan.emojiPlaceholder, text: self.$store.emojiText, maxLength: 2)
+            TabiTextField(placeholder: Strings.Plan.emojiPlaceholder, text: self.$store.emojiText, maxLength: 1)
         }
     }
 

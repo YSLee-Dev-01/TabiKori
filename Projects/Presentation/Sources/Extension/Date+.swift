@@ -28,7 +28,8 @@ extension Date {
     var planPeriodDateTitle: String {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ja_JP")
-        formatter.dateFormat = "MM/dd"
+        let isThisYear = Calendar.current.component(.year, from: self) == Calendar.current.component(.year, from: Date())
+        formatter.dateFormat = isThisYear ? "MM/dd" : "YY/MM/dd"
         return formatter.string(from: self)
     }
 }

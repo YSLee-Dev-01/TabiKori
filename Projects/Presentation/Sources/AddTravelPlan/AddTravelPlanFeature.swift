@@ -29,7 +29,6 @@ public struct AddTravelPlanFeature: Sendable {
         var emojiText: String = ""
         var startDate: Date? = nil
         var endDate: Date? = nil
-        fileprivate var hasCustomEmoji: Bool = false
         @Presents var alert: AlertState<Action.Alert>?
 
         var isConfirmEnabled: Bool {
@@ -62,10 +61,6 @@ public struct AddTravelPlanFeature: Sendable {
         BindingReducer()
         Reduce { state, action in
             switch action {
-            case .binding(\.emojiText):
-                state.hasCustomEmoji = true
-                return .none
-
             case .binding:
                 return .none
 
@@ -77,8 +72,8 @@ public struct AddTravelPlanFeature: Sendable {
                 if region != .etc {
                     state.customRegionText = ""
                 }
-                if !state.hasCustomEmoji {
-                    state.emojiText = region.emoji ?? ""
+                if let emoji = region.emoji {
+                    state.emojiText = emoji
                 }
                 return .none
 
