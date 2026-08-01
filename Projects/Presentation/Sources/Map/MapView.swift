@@ -47,10 +47,7 @@ public struct MapView: View {
             self.mapContainerHeight = newValue
         }
         .overlay(alignment: .bottom) {
-            if self.store.mode == .typing || self.store.mode == .result {
-                self.searchPanel()
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
+            self.searchPanelOverlay()
         }
         .animation(.tabiStandard, value: self.store.searchQuery.isEmpty)
         .animation(.tabiStandard, value: self.store.mode)
@@ -117,32 +114,35 @@ private struct MapSearchLoadingDots: View {
 
 private extension MapView {
     func mapBackground() -> some View {
-        Group {
-            if self.store.hasResolvedInitialCenter {
-                TabiMapView(
-                    centerLatitude: self.store.centerLatitude,
-                    centerLongitude: self.store.centerLongitude,
-                    markers: self.store.searchResults.compactMap(\.toMapMarker),
-                    isClusteringEnabled: false,
-                    showsLocationButton: self.store.showsUserLocation,
-                    followsUserLocation: false,
-                    boundsFitToken: self.store.searchResultFitToken,
-                    onMapTapped: { _, _ in },
-                    onMarkerTapped: { id in
-                        guard let spot = self.store.searchResults.first(where: { $0.id == id }) else { return }
-                        self.selectSearchResult(spot)
-                    },
-                    onMapDragged: { self.store.send(.mapDragged) },
-                    onCameraIdle: { latitude, longitude, radiusMeters in
-                        self.store.send(.mapCenterChanged(Coordinate(latitude: latitude, longitude: longitude), radiusMeters: radiusMeters))
-                    }
-                )
+        ZStack {
+            Rectangle()
+                .fill(TabiColor.tabiBackground)
                 .ignoresSafeArea()
-            } else {
-                Rectangle()
-                    .fill(TabiColor.tabiBackground)
-                    .ignoresSafeArea()
-                ProgressView()
+
+            Group {
+                if self.store.hasResolvedInitialCenter {
+                    TabiMapView(
+                        centerLatitude: self.store.centerLatitude,
+                        centerLongitude: self.store.centerLongitude,
+                        markers: self.store.searchResults.compactMap(\.toMapMarker),
+                        isClusteringEnabled: false,
+                        showsLocationButton: self.store.showsUserLocation,
+                        followsUserLocation: false,
+                        boundsFitToken: self.store.searchResultFitToken,
+                        onMapTapped: { _, _ in },
+                        onMarkerTapped: { id in
+                            guard let spot = self.store.searchResults.first(where: { $0.id == id }) else { return }
+                            self.selectSearchResult(spot)
+                        },
+                        onMapDragged: { self.store.send(.mapDragged) },
+                        onCameraIdle: { latitude, longitude, radiusMeters in
+                            self.store.send(.mapCenterChanged(Coordinate(latitude: latitude, longitude: longitude), radiusMeters: radiusMeters))
+                        }
+                    )
+                    .ignoresSafeArea(edges: [.top, .horizontal])
+                } else {
+                    ProgressView()
+                }
             }
         }
     }
@@ -164,6 +164,14 @@ private extension MapView {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    func searchPanelOverlay() -> some View {
+        if self.store.mode == .typing || self.store.mode == .result {
+            self.searchPanel()
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
     }
 
     func searchPanel() -> some View {

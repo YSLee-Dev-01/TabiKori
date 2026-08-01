@@ -14,6 +14,8 @@ import Resource
 private enum MapSearchPanelLayout {
     static let dragHandleSize = CGSize(width: 36, height: 4)
     static let dragHandleTouchPadding: CGFloat = 20
+    static let dismissThresholdRatio: CGFloat = 0.65
+    static let dismissVelocityWeight: CGFloat = 0.2
 }
 
 struct MapSearchPanelView<Content: View>: View {
@@ -28,10 +30,12 @@ struct MapSearchPanelView<Content: View>: View {
     private let onDismiss: () -> Void
     private let content: Content
 
-    @GestureState private var dragTranslation: CGFloat = 0
+    @State private var displayedStage: MapPanelStage
+    @State private var dragOffset: CGFloat = 0
+    @State private var settleTrigger: Int = 0
 
     private var baseHeight: CGFloat {
-        switch self.stage {
+        switch self.displayedStage {
         case .collapsed: return self.collapsedHeight
         case .half: return self.halfHeight
         case .full: return self.fullHeight
@@ -39,7 +43,7 @@ struct MapSearchPanelView<Content: View>: View {
     }
 
     private var currentHeight: CGFloat {
-        max(0, self.baseHeight - self.dragTranslation)
+        max(0, self.baseHeight - self.dragOffset)
     }
 
     // MARK: - Init
@@ -60,6 +64,7 @@ struct MapSearchPanelView<Content: View>: View {
         self.onStageChanged = onStageChanged
         self.onDismiss = onDismiss
         self.content = content()
+        self._displayedStage = State(initialValue: stage)
     }
 
     // MARK: - View
@@ -76,7 +81,11 @@ struct MapSearchPanelView<Content: View>: View {
                 .fill(TabiColor.tabiSurface)
                 .ignoresSafeArea(.container, edges: .bottom)
         }
-        .animation(.tabiSpring, value: self.stage)
+        .animation(.tabiSpring, value: self.displayedStage)
+        .animation(.tabiSpring, value: self.settleTrigger)
+        .onChange(of: self.stage) { _, newValue in
+            self.displayedStage = newValue
+        }
     }
 }
 
@@ -95,11 +104,12 @@ private extension MapSearchPanelView {
 
     func dragGesture() -> some Gesture {
         DragGesture()
-            .updating(self.$dragTranslation) { value, state, _ in
-                state = value.translation.height
+            .onChanged { value in
+                self.dragOffset = value.translation.height
             }
             .onEnded { value in
-                self.handleDragEnded(predictedTranslation: value.predictedEndTranslation.height)
+                let projectedTranslation = value.translation.height + value.velocity.height * MapSearchPanelLayout.dismissVelocityWeight
+                self.handleDragEnded(projectedTranslation: projectedTranslation)
             }
     }
 }
@@ -107,9 +117,12 @@ private extension MapSearchPanelView {
 // MARK: - Method
 
 private extension MapSearchPanelView {
-    func handleDragEnded(predictedTranslation: CGFloat) {
-        let finalHeight = max(0, self.baseHeight - predictedTranslation)
-        guard finalHeight >= self.collapsedHeight / 2 else {
+    func handleDragEnded(projectedTranslation: CGFloat) {
+        let finalHeight = max(0, self.baseHeight - projectedTranslation)
+        self.dragOffset = 0
+
+        guard finalHeight >= self.collapsedHeight * MapSearchPanelLayout.dismissThresholdRatio else {
+            self.settleTrigger += 1
             self.onDismiss()
             return
         }
@@ -121,8 +134,10 @@ private extension MapSearchPanelView {
         ]
         let nearestStage = stages.min { lhs, rhs in
             abs(lhs.height - finalHeight) < abs(rhs.height - finalHeight)
-        }?.stage ?? self.stage
+        }?.stage ?? self.displayedStage
 
+        self.displayedStage = nearestStage
+        self.settleTrigger += 1
         self.onStageChanged(nearestStage)
     }
 }
