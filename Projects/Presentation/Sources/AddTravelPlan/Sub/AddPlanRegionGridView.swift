@@ -27,8 +27,10 @@ struct AddPlanRegionGridView: View {
 
             if self.selectedRegion == .etc {
                 TabiTextField(placeholder: Strings.Plan.customRegionPlaceholder, text: self.$customRegionText)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+        .animation(.tabiStandard, value: self.selectedRegion)
     }
 }
 

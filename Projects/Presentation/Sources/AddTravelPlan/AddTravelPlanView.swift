@@ -30,10 +30,12 @@ public struct AddTravelPlanView: View {
             }
             .padding(20)
         }
+        .scrollDismissesKeyboard(.immediately)
         .safeAreaBar(edge: .top) {
             TabiNavigationBar(title: Strings.Plan.addScreenTitle) {
                 self.closeButton()
             }
+            .padding(.top, 20)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             AddPlanBottomCTAView(isEnabled: self.store.isConfirmEnabled) {
