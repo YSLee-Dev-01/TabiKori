@@ -78,7 +78,7 @@ private extension BookmarkView {
                         BookmarkCategoryFilterBar(
                             selectedCategory: self.store.selectedCategory
                         ) { category in
-                            self.store.send(.categoryFilterTapped(category))
+                            self.store.send(.categoryFilterTapped(category), animation: .tabiStandard)
                         }
 
                         TabiLabel(
@@ -98,7 +98,6 @@ private extension BookmarkView {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .contentMargins(.top, 0, for: .scrollContent)
-            .animation(.tabiStandard, value: self.store.selectedCategory)
         }
     }
 }
