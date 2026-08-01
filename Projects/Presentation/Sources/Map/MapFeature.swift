@@ -158,7 +158,6 @@ public struct MapFeature: Sendable {
                 return self.categoryResearchEffect(category: category, coordinate: resolvedCoordinate, radiusMeters: resolvedRadiusMeters)
 
             case .searchResultTapped:
-                state.mode = .map
                 return .none
 
             case .recentSearchTapped(let history):

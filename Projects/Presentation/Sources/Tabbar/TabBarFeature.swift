@@ -23,8 +23,6 @@ public struct TabBarFeature {
 
         var path = StackState<StackPath.State>()
 
-        fileprivate var mapSearchDetailID: StackElementID?
-
         public init() {}
     }
 
@@ -81,7 +79,6 @@ public struct TabBarFeature {
 
             case .map(.searchResultTapped(let spot)):
                 state.path.append(.detail(DetailFeature.State(touristSpot: spot)))
-                state.mapSearchDetailID = state.path.ids.last
                 return .none
 
             case .map:
@@ -111,12 +108,6 @@ public struct TabBarFeature {
                     startIndex: index,
                     title: detailState.detail.japaneseTitle
                 )))
-                return .none
-
-            case .path(.popFrom(id: let id)):
-                guard state.mapSearchDetailID == id else { return .none }
-                state.mapSearchDetailID = nil
-                state.mapState.mode = .result
                 return .none
 
             case .path:
