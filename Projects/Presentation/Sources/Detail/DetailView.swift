@@ -56,7 +56,7 @@ struct DetailView: View {
             }
             .scrollIndicators(.hidden)
             .coordinateSpace(name: "detailScroll")
-            .ignoresSafeArea(edges: .all)
+            .ignoresSafeArea(edges: .top)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {

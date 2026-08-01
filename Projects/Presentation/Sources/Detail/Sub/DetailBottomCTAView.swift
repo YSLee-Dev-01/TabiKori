@@ -17,19 +17,14 @@ struct DetailBottomCTAView: View {
     let isRouteDirectionsDisabled: Bool
 
     var body: some View {
-        HStack(spacing: 10) {
-            Button {
+        HStack(spacing: 12) {
+            TabiGlassIconButton(
+                systemName: "arrow.triangle.turn.up.right.diamond",
+                size: .lg,
+                foregroundColor: .tabiTextSecondary
+            ) {
                 self.onRouteDirectionsTapped()
-            } label: {
-                Image(systemName: "arrow.triangle.turn.up.right.diamond")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 22, height: 22)
-                    .foregroundStyle(TabiColor.tabiTextSecondary)
-                    .frame(width: 45, height: 45)
-                    .glassEffect(.regular, in: .rect(cornerRadius: .tabiRadiusSm))
             }
-            .buttonStyle(TabiPressStyle())
             .disabled(self.isRouteDirectionsDisabled)
 
             TabiButton(
@@ -37,17 +32,12 @@ struct DetailBottomCTAView: View {
                 style: .primary,
                 icon: Image(systemName: "plus"),
                 isExpanded: true,
-                height: 45
+                height: 45,
+                cornerRadius: .tabiRadiusFull
             ) {
                 self.onAddToItineraryTapped()
             }
         }
         .padding(.horizontal, 20)
-        .padding(.top, 12)
-        .background {
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
-        }
     }
 }

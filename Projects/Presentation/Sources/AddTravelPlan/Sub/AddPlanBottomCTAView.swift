@@ -20,17 +20,12 @@ struct AddPlanBottomCTAView: View {
             Strings.Plan.confirmButton,
             style: .primary,
             isExpanded: true,
-            height: 45
+            height: 45,
+            cornerRadius: .tabiRadiusFull
         ) {
             self.onConfirmTapped()
         }
         .disabled(!self.isEnabled)
         .padding(.horizontal, 20)
-        .padding(.top, 12)
-        .background {
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
-        }
     }
 }
