@@ -46,6 +46,7 @@ struct PhotoViewerView: View {
         .navigationTitle(self.store.title)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .interactivePopGestureEnabled(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {

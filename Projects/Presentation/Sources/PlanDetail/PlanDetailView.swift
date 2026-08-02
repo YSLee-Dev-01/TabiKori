@@ -48,6 +48,7 @@ public struct PlanDetailView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .interactivePopGestureEnabled(true)
         .onAppear {
             self.store.send(.onAppear)
         }
