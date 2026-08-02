@@ -36,6 +36,7 @@ public struct PlanFeature: Sendable {
         case onAppear
         case addButtonTapped
         case planTapped(id: UUID)
+        case dayChipTapped(id: UUID, dayIndex: Int)
         case plansResult([TravelPlan])
         case addPlan(PresentationAction<AddTravelPlanFeature.Action>)
     }
@@ -54,6 +55,9 @@ public struct PlanFeature: Sendable {
                 return .none
 
             case .planTapped:
+                return .none
+
+            case .dayChipTapped:
                 return .none
 
             case .plansResult(let plans):

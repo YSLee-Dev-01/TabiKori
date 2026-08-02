@@ -28,8 +28,9 @@ public struct PlanDetailFeature: Sendable {
         var isLoading: Bool = false
         fileprivate var hasStartedLoading: Bool = false
 
-        public init(id: UUID) {
+        public init(id: UUID, initialDayIndex: Int = 0) {
             self.id = id
+            self.selectedDayIndex = initialDayIndex
         }
     }
 
