@@ -94,10 +94,10 @@ private extension TouristSpotDetailItemDTO {
         )
 
         let addressParts = [self.addr1, self.addr2].compactMap { $0?.isEmpty == false ? $0 : nil }
-        let address = addressParts.joined(separator: " ")
+        let address = addressParts.joined(separator: " ").replacingBRWithNewline
 
-        let tel = self.tel?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let homepage = self.homepage?.trimmingCharacters(in: .whitespacesAndNewlines).extractedHomepageURLString
+        let tel = self.tel?.trimmingCharacters(in: .whitespacesAndNewlines).replacingBRWithNewline
+        let homepage = self.homepage?.trimmingCharacters(in: .whitespacesAndNewlines).extractedHomepageURLString.replacingBRWithNewline
 
         return TouristSpotDetail(
             id: self.contentid,
@@ -108,7 +108,7 @@ private extension TouristSpotDetailItemDTO {
             imageURLString: self.firstimage,
             address: address,
             coordinate: coordinate,
-            overview: self.overview
+            overview: self.overview?.replacingBRWithNewline
         )
     }
 }

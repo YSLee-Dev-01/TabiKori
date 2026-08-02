@@ -168,35 +168,35 @@ private extension TouristSpotIntroItemDTO {
         case .sightseeing:
             return .sightseeing(SightseeingIntro(
                 contact: self.infocenter?.nilIfEmpty,
-                openTime: self.usetime?.nilIfEmpty,
-                restDate: self.restdate?.nilIfEmpty,
-                parking: self.parking?.nilIfEmpty,
+                openTime: self.usetime?.nilIfEmpty?.replacingBRWithNewline,
+                restDate: self.restdate?.nilIfEmpty?.replacingBRWithNewline,
+                parking: self.parking?.nilIfEmpty?.replacingBRWithNewline,
                 openDate: self.opendate?.nilIfEmpty,
-                experienceGuide: self.expguide?.nilIfEmpty,
-                experienceAgeRange: self.expagerange?.nilIfEmpty,
-                useSeason: self.useseason?.nilIfEmpty,
+                experienceGuide: self.expguide?.nilIfEmpty?.replacingBRWithNewline,
+                experienceAgeRange: self.expagerange?.nilIfEmpty?.replacingBRWithNewline,
+                useSeason: self.useseason?.nilIfEmpty?.replacingBRWithNewline,
                 accommodationCount: self.accomcount?.nilIfEmpty
             ))
         case .nature:
             return .nature(NatureIntro(
                 contact: self.infocenterleports?.nilIfEmpty,
-                openTime: self.usetimeleports?.nilIfEmpty,
-                restDate: self.restdateleports?.nilIfEmpty,
-                parking: self.parkingleports?.nilIfEmpty,
+                openTime: self.usetimeleports?.nilIfEmpty?.replacingBRWithNewline,
+                restDate: self.restdateleports?.nilIfEmpty?.replacingBRWithNewline,
+                parking: self.parkingleports?.nilIfEmpty?.replacingBRWithNewline,
                 parkingFee: self.parkingfeeleports?.nilIfEmpty,
                 reservation: self.reservation?.nilIfEmpty,
                 openPeriod: self.openperiod?.nilIfEmpty,
                 useFee: self.usefeeleports?.nilIfEmpty,
                 scale: self.scaleleports?.nilIfEmpty,
-                experienceAgeRange: self.expagerangeleports?.nilIfEmpty,
+                experienceAgeRange: self.expagerangeleports?.nilIfEmpty?.replacingBRWithNewline,
                 accommodationCount: self.accomcountleports?.nilIfEmpty
             ))
         case .food:
             return .food(FoodIntro(
                 contact: self.infocenterfood?.nilIfEmpty,
-                openTime: self.opentimefood?.nilIfEmpty,
-                restDate: self.restdatefood?.nilIfEmpty,
-                parking: self.parkingfood?.nilIfEmpty,
+                openTime: self.opentimefood?.nilIfEmpty?.replacingBRWithNewline,
+                restDate: self.restdatefood?.nilIfEmpty?.replacingBRWithNewline,
+                parking: self.parkingfood?.nilIfEmpty?.replacingBRWithNewline,
                 mainMenu: self.firstmenu?.nilIfEmpty,
                 menu: self.treatmenu?.nilIfEmpty,
                 seatCount: self.seat?.nilIfEmpty,
@@ -209,7 +209,7 @@ private extension TouristSpotIntroItemDTO {
         case .hotel:
             return .hotel(HotelIntro(
                 contact: self.infocenterlodging?.nilIfEmpty,
-                parking: self.parkinglodging?.nilIfEmpty,
+                parking: self.parkinglodging?.nilIfEmpty?.replacingBRWithNewline,
                 checkInTime: self.checkintime?.nilIfEmpty,
                 checkOutTime: self.checkouttime?.nilIfEmpty,
                 roomCount: self.roomcount?.nilIfEmpty,
@@ -246,9 +246,9 @@ private extension TouristSpotIntroItemDTO {
         case .shopping:
             return .shopping(ShoppingIntro(
                 contact: self.infocentershopping?.nilIfEmpty,
-                openTime: self.opentime?.nilIfEmpty,
-                restDate: self.restdateshopping?.nilIfEmpty,
-                parking: self.parkingshopping?.nilIfEmpty,
+                openTime: self.opentime?.nilIfEmpty?.replacingBRWithNewline,
+                restDate: self.restdateshopping?.nilIfEmpty?.replacingBRWithNewline,
+                parking: self.parkingshopping?.nilIfEmpty?.replacingBRWithNewline,
                 saleItems: self.saleitem?.nilIfEmpty,
                 openDate: self.opendateshopping?.nilIfEmpty,
                 fairDay: self.fairday?.nilIfEmpty,
