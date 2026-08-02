@@ -22,12 +22,14 @@ public final class TravelPlanModelContainer: Sendable {
     // MARK: - Init
 
     private init() {
+        let schema = Schema([TravelPlanModel.self, TravelPlanDetailModel.self])
         do {
-            self.modelContainer = try ModelContainer(for: Schema([TravelPlanModel.self, TravelPlanDetailModel.self]))
+            let configuration = ModelConfiguration("TravelPlan", schema: schema)
+            self.modelContainer = try ModelContainer(for: schema, configurations: configuration)
         } catch {
             AppLogger.core.log(.error, "TravelPlanModelContainer 생성 실패, in-memory로 폴백: \(error.localizedDescription)")
             let fallbackConfig = ModelConfiguration(isStoredInMemoryOnly: true)
-            guard let fallback = try? ModelContainer(for: Schema([TravelPlanModel.self, TravelPlanDetailModel.self]), configurations: fallbackConfig) else {
+            guard let fallback = try? ModelContainer(for: schema, configurations: fallbackConfig) else {
                 fatalError("TravelPlanModelContainer in-memory 폴백조차 실패: \(error.localizedDescription)")
             }
             self.modelContainer = fallback
