@@ -28,4 +28,11 @@ public extension String {
 
         return withoutEmptyParens.trimmingCharacters(in: .whitespaces)
     }
+
+    var replacingBRWithNewline: String {
+        let brPattern = "<br\\s*/?>"
+        guard let brRegex = try? NSRegularExpression(pattern: brPattern, options: .caseInsensitive) else { return self }
+        let brRange = NSRange(self.startIndex..., in: self)
+        return brRegex.stringByReplacingMatches(in: self, range: brRange, withTemplate: "\n")
+    }
 }
