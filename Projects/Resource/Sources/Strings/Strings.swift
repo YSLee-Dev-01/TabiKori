@@ -45,6 +45,8 @@ public extension Strings.Common {
     static let contentTypeTransportation = "交通"
     /// 전체
     static let contentTypeAll = "すべて"
+    /// 삭제 (스와이프 액션)
+    static let delete = "削除"
 }
 
 public extension Strings.Home {
@@ -177,8 +179,6 @@ public extension Strings.Bookmark {
     static let emptyTitle = "保存したスポットがありません"
     /// 빈 상태 설명
     static let emptyDescription = "気になるスポットのハートを押して保存してみましょう"
-    /// 삭제 (스와이프 액션)
-    static let delete = "削除"
 }
 
 public extension Strings.Plan {
@@ -208,6 +208,21 @@ public extension Strings.Plan {
     static let emptyTitle = "登録された日程がありません"
     /// 빈 상태 설명
     static let emptyDescription = "右上の「新規作成」から旅行の日程を追加してみましょう"
+
+    /// 스팟 빈 상태 제목
+    static let spotEmptyTitle = "まだスポットがありません"
+    /// 스팟 빈 상태 설명
+    static let spotEmptyDescription = "観光地や飲食店の詳細ページから「日程に追加する」で追加できます"
+    /// 스팟 0건 안내
+    static let spotCountZero = "スポットがまだ追加されていません"
+    /// 스팟 N건 안내 (%d: 스팟 개수)
+    nonisolated(unsafe) static let spotCountTitle: ((Int) -> String) = {
+        "\($0)件のスポットが追加されています"
+    }
+    /// 소요시간 (%d: 분)
+    nonisolated(unsafe) static let spotDurationTitle: ((Int) -> String) = {
+        "\($0)分"
+    }
 
     /// 추가 화면 타이틀
     static let addScreenTitle = "新しい日程を作成"

@@ -68,7 +68,7 @@ private extension BookmarkView {
                                 Button(role: .destructive) {
                                     self.store.send(.deleteSwiped(contentId: bookmark.id))
                                 } label: {
-                                    Label(Strings.Bookmark.delete, systemImage: "trash")
+                                    Label(Strings.Common.delete, systemImage: "trash")
                                 }
                             }
                         }
