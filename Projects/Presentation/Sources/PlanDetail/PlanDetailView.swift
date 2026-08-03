@@ -125,6 +125,13 @@ private extension PlanDetailView {
                     }
                 }
             }
+
+            PlanDetailAddSpotButton {
+                self.store.send(.addSpotButtonTapped)
+            }
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)

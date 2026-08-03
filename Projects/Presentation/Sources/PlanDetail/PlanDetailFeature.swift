@@ -42,6 +42,7 @@ public struct PlanDetailFeature: Sendable {
         case onAppear
         case dayButtonTapped(index: Int)
         case spotDeleteButtonTapped(id: UUID)
+        case addSpotButtonTapped
         case travelPlanDetailResult(TravelPlanDetail?)
         case spotDeleted(id: UUID)
     }
@@ -62,6 +63,10 @@ public struct PlanDetailFeature: Sendable {
 
             case .spotDeleteButtonTapped(let id):
                 return self.removeSpotEffect(planId: state.plan.id, spotId: id)
+
+            case .addSpotButtonTapped:
+                // TODO: 스팟 추가 플로우 연결
+                return .none
 
             case .travelPlanDetailResult(let detail):
                 state.travelPlanDetail = detail

@@ -223,6 +223,8 @@ public extension Strings.Plan {
     nonisolated(unsafe) static let spotDurationTitle: ((Int) -> String) = {
         "\($0)分"
     }
+    /// 스팟 추가 버튼 (일자 목록 footer)
+    static let spotAddButtonTitle = "スポットを追加"
 
     /// 추가 화면 타이틀
     static let addScreenTitle = "新しい日程を作成"
