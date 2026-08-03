@@ -11,4 +11,5 @@ import Foundation
 public protocol TravelPlanDetailRepositoryProtocol: Sendable {
     func fetch(planId: UUID) async throws -> TravelPlanDetail?
     func add(_ detail: TravelPlanDetail) async throws
+    func removeSpot(planId: UUID, spotId: UUID) async throws
 }

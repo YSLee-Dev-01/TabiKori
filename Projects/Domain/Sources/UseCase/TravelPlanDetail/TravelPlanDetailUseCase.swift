@@ -29,4 +29,8 @@ public final class TravelPlanDetailUseCase: TravelPlanDetailUseCaseProtocol {
     public func add(_ detail: TravelPlanDetail) async throws {
         try await self.repository.add(detail)
     }
+
+    public func removeSpot(planId: UUID, spotId: UUID) async throws {
+        try await self.repository.removeSpot(planId: planId, spotId: spotId)
+    }
 }

@@ -10,8 +10,10 @@ import Foundation
 
 public struct TravelPlanDetail: Equatable, Sendable {
     public let planId: UUID
+    public let spots: [TravelPlanDetailSpot]
 
-    public init(planId: UUID) {
+    public init(planId: UUID, spots: [TravelPlanDetailSpot] = []) {
         self.planId = planId
+        self.spots = spots
     }
 }
