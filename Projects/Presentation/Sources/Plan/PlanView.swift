@@ -88,8 +88,8 @@ private extension PlanView {
                 ForEach(plans) { plan in
                     PlanCardView(
                         plan: plan,
-                        onTapped: { self.store.send(.planTapped(id: plan.id)) },
-                        onDayChipTapped: { dayIndex in self.store.send(.dayChipTapped(id: plan.id, dayIndex: dayIndex)) }
+                        onTapped: { self.store.send(.planTapped(plan: plan)) },
+                        onDayChipTapped: { dayIndex in self.store.send(.dayChipTapped(plan: plan, dayIndex: dayIndex)) }
                     )
                     .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
                     .listRowSeparator(.hidden)

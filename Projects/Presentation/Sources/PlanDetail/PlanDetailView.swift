@@ -25,27 +25,20 @@ public struct PlanDetailView: View {
     }
 
     public var body: some View {
-        Group {
-            if let plan = self.store.plan {
-                VStack(alignment: .leading, spacing: 0) {
-                    self.navigationBar(plan: plan)
-                    self.dayTabScroll(plan: plan)
-                    if let dateTitle = self.selectedDayDateTitle(plan: plan) {
-                        PlanDetailDayHeader(
-                            dateTitle: dateTitle,
-                            spotCountTitle: self.spotCountTitle
-                        )
-                        .padding(.horizontal, 20)
-                        .padding(.top, 16)
-                    }
-                    // TODO: 지도 영역 추가
-                    EmptyView()
-                    self.spotList()
-                }
-            } else {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+        VStack(alignment: .leading, spacing: 0) {
+            self.navigationBar(plan: self.store.plan)
+            self.dayTabScroll(plan: self.store.plan)
+            if let dateTitle = self.selectedDayDateTitle(plan: self.store.plan) {
+                PlanDetailDayHeader(
+                    dateTitle: dateTitle,
+                    spotCountTitle: self.spotCountTitle
+                )
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
             }
+            // TODO: 지도 영역 추가
+            EmptyView()
+            self.spotList()
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -139,12 +132,6 @@ private extension PlanDetailView {
 }
 
 #Preview {
-    let mockPlanUseCase: TestTravelPlanUseCase = {
-        let useCase = TestTravelPlanUseCase()
-        useCase.plans = [.mock]
-        return useCase
-    }()
-
     let mockDetailUseCase: TestTravelPlanDetailUseCase = {
         let useCase = TestTravelPlanDetailUseCase()
         useCase.details = [.mock]
@@ -154,10 +141,9 @@ private extension PlanDetailView {
     NavigationStack {
         PlanDetailView(
             store: Store(
-                initialState: PlanDetailFeature.State(id: TravelPlan.mock.id),
+                initialState: PlanDetailFeature.State(plan: .mock),
                 reducer: { PlanDetailFeature() },
                 withDependencies: { dependency in
-                    dependency.travelPlanUseCase = mockPlanUseCase
                     dependency.travelPlanDetailUseCase = mockDetailUseCase
                 }
             )

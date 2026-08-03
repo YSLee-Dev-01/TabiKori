@@ -35,8 +35,8 @@ public struct PlanFeature: Sendable {
     public enum Action: Equatable {
         case onAppear
         case addButtonTapped
-        case planTapped(id: UUID)
-        case dayChipTapped(id: UUID, dayIndex: Int)
+        case planTapped(plan: TravelPlan)
+        case dayChipTapped(plan: TravelPlan, dayIndex: Int)
         case plansResult([TravelPlan])
         case addPlan(PresentationAction<AddTravelPlanFeature.Action>)
     }

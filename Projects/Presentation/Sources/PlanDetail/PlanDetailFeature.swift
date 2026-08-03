@@ -16,20 +16,18 @@ import Domain
 @Reducer
 public struct PlanDetailFeature: Sendable {
 
-    @Dependency(\.travelPlanUseCase) var travelPlanUseCase
     @Dependency(\.travelPlanDetailUseCase) var travelPlanDetailUseCase
 
     @ObservableState
     public struct State: Equatable {
-        let id: UUID
-        var plan: TravelPlan?
+        var plan: TravelPlan
         var travelPlanDetail: TravelPlanDetail?
         var selectedDayIndex: Int = 0
         fileprivate var hasStartedLoading: Bool = false
 
-        public init(id: UUID, initialDayIndex: Int = 0) {
-            self.id = id
-            self.selectedDayIndex = initialDayIndex
+        public init(plan: TravelPlan, initialDayIndex: Int = 0) {
+            self.plan = plan
+            self.selectedDayIndex = min(max(initialDayIndex, 0), plan.dayCount - 1)
         }
 
         var selectedDaySpots: [TravelPlanDetailSpot] {
@@ -44,7 +42,6 @@ public struct PlanDetailFeature: Sendable {
         case onAppear
         case dayButtonTapped(index: Int)
         case spotDeleteButtonTapped(id: UUID)
-        case planResult(TravelPlan?)
         case travelPlanDetailResult(TravelPlanDetail?)
         case spotDeleted(id: UUID)
     }
@@ -57,24 +54,14 @@ public struct PlanDetailFeature: Sendable {
             case .onAppear:
                 guard state.hasStartedLoading == false else { return .none }
                 state.hasStartedLoading = true
-                return .merge(
-                    self.fetchPlanEffect(id: state.id),
-                    self.fetchTravelPlanDetailEffect(id: state.id)
-                )
+                return self.fetchTravelPlanDetailEffect(id: state.plan.id)
 
             case .dayButtonTapped(let index):
                 state.selectedDayIndex = index
                 return .none
 
             case .spotDeleteButtonTapped(let id):
-                return self.removeSpotEffect(planId: state.id, spotId: id)
-
-            case .planResult(let plan):
-                state.plan = plan
-                if let plan {
-                    state.selectedDayIndex = min(max(state.selectedDayIndex, 0), plan.dayCount - 1)
-                }
-                return .none
+                return self.removeSpotEffect(planId: state.plan.id, spotId: id)
 
             case .travelPlanDetailResult(let detail):
                 state.travelPlanDetail = detail
@@ -95,18 +82,6 @@ public struct PlanDetailFeature: Sendable {
 // MARK: - Method
 
 private extension PlanDetailFeature {
-    func fetchPlanEffect(id: UUID) -> Effect<Action> {
-        .run { [travelPlanUseCase = self.travelPlanUseCase] send in
-            do {
-                let plans = try await travelPlanUseCase.fetch()
-                await send(.planResult(plans.first(where: { $0.id == id })))
-            } catch {
-                AppLogger.view.log(.error, "일정 상세 조회 실패: \(error.localizedDescription)")
-                await send(.planResult(nil))
-            }
-        }
-    }
-
     func fetchTravelPlanDetailEffect(id: UUID) -> Effect<Action> {
         .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase] send in
             do {

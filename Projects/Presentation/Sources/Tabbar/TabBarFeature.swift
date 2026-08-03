@@ -91,12 +91,12 @@ public struct TabBarFeature {
             case .bookmark:
                 return .none
 
-            case .plan(.planTapped(let id)):
-                state.path.append(.planDetail(PlanDetailFeature.State(id: id)))
+            case .plan(.planTapped(let plan)):
+                state.path.append(.planDetail(PlanDetailFeature.State(plan: plan)))
                 return .none
 
-            case .plan(.dayChipTapped(let id, let dayIndex)):
-                state.path.append(.planDetail(PlanDetailFeature.State(id: id, initialDayIndex: dayIndex)))
+            case .plan(.dayChipTapped(let plan, let dayIndex)):
+                state.path.append(.planDetail(PlanDetailFeature.State(plan: plan, initialDayIndex: dayIndex)))
                 return .none
 
             case .plan:
