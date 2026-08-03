@@ -95,10 +95,6 @@ public struct TabBarFeature {
                 state.path.append(.planDetail(PlanDetailFeature.State(plan: plan)))
                 return .none
 
-            case .plan(.dayChipTapped(let plan, let dayIndex)):
-                state.path.append(.planDetail(PlanDetailFeature.State(plan: plan, initialDayIndex: dayIndex)))
-                return .none
-
             case .plan:
                 return .none
 

@@ -20,10 +20,6 @@ extension TravelPlan {
         return max(days + 1, 1)
     }
 
-    var dayChipTitles: [String] {
-        (1...self.dayCount).map { Strings.Plan.dayChipTitle($0) }
-    }
-
     var dayDates: [Date] {
         let start = Calendar.current.startOfDay(for: self.startDate)
         return (0..<self.dayCount).compactMap { Calendar.current.date(byAdding: .day, value: $0, to: start) }

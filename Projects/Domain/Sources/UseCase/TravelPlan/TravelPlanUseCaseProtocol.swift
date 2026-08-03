@@ -11,4 +11,5 @@ import Foundation
 public protocol TravelPlanUseCaseProtocol: Sendable {
     func fetch() async throws -> [TravelPlan]
     func add(_ plan: TravelPlan) async throws
+    func remove(planId: UUID) async throws
 }

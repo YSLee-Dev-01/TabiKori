@@ -27,4 +27,8 @@ public final class TestTravelPlanUseCase: TravelPlanUseCaseProtocol, @unchecked 
     public func add(_ plan: TravelPlan) async throws {
         self.plans.append(plan)
     }
+
+    public func remove(planId: UUID) async throws {
+        self.plans.removeAll { $0.id == planId }
+    }
 }

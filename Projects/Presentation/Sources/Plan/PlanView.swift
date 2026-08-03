@@ -88,11 +88,17 @@ private extension PlanView {
                 ForEach(plans) { plan in
                     PlanCardView(
                         plan: plan,
-                        onTapped: { self.store.send(.planTapped(plan: plan)) },
-                        onDayChipTapped: { dayIndex in self.store.send(.dayChipTapped(plan: plan, dayIndex: dayIndex)) }
+                        onTapped: { self.store.send(.planTapped(plan: plan)) }
                     )
                     .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
                     .listRowSeparator(.hidden)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button(role: .destructive) {
+                            self.store.send(.planDeleteButtonTapped(id: plan.id))
+                        } label: {
+                            Text(Strings.Common.delete)
+                        }
+                    }
                 }
             } header: {
                 TabiLabel(title: section.title, style: .bodyMBold, color: .tabiTextPrimary)

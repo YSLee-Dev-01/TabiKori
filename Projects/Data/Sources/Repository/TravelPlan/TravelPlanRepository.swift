@@ -52,4 +52,36 @@ extension TravelPlanRepository: TravelPlanRepositoryProtocol {
             throw TabiError.persistenceFailed(message: error.localizedDescription)
         }
     }
+
+    public func remove(planId: UUID) async throws {
+        do {
+            let context = ModelContext(self.modelContainer)
+
+            let planDescriptor = FetchDescriptor<TravelPlanModel>(
+                predicate: #Predicate { $0.id == planId }
+            )
+            if let planModel = try context.fetch(planDescriptor).first {
+                context.delete(planModel)
+            }
+
+            let detailDescriptor = FetchDescriptor<TravelPlanDetailModel>(
+                predicate: #Predicate { $0.planId == planId }
+            )
+            if let detailModel = try context.fetch(detailDescriptor).first {
+                context.delete(detailModel)
+            }
+
+            let spotDescriptor = FetchDescriptor<TravelPlanDetailSpotModel>(
+                predicate: #Predicate { $0.planId == planId }
+            )
+            for spotModel in try context.fetch(spotDescriptor) {
+                context.delete(spotModel)
+            }
+
+            try context.save()
+        } catch {
+            AppLogger.core.log(.error, "일정 삭제 실패: \(error.localizedDescription)")
+            throw TabiError.persistenceFailed(message: error.localizedDescription)
+        }
+    }
 }

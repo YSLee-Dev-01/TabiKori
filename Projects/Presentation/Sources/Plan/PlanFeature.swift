@@ -36,8 +36,9 @@ public struct PlanFeature: Sendable {
         case onAppear
         case addButtonTapped
         case planTapped(plan: TravelPlan)
-        case dayChipTapped(plan: TravelPlan, dayIndex: Int)
+        case planDeleteButtonTapped(id: UUID)
         case plansResult([TravelPlan])
+        case planDeleted(id: UUID)
         case addPlan(PresentationAction<AddTravelPlanFeature.Action>)
     }
 
@@ -57,12 +58,16 @@ public struct PlanFeature: Sendable {
             case .planTapped:
                 return .none
 
-            case .dayChipTapped:
-                return .none
+            case .planDeleteButtonTapped(let id):
+                return self.removePlanEffect(planId: id)
 
             case .plansResult(let plans):
                 state.plans = plans
                 state.isLoading = false
+                return .none
+
+            case .planDeleted(let id):
+                state.plans.removeAll { $0.id == id }
                 return .none
 
             case .addPlan(.presented(.saveResult(true))):
@@ -90,6 +95,17 @@ private extension PlanFeature {
             } catch {
                 AppLogger.view.log(.error, "일정 목록 조회 실패: \(error.localizedDescription)")
                 await send(.plansResult([]))
+            }
+        }
+    }
+
+    func removePlanEffect(planId: UUID) -> Effect<Action> {
+        .run { [travelPlanUseCase = self.travelPlanUseCase] send in
+            do {
+                try await travelPlanUseCase.remove(planId: planId)
+                await send(.planDeleted(id: planId))
+            } catch {
+                AppLogger.view.log(.error, "일정 삭제 실패 (planId: \(planId)): \(error.localizedDescription)")
             }
         }
     }
