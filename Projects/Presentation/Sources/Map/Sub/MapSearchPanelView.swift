@@ -51,11 +51,7 @@ struct MapSearchPanelView<Content: View>: View {
     }
 
     private var currentHeight: CGFloat {
-        max(0, self.baseHeight - self.dragOffset)
-    }
-
-    private var hiddenOffset: CGFloat {
-        max(0, self.fullHeight - self.currentHeight)
+        min(self.fullHeight, max(0, self.baseHeight - self.dragOffset))
     }
 
     // MARK: - Init
@@ -91,13 +87,16 @@ struct MapSearchPanelView<Content: View>: View {
             self.content
         }
         .frame(maxWidth: .infinity)
-        .frame(height: self.fullHeight, alignment: .top)
+        // content 영역을 fullHeight로 고정하면 Spacer로 중앙 정렬하는 하위 뷰(emptyView 등)가
+        // 항상 fullHeight 기준으로 중앙을 계산해, half/collapsed처럼 실제로 더 작게 보이는
+        // 단계에서는 그 중앙 지점이 화면 밖으로 밀려 보이지 않는다. 현재 단계의 실제 표시
+        // 높이(currentHeight)에 맞춰야 각 단계 안에서 정확히 중앙에 위치한다
+        .frame(height: self.currentHeight, alignment: .top)
         .background {
             UnevenRoundedRectangle(topLeadingRadius: .tabiRadiusXl, topTrailingRadius: .tabiRadiusXl)
                 .fill(TabiColor.tabiSurface)
                 .ignoresSafeArea(.container, edges: .bottom)
         }
-        .offset(y: self.hiddenOffset)
         .animation(.tabiSpring, value: self.displayedStage)
         .onChange(of: self.isDragActive) { _, newValue in
             if newValue {
@@ -171,6 +170,13 @@ private extension MapSearchPanelView {
         guard shouldAdvance else { return }
 
         guard let nextStage = self.nextLowerStage(from: self.displayedStage) else {
+            self.onDismiss()
+            return
+        }
+
+        // .collapsed는 지도 드래그(mapDragged) 등 시스템 트리거로만 진입해야 하므로,
+        // 사용자가 half에서 아래로 드래그해 .collapsed에 도달하려는 시도는 dismiss로 대체한다
+        guard nextStage != .collapsed else {
             self.onDismiss()
             return
         }
