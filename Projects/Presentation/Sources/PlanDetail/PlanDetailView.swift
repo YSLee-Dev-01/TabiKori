@@ -13,7 +13,7 @@ import DesignSystem
 import Domain
 import Resource
 
-/// 일정 상세 화면. NavigationBar와 일자 선택 탭을 표시한다. 선택된 날짜의 일정(스팟 목록) View는 이후 별도 기능에서 구현한다
+/// 일정 상세 화면. NavigationBar와 일자 선택 탭, 선택된 날짜의 스팟 목록(타임라인 + 스와이프 삭제)을 표시한다
 public struct PlanDetailView: View {
 
     private let store: StoreOf<PlanDetailFeature>
@@ -30,7 +30,17 @@ public struct PlanDetailView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     self.navigationBar(plan: plan)
                     self.dayTabScroll(plan: plan)
-                    Spacer()
+                    if let dateTitle = self.selectedDayDateTitle(plan: plan) {
+                        PlanDetailDayHeader(
+                            dateTitle: dateTitle,
+                            spotCountTitle: self.spotCountTitle
+                        )
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+                    }
+                    // TODO: 지도 영역 추가
+                    EmptyView()
+                    self.spotList()
                 }
             } else {
                 ProgressView()
@@ -83,5 +93,74 @@ private extension PlanDetailView {
         }
         .scrollIndicators(.hidden)
         .padding(.top, 20)
+    }
+
+    func selectedDayDateTitle(plan: TravelPlan) -> String? {
+        guard plan.dayDates.indices.contains(self.store.selectedDayIndex) else { return nil }
+        return plan.dayDates[self.store.selectedDayIndex].planDayHeaderTitle
+    }
+
+    var spotCountTitle: String {
+        let count = self.store.selectedDaySpots.count
+        return count == 0 ? Strings.Plan.spotCountZero : Strings.Plan.spotCountTitle(count)
+    }
+
+    func spotList() -> some View {
+        List {
+            if self.store.selectedDaySpots.isEmpty {
+                PlanDetailSpotEmptyState()
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
+            } else {
+                let spots = self.store.selectedDaySpots
+                ForEach(Array(spots.enumerated()), id: \.element.id) { index, spot in
+                    PlanDetailSpotRow(
+                        spot: spot,
+                        isFirst: index == 0,
+                        isLast: index == spots.count - 1
+                    )
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 20, bottom: 4, trailing: 20))
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button(role: .destructive) {
+                            self.store.send(.spotDeleteButtonTapped(id: spot.id))
+                        } label: {
+                            Text(Strings.Common.delete)
+                        }
+                    }
+                }
+            }
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+    }
+}
+
+#Preview {
+    let mockPlanUseCase: TestTravelPlanUseCase = {
+        let useCase = TestTravelPlanUseCase()
+        useCase.plans = [.mock]
+        return useCase
+    }()
+
+    let mockDetailUseCase: TestTravelPlanDetailUseCase = {
+        let useCase = TestTravelPlanDetailUseCase()
+        useCase.details = [.mock]
+        return useCase
+    }()
+
+    NavigationStack {
+        PlanDetailView(
+            store: Store(
+                initialState: PlanDetailFeature.State(id: TravelPlan.mock.id),
+                reducer: { PlanDetailFeature() },
+                withDependencies: { dependency in
+                    dependency.travelPlanUseCase = mockPlanUseCase
+                    dependency.travelPlanDetailUseCase = mockDetailUseCase
+                }
+            )
+        )
     }
 }

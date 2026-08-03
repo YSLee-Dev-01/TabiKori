@@ -12,7 +12,7 @@ import ComposableArchitecture
 import Core
 import Domain
 
-/// 일정 상세 화면. NavigationBar와 일자 선택 탭을 담당하며, 선택된 날짜의 일정(스팟 목록) View는 이후 별도 기능에서 구현한다
+/// 일정 상세 화면. NavigationBar와 일자 선택 탭, 선택된 날짜의 스팟 목록 표시 + 스와이프 삭제를 담당한다
 @Reducer
 public struct PlanDetailFeature: Sendable {
 
@@ -25,20 +25,28 @@ public struct PlanDetailFeature: Sendable {
         var plan: TravelPlan?
         var travelPlanDetail: TravelPlanDetail?
         var selectedDayIndex: Int = 0
-        var isLoading: Bool = false
         fileprivate var hasStartedLoading: Bool = false
 
         public init(id: UUID, initialDayIndex: Int = 0) {
             self.id = id
             self.selectedDayIndex = initialDayIndex
         }
+
+        var selectedDaySpots: [TravelPlanDetailSpot] {
+            guard let spots = self.travelPlanDetail?.spots else { return [] }
+            return spots
+                .filter { $0.dayIndex == self.selectedDayIndex }
+                .sorted { $0.order < $1.order }
+        }
     }
 
     public enum Action: Equatable {
         case onAppear
         case dayButtonTapped(index: Int)
+        case spotDeleteButtonTapped(id: UUID)
         case planResult(TravelPlan?)
         case travelPlanDetailResult(TravelPlanDetail?)
+        case spotDeleted(id: UUID)
     }
 
     public init() {}
@@ -49,7 +57,6 @@ public struct PlanDetailFeature: Sendable {
             case .onAppear:
                 guard state.hasStartedLoading == false else { return .none }
                 state.hasStartedLoading = true
-                state.isLoading = true
                 return .merge(
                     self.fetchPlanEffect(id: state.id),
                     self.fetchTravelPlanDetailEffect(id: state.id)
@@ -59,9 +66,11 @@ public struct PlanDetailFeature: Sendable {
                 state.selectedDayIndex = index
                 return .none
 
+            case .spotDeleteButtonTapped(let id):
+                return self.removeSpotEffect(planId: state.id, spotId: id)
+
             case .planResult(let plan):
                 state.plan = plan
-                state.isLoading = false
                 if let plan {
                     state.selectedDayIndex = min(max(state.selectedDayIndex, 0), plan.dayCount - 1)
                 }
@@ -69,6 +78,14 @@ public struct PlanDetailFeature: Sendable {
 
             case .travelPlanDetailResult(let detail):
                 state.travelPlanDetail = detail
+                return .none
+
+            case .spotDeleted(let id):
+                guard let detail = state.travelPlanDetail else { return .none }
+                state.travelPlanDetail = TravelPlanDetail(
+                    planId: detail.planId,
+                    spots: detail.spots.filter { $0.id != id }
+                )
                 return .none
             }
         }
@@ -98,6 +115,17 @@ private extension PlanDetailFeature {
             } catch {
                 AppLogger.view.log(.error, "일정 상세(TravelPlanDetail) 조회 실패: \(error.localizedDescription)")
                 await send(.travelPlanDetailResult(nil))
+            }
+        }
+    }
+
+    func removeSpotEffect(planId: UUID, spotId: UUID) -> Effect<Action> {
+        .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase] send in
+            do {
+                try await travelPlanDetailUseCase.removeSpot(planId: planId, spotId: spotId)
+                await send(.spotDeleted(id: spotId))
+            } catch {
+                AppLogger.view.log(.error, "일정 상세 스팟 삭제 실패 (planId: \(planId), spotId: \(spotId)): \(error.localizedDescription)")
             }
         }
     }

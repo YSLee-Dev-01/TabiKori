@@ -39,4 +39,18 @@ extension Date {
         formatter.dateFormat = "M月d日"
         return formatter.string(from: self)
     }
+
+    var planDayHeaderTitle: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.dateFormat = "M月d日（E）"
+        return formatter.string(from: self)
+    }
+
+    var planSpotTimeTitle: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: self)
+    }
 }
