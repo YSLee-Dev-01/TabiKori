@@ -47,12 +47,14 @@ public struct HomeView: View {
                         
                         self.exchangeRateCard()
                             .staggeredAppear(index: 2)
-                        self.categoryView()
+                        self.recommendedEventBanner()
                             .staggeredAppear(index: 3)
-                        self.nearbyTouristSpotBanner()
+                        self.categoryView()
                             .staggeredAppear(index: 4)
-                        self.nearbyRestaurantBanner()
+                        self.nearbyTouristSpotBanner()
                             .staggeredAppear(index: 5)
+                        self.nearbyRestaurantBanner()
+                            .staggeredAppear(index: 6)
                     } else {
                         if self.store.locationStatus == .allowed {
                             self.inJapanBanner()
@@ -67,11 +69,11 @@ public struct HomeView: View {
                         .staggeredAppear(index: 1)
                         self.categoryView()
                             .staggeredAppear(index: 2)
-                        self.recommendedRegionBanner()
+                        self.recommendedEventBanner()
                             .staggeredAppear(index: 3)
+                        self.recommendedRegionBanner()
+                            .staggeredAppear(index: 4)
                     }
-                    self.recommendedEventBanner()
-                        .staggeredAppear(index: 6)
                 }
                 .animation(.tabiStandard, value: self.store.locationStatus)
                 .animation(.tabiStandard, value: self.store.currentRegion.isKorea)
