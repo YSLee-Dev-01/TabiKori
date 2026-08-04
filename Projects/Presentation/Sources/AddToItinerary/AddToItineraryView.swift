@@ -36,6 +36,7 @@ struct AddToItineraryView: View {
                             self.store.send(.dayRowTapped(plan: plan, dayIndex: dayIndex, date: date))
                         }
                     )
+                    .transition(.move(edge: .leading))
 
                 case .configuringTime:
                     AddToItineraryTimeConfigView(
@@ -49,8 +50,10 @@ struct AddToItineraryView: View {
                         isSaving: self.store.isSaving,
                         onSaveTapped: { self.store.send(.saveButtonTapped) }
                     )
+                    .transition(.move(edge: .trailing))
                 }
             }
+            .animation(.tabiStandard, value: self.store.step)
         }
         .onAppear {
             self.store.send(.onAppear)
@@ -81,7 +84,8 @@ private extension AddToItineraryView {
             }
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 16)
+        .padding(.top, 26)
+        .padding(.bottom, 16)
     }
 }
 

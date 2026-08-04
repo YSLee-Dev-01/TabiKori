@@ -63,7 +63,6 @@ private extension AddToItineraryPlanListView {
                         }
                     }
                 }
-                .padding(.leading, 12)
             }
         }
         .animation(.tabiFast, value: isExpanded)
