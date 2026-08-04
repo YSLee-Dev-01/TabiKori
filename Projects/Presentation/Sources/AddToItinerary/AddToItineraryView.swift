@@ -30,6 +30,7 @@ struct AddToItineraryView: View {
                     AddToItineraryPlanListView(
                         plans: self.store.plans,
                         isLoading: self.store.isLoading,
+                        isFetchingDetail: self.store.isFetchingDetail,
                         expandedPlanId: self.store.expandedPlanId,
                         onPlanTapped: { self.store.send(.planRowTapped($0)) },
                         onDayTapped: { plan, dayIndex, date in

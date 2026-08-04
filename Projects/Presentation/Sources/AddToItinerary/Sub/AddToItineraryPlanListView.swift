@@ -16,6 +16,7 @@ import Resource
 struct AddToItineraryPlanListView: View {
     let plans: [TravelPlan]
     let isLoading: Bool
+    let isFetchingDetail: Bool
     let expandedPlanId: UUID?
     let onPlanTapped: (TravelPlan) -> Void
     let onDayTapped: (TravelPlan, Int, Date) -> Void
@@ -36,6 +37,12 @@ struct AddToItineraryPlanListView: View {
                         }
                     }
                     .padding(20)
+                }
+                .disabled(self.isFetchingDetail)
+                .overlay {
+                    if self.isFetchingDetail {
+                        ProgressView()
+                    }
                 }
             }
         }

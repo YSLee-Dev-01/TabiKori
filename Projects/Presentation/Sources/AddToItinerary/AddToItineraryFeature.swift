@@ -33,9 +33,10 @@ public struct AddToItineraryFeature: Sendable {
         var selectedPlan: TravelPlan? = nil
         var selectedDayIndex: Int = 0
         var selectedDate: Date = Date()
-        var existingDetail: TravelPlanDetail? = nil
+        var isFetchingDetail: Bool = false
         var startTime: Date = Date()
         var endTime: Date = Date()
+        fileprivate var existingDetail: TravelPlanDetail? = nil
 
         public init(touristSpot: TouristSpot, address: String) {
             self.touristSpot = touristSpot
@@ -83,6 +84,7 @@ public struct AddToItineraryFeature: Sendable {
             case .onAppear:
                 state.isLoading = true
                 return self.fetchPlansEffect()
+                    .cancellable(id: CancelID.fetchPlans, cancelInFlight: true)
 
             case .closeButtonTapped:
                 return .run { [dismiss = self.dismiss] _ in await dismiss() }
@@ -95,10 +97,13 @@ public struct AddToItineraryFeature: Sendable {
                 state.selectedPlan = plan
                 state.selectedDayIndex = dayIndex
                 state.selectedDate = date
+                state.isFetchingDetail = true
                 return self.fetchExistingDetailEffect(planId: plan.id)
+                    .cancellable(id: CancelID.fetchExistingDetail, cancelInFlight: true)
 
             case .existingDetailResult(let detail):
                 state.existingDetail = detail
+                state.isFetchingDetail = false
                 let range = Self.makeDefaultTimeRange(date: state.selectedDate, dayIndex: state.selectedDayIndex, detail: detail)
                 state.startTime = range.start
                 state.endTime = range.end
@@ -143,6 +148,13 @@ public struct AddToItineraryFeature: Sendable {
             }
         }
     }
+}
+
+// MARK: - CancelID
+
+private enum CancelID {
+    case fetchPlans
+    case fetchExistingDetail
 }
 
 // MARK: - Method
