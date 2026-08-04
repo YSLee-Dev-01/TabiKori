@@ -49,6 +49,7 @@ public struct DetailFeature {
         fileprivate var hasReceivedDetail: Bool = false
         fileprivate var hasReceivedIntro: Bool = false
         fileprivate var hasReceivedImages: Bool = false
+        @Presents var addToItineraryState: AddToItineraryFeature.State?
 
         public init(touristSpot: TouristSpot) {
             self.touristSpot = touristSpot
@@ -79,10 +80,12 @@ public struct DetailFeature {
         case photoCellTapped(index: Int)
         case mapSearchButtonTapped
         case routeDirectionsButtonTapped
+        case addToItineraryButtonTapped
         case detailResult(TouristSpotDetail?)
         case introResult(TouristSpotIntro?)
         case imagesResult([TouristSpotImage]?)
         case isBookmarkedResult(Bool)
+        case addToItinerary(PresentationAction<AddToItineraryFeature.Action>)
     }
 
     public init() {}
@@ -130,6 +133,13 @@ public struct DetailFeature {
                     await naverMapUseCase.routeToDestination(coordinate: coordinate, destinationName: name)
                 }
 
+            case .addToItineraryButtonTapped:
+                state.addToItineraryState = AddToItineraryFeature.State(
+                    touristSpot: state.touristSpot,
+                    address: state.detail.address
+                )
+                return .none
+
             case .detailResult(let detail):
                 state.hasReceivedDetail = true
                 state.isLoading = !state.hasReceivedAllResults
@@ -158,9 +168,19 @@ public struct DetailFeature {
                 state.isSaved = isSaved
                 return .none
 
+            case .addToItinerary(.presented(.spotAdded)):
+                state.addToItineraryState = nil
+                return .none
+
+            case .addToItinerary:
+                return .none
+
             case .binding:
                 return .none
             }
+        }
+        .ifLet(\.$addToItineraryState, action: \.addToItinerary) {
+            AddToItineraryFeature()
         }
     }
 }

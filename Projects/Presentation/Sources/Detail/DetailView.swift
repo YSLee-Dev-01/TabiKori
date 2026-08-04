@@ -92,9 +92,14 @@ struct DetailView: View {
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 DetailBottomCTAView(
                     onRouteDirectionsTapped: { self.store.send(.routeDirectionsButtonTapped) },
-                    onAddToItineraryTapped: {},
+                    onAddToItineraryTapped: { self.store.send(.addToItineraryButtonTapped) },
                     isRouteDirectionsDisabled: self.store.isLoading
                 )
+            }
+            .sheet(item: self.$store.scope(state: \.addToItineraryState, action: \.addToItinerary)) { store in
+                AddToItineraryView(store: store)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
             }
             .onAppear {
                 self.store.send(.onAppear)
