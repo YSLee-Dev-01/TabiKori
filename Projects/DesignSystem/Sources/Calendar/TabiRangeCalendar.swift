@@ -123,10 +123,8 @@ private extension TabiRangeCalendar {
             )
             .frame(height: 36)
             .background {
-                if self.isStartDate(day) {
+                if self.isEndpoint(day) {
                     Circle().fill(TabiColor.tabiPrimary)
-                } else if self.isEndDate(day) {
-                    Circle().fill(TabiColor.tabiSecondary)
                 } else if self.isInRange(day) {
                     Circle().fill(TabiColor.tabiPrimaryLight.opacity(0.3))
                 }
