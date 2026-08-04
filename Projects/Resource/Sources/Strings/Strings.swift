@@ -18,6 +18,7 @@ public enum Strings {
     public enum Bookmark {}
     public enum Plan {}
     public enum Festival {}
+    public enum AddToItinerary {}
 }
 
 public extension Strings.Common {
@@ -300,13 +301,18 @@ public extension Strings.Detail {
     static let shareLinkPrefix = "🔗"
 }
 
+public extension Strings.AddToItinerary {
+    /// 시작 시각 라벨
+    static let startTimeLabel = "開始時刻"
+    /// 종료 시각 라벨
+    static let endTimeLabel = "終了時刻"
+    /// 소요시간 라벨
+    static let durationLabel = "所要時間"
+    /// 저장(추가) 버튼
+    static let saveButton = "追加する"
+}
+
 public extension Strings.Festival {
-    /// 개최 기간 섹션 라벨
-    static let periodSectionTitle = "開催期間"
-    /// 종료일 없음/무제한 토글 라벨
-    static let unlimitedEndDateToggleTitle = "終了日なし"
-    /// 지역 필터 섹션 라벨
-    static let regionSectionTitle = "地域"
     /// 결과 없음 제목
     static let emptyTitle = "イベントが見つかりませんでした"
     /// 결과 없음 설명

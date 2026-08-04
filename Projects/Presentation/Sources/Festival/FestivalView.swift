@@ -16,7 +16,6 @@ public struct FestivalView: View {
 
     @Bindable private var store: StoreOf<FestivalFeature>
     @Environment(\.dismiss) private var dismiss
-    @State private var headerHeight: CGFloat = 0
 
     public init(store: StoreOf<FestivalFeature>) {
         self.store = store
@@ -24,11 +23,11 @@ public struct FestivalView: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            TabiNavigationBar(title: Strings.Home.eventFestivalTitle)
-                .padding(.top, 20)
-
+            self.filterSection()
             self.festivalList()
         }
+        .navigationTitle(Strings.Home.eventFestivalTitle)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
@@ -50,19 +49,44 @@ public struct FestivalView: View {
 // MARK: - View
 
 private extension FestivalView {
+    func filterSection() -> some View {
+        VStack(alignment: .leading, spacing: 20) {
+            FestivalDateRangeView(
+                startDate: self.$store.startDate,
+                endDate: self.$store.endDate,
+                activeField: self.store.activeDateField,
+                onFieldTapped: { field in
+                    self.store.send(.dateFieldTapped(field), animation: .tabiStandard)
+                }
+            )
+
+            if self.store.regions.isEmpty == false {
+                FestivalRegionFilterBar(
+                    regions: self.store.regions,
+                    selectedRegionCode: self.store.selectedRegionCode
+                ) { regionCode in
+                    self.store.send(.regionChipTapped(regionCode), animation: .tabiStandard)
+                }
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        .padding(.bottom, 12)
+    }
+
     func festivalList() -> some View {
         GeometryReader { proxy in
             List {
                 Section {
                     if self.store.isLoading {
                         ProgressView()
-                            .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                            .frame(height: max(proxy.size.height, 0))
                             .frame(maxWidth: .infinity)
                             .listRowInsets(EdgeInsets())
                             .listRowSeparator(.hidden)
                     } else if self.store.festivals.isEmpty {
                         FestivalEmptyState()
-                            .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                            .frame(height: max(proxy.size.height, 0))
                             .listRowInsets(EdgeInsets())
                             .listRowSeparator(.hidden)
                     } else {
@@ -77,29 +101,6 @@ private extension FestivalView {
                             .listRowInsets(EdgeInsets())
                             .listRowSeparator(.hidden)
                         }
-                    }
-                } header: {
-                    VStack(alignment: .leading, spacing: 20) {
-                        FestivalDateRangeView(
-                            startDate: self.$store.startDate,
-                            endDate: self.$store.endDate,
-                            isEndDateUnlimited: self.$store.isEndDateUnlimited
-                        )
-
-                        if self.store.regions.isEmpty == false {
-                            FestivalRegionFilterBar(
-                                regions: self.store.regions,
-                                selectedRegionCode: self.store.selectedRegionCode
-                            ) { regionCode in
-                                self.store.send(.regionChipTapped(regionCode), animation: .tabiStandard)
-                            }
-                        }
-                    }
-                    .padding(.bottom, 12)
-                    .onGeometryChange(for: CGFloat.self) { headerProxy in
-                        headerProxy.size.height
-                    } action: { newValue in
-                        self.headerHeight = newValue
                     }
                 }
             }

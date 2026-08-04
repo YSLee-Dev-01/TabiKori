@@ -10,9 +10,16 @@ import SwiftUI
 
 import Resource
 
+/// `TabiRangeCalendar`의 날짜 선택 대상 필드
+public enum TabiCalendarField: Equatable, Sendable {
+    case start
+    case end
+}
+
 /// 월 단위 그리드 + 요일 헤더로 구성된 기간(범위) 선택 캘린더
-/// - 선택 규칙: 첫 탭 = 시작일, 두 번째 탭이 시작일 이후면 종료일 확정 / 이전이면 시작일 재설정
+/// - 연동 모드(`editingField == nil`, 기본값): 첫 탭 = 시작일, 두 번째 탭이 시작일 이후면 종료일 확정 / 이전이면 시작일 재설정
 ///   → 종료일이 시작일보다 빠른 조합은 절대 만들어지지 않음
+/// - 독립 선택 모드(`editingField != nil`): 탭한 날짜가 지정된 필드에만 반영되며 다른 필드는 영향받지 않음
 public struct TabiRangeCalendar: View {
 
     // MARK: - Properties
@@ -20,6 +27,7 @@ public struct TabiRangeCalendar: View {
     @Binding private var startDate: Date?
     @Binding private var endDate: Date?
     @State private var displayedMonth: Date
+    private let editingField: TabiCalendarField?
 
     /// 요일 헤더(日 月 火 水 木 金 土)가 항상 일요일 시작으로 고정되어 있으므로,
     /// 날짜 그리드 계산도 기기 로케일의 `firstWeekday`와 무관하게 일요일 기준으로 고정한다
@@ -35,11 +43,13 @@ public struct TabiRangeCalendar: View {
     public init(
         startDate: Binding<Date?>,
         endDate: Binding<Date?>,
-        initialMonth: Date = Date()
+        initialMonth: Date = Date(),
+        editingField: TabiCalendarField? = nil
     ) {
         self._startDate = startDate
         self._endDate = endDate
         self._displayedMonth = State(initialValue: initialMonth)
+        self.editingField = editingField
     }
 
     // MARK: - View
@@ -168,6 +178,16 @@ private extension TabiRangeCalendar {
     }
 
     func selectDate(_ date: Date) {
+        if let editingField {
+            switch editingField {
+            case .start:
+                self.startDate = date
+            case .end:
+                self.endDate = date
+            }
+            return
+        }
+
         guard let start = self.startDate, self.endDate == nil else {
             self.startDate = date
             self.endDate = nil

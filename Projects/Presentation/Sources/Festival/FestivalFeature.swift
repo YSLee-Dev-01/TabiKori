@@ -12,6 +12,12 @@ import ComposableArchitecture
 import Core
 import Domain
 
+/// `FestivalFeature`에서 현재 캘린더 편집 대상이 되는 날짜 필드
+public enum FestivalDateField: Equatable, Hashable, Sendable {
+    case start
+    case end
+}
+
 @Reducer
 public struct FestivalFeature: Sendable {
 
@@ -19,18 +25,17 @@ public struct FestivalFeature: Sendable {
 
     @ObservableState
     public struct State: Equatable {
-        var startDate: Date? = Calendar.current.startOfDay(for: Date())
-        var endDate: Date? = Calendar.current.date(
+        var startDate: Date? = Calendar.current.date(
             byAdding: .day,
-            value: FestivalSearchPeriod.defaultDurationDays,
+            value: -FestivalSearchPeriod.defaultDurationDays,
             to: Calendar.current.startOfDay(for: Date())
         )
-        var isEndDateUnlimited: Bool = false
+        var endDate: Date? = nil
+        var activeDateField: FestivalDateField? = nil
         var regions: [LDongRegion] = []
         var selectedRegionCode: String? = nil
         var festivals: [Festival] = []
         var isLoading: Bool = false
-        fileprivate var lastSelectedEndDate: Date? = nil
         fileprivate var hasLoadedRegions: Bool = false
         fileprivate var hasLoadedInitialFestivals: Bool = false
 
@@ -40,6 +45,7 @@ public struct FestivalFeature: Sendable {
     public enum Action: BindableAction, Equatable {
         case binding(BindingAction<State>)
         case onAppear
+        case dateFieldTapped(FestivalDateField)
         case regionChipTapped(String?)
         case festivalTapped(Festival)
         case festivalsResult([Festival])
@@ -60,20 +66,6 @@ public struct FestivalFeature: Sendable {
                 state.isLoading = true
                 return self.searchEffect(state: state)
 
-            case .binding(\.isEndDateUnlimited):
-                if state.isEndDateUnlimited {
-                    state.lastSelectedEndDate = state.endDate
-                    state.endDate = nil
-                } else {
-                    state.endDate = state.lastSelectedEndDate ?? Calendar.current.date(
-                        byAdding: .day,
-                        value: FestivalSearchPeriod.defaultDurationDays,
-                        to: state.startDate ?? Calendar.current.startOfDay(for: Date())
-                    )
-                }
-                state.isLoading = true
-                return self.searchEffect(state: state)
-
             case .binding:
                 return .none
 
@@ -87,12 +79,15 @@ public struct FestivalFeature: Sendable {
 
                 if state.hasLoadedInitialFestivals == false {
                     state.hasLoadedInitialFestivals = true
-                    state.lastSelectedEndDate = state.endDate
                     state.isLoading = true
                     effects.append(self.searchEffect(state: state))
                 }
 
                 return .merge(effects)
+
+            case .dateFieldTapped(let field):
+                state.activeDateField = state.activeDateField == field ? nil : field
+                return .none
 
             case .regionChipTapped(let regionCode):
                 state.selectedRegionCode = state.selectedRegionCode == regionCode ? nil : regionCode
