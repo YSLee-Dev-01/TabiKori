@@ -79,6 +79,7 @@ private extension FestivalRegionFilterBar {
                     }
                 }
             }
+            .padding(.top, 10)
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
