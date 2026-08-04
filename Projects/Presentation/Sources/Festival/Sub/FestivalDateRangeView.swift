@@ -25,17 +25,12 @@ struct FestivalDateRangeView: View {
             }
 
             if let activeField {
-                // 활성 필드 전환 시 캘린더 자체는 유지된 채 표시 월만 이동해야 하므로,
-                // transition은 바깥 Group에 걸고 표시 월 재계산용 .id()는 안쪽 TabiRangeCalendar에만 적용
-                Group {
-                    TabiRangeCalendar(
-                        startDate: self.$startDate,
-                        endDate: self.$endDate,
-                        initialMonth: self.initialMonth(for: activeField),
-                        editingField: self.calendarField(for: activeField)
-                    )
-                    .id(activeField)
-                }
+                TabiRangeCalendar(
+                    startDate: self.$startDate,
+                    endDate: self.$endDate,
+                    initialMonth: self.initialMonth(for: activeField),
+                    editingField: self.calendarField(for: activeField)
+                )
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }

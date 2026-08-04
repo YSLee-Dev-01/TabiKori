@@ -27,6 +27,7 @@ public struct TabiRangeCalendar: View {
     @Binding private var startDate: Date?
     @Binding private var endDate: Date?
     @State private var displayedMonth: Date
+    private let initialMonth: Date
     private let editingField: TabiCalendarField?
 
     /// 요일 헤더(日 月 火 水 木 金 土)가 항상 일요일 시작으로 고정되어 있으므로,
@@ -49,6 +50,7 @@ public struct TabiRangeCalendar: View {
         self._startDate = startDate
         self._endDate = endDate
         self._displayedMonth = State(initialValue: initialMonth)
+        self.initialMonth = initialMonth
         self.editingField = editingField
     }
 
@@ -59,6 +61,11 @@ public struct TabiRangeCalendar: View {
             self.monthHeader()
             self.weekdayHeader()
             self.dateGrid()
+        }
+        // editingField가 바뀌어도 뷰 자체는 같은 인스턴스로 유지한 채 표시 월만 이동시켜야
+        // LazyVGrid 내부 Button들의 hit-test 영역이 재마운트 없이 안정적으로 유지된다
+        .onChange(of: self.editingField) { _, _ in
+            self.displayedMonth = self.initialMonth
         }
     }
 }

@@ -16,33 +16,31 @@ public struct FestivalView: View {
 
     @Bindable private var store: StoreOf<FestivalFeature>
     @Environment(\.dismiss) private var dismiss
+    @State private var headerHeight: CGFloat = 0
 
     public init(store: StoreOf<FestivalFeature>) {
         self.store = store
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            self.filterSection()
-            self.festivalList()
-        }
-        .navigationTitle(Strings.Home.eventFestivalTitle)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    self.dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
+        self.festivalList()
+            .navigationTitle(Strings.Home.eventFestivalTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        self.dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                    }
+                    .tint(Color.getTabiColor(.tabiPrimary))
                 }
-                .tint(Color.getTabiColor(.tabiPrimary))
             }
-        }
-        .navigationBarBackButtonHidden(true)
-        .interactivePopGestureEnabled(true)
-        .onAppear {
-            self.store.send(.onAppear)
-        }
+            .navigationBarBackButtonHidden(true)
+            .interactivePopGestureEnabled(true)
+            .onAppear {
+                self.store.send(.onAppear)
+            }
     }
 }
 
@@ -72,24 +70,27 @@ private extension FestivalView {
         .padding(.horizontal, 20)
         .padding(.top, 20)
         .padding(.bottom, 12)
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.size.height
+        } action: { newValue in
+            self.headerHeight = newValue
+        }
     }
 
     func festivalList() -> some View {
         GeometryReader { proxy in
-            List {
-                Section {
-                    if self.store.isLoading {
-                        ProgressView()
-                            .frame(height: max(proxy.size.height, 0))
-                            .frame(maxWidth: .infinity)
-                            .listRowInsets(EdgeInsets())
-                            .listRowSeparator(.hidden)
-                    } else if self.store.festivals.isEmpty {
-                        FestivalEmptyState()
-                            .frame(height: max(proxy.size.height, 0))
-                            .listRowInsets(EdgeInsets())
-                            .listRowSeparator(.hidden)
-                    } else {
+            ScrollView {
+                self.filterSection()
+
+                if self.store.isLoading {
+                    ProgressView()
+                        .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                        .frame(maxWidth: .infinity)
+                } else if self.store.festivals.isEmpty {
+                    FestivalEmptyState()
+                        .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                } else {
+                    LazyVStack(spacing: 0) {
                         ForEach(self.store.festivals) { festival in
                             TabiFestivalRow(
                                 thumbnailURL: festival.touristSpot.thumbnailURL,
@@ -98,15 +99,10 @@ private extension FestivalView {
                                 periodTitle: festival.periodTitle,
                                 onTap: { self.store.send(.festivalTapped(festival)) }
                             )
-                            .listRowInsets(EdgeInsets())
-                            .listRowSeparator(.hidden)
                         }
                     }
                 }
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .contentMargins(.top, 0, for: .scrollContent)
         }
     }
 }
