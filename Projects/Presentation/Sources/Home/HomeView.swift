@@ -472,6 +472,7 @@ fileprivate extension HomeView {
 
     func recommendedEventBanner() -> some View {
         Button {
+            self.store.send(.recommendedEventBannerTapped)
         } label: {
             TabiCard {
                 HStack(alignment: .center, spacing: 10) {

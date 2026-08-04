@@ -53,4 +53,11 @@ extension Date {
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: self)
     }
+
+    var festivalPeriodDateTitle: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.dateFormat = "M/d"
+        return formatter.string(from: self)
+    }
 }

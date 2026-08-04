@@ -56,6 +56,7 @@ public struct HomeFeature: Sendable {
         case searchBarTapped
         case categoryTapped(CategoryType)
         case categoryCoordinateResolved(CategoryType, Coordinate)
+        case recommendedEventBannerTapped
     }
 
     public init() {}
@@ -191,6 +192,9 @@ public struct HomeFeature: Sendable {
                 .cancellable(id: CancelID.categoryCoordinate, cancelInFlight: true)
 
             case .categoryCoordinateResolved:
+                return .none
+
+            case .recommendedEventBannerTapped:
                 return .none
             }
         }

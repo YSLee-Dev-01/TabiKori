@@ -74,6 +74,10 @@ public struct TabBarFeature {
                 guard state.selectedTab == .map else { return .none }
                 return .send(.map(.categorySelected(category, coordinate: coordinate)))
 
+            case .home(.recommendedEventBannerTapped):
+                state.path.append(.festival(FestivalFeature.State()))
+                return .none
+
             case .home:
                 return .none
 
@@ -108,6 +112,10 @@ public struct TabBarFeature {
                     startIndex: index,
                     title: detailState.detail.japaneseTitle
                 )))
+                return .none
+
+            case .path(.element(id: _, action: .festival(.festivalTapped(let festival)))):
+                state.path.append(.detail(DetailFeature.State(touristSpot: festival.touristSpot)))
                 return .none
 
             case .path:

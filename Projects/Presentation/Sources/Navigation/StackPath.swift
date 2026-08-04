@@ -13,6 +13,7 @@ public enum StackPath {
     case detail(DetailFeature)
     case photoViewer(PhotoViewerFeature)
     case planDetail(PlanDetailFeature)
+    case festival(FestivalFeature)
 }
 
 extension StackPath.State: Equatable {}

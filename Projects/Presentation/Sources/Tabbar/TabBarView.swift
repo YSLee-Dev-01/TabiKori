@@ -61,6 +61,8 @@ public struct TabBarView: View {
                 PhotoViewerView(store: store)
             case .planDetail(let store):
                 PlanDetailView(store: store)
+            case .festival(let store):
+                FestivalView(store: store)
             }
         }
     }
