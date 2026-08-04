@@ -24,6 +24,9 @@ extension TabiMapView {
         private var lastAppliedFitToken: Int?
         private let singleMarkerFitZoomLevel: Double = 15
         private let boundsFitPadding: CGFloat = 60
+        // MapView 검색 패널 등장 애니메이션(.tabiStandard = Animation.smooth, 기본 duration 0.5초)과
+        // 카메라 이동 애니메이션 길이를 맞춰, 시트가 다 올라오기 전에 지도가 먼저 이동해버리는 것을 방지
+        private let boundsFitAnimationDuration: TimeInterval = 0.5
 
         init(
             onMapTapped: @escaping (Double, Double) -> Void,
@@ -127,6 +130,7 @@ private extension TabiMapView.Coordinator {
 
         let singleMarkerFitZoomLevel = self.singleMarkerFitZoomLevel
         let boundsFitPadding = self.boundsFitPadding
+        let boundsFitAnimationDuration = self.boundsFitAnimationDuration
 
         // NMFMapView는 UIView(→ UIResponder)를 상속해 moveCamera가 @MainActor로 격리됨.
         // sync(...)는 UIViewRepresentable의 makeUIView/updateUIView(둘 다 메인 액터)에서만 호출되므로 안전함.
@@ -142,6 +146,8 @@ private extension TabiMapView.Coordinator {
                 let bounds = NMGLatLngBounds(latLngs: latLngs)
                 cameraUpdate = NMFCameraUpdate(fit: bounds, padding: boundsFitPadding)
             }
+            cameraUpdate.animation = .easeOut
+            cameraUpdate.animationDuration = boundsFitAnimationDuration
             mapView.moveCamera(cameraUpdate)
         }
     }

@@ -345,7 +345,9 @@ private extension MapView {
                         placeholder: Strings.Map.searchPlaceholder,
                         style: .glass
                     ) {
-                        self.store.send(.searchFieldTapped)
+                        withAnimation(.tabiStandard) {
+                            _ = self.store.send(.searchFieldTapped)
+                        }
                     }
                     .matchedGeometryEffect(id: "mapSearchField", in: self.searchFieldNamespace)
 
@@ -460,7 +462,9 @@ private extension MapView {
 
     func categoryChip(_ item: CategoryType) -> some View {
         Button {
-            self.store.send(.categorySelected(item, coordinate: nil))
+            withAnimation(.tabiStandard) {
+                _ = self.store.send(.categorySelected(item, coordinate: nil))
+            }
         } label: {
             HStack(spacing: 6) {
                 Image(item.icon)
@@ -493,6 +497,9 @@ private extension MapView {
 private extension MapView {
     func cancelSearch() {
         self.lastTappedSpotID = nil
-        self.store.send(.searchCancelTapped)
+        self.isSearchFieldFocused = false
+        withAnimation(.tabiStandard) {
+            _ = self.store.send(.searchCancelTapped)
+        }
     }
 }

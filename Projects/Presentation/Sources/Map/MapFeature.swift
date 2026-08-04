@@ -22,6 +22,7 @@ public struct MapFeature: Sendable {
     @Dependency(\.searchHistoryUseCase) var searchHistoryUseCase
 
     private let searchPageSize = 50
+    private let minimumLoadingDuration: TimeInterval = 0.2
 
     @ObservableState
     public struct State: Equatable {
@@ -276,9 +277,11 @@ private extension MapFeature {
     }
 
     func searchEffect(keyword: String) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase] send in
+        .run { [touristSpotUseCase = self.touristSpotUseCase, minimumLoadingDuration = self.minimumLoadingDuration] send in
             do {
-                let results = try await touristSpotUseCase.searchByKeyword(keyword: keyword, pageNo: 1)
+                let results = try await Task.withMinimumDuration(seconds: minimumLoadingDuration) {
+                    try await touristSpotUseCase.searchByKeyword(keyword: keyword, pageNo: 1)
+                }
                 await send(.searchResultsResult(results))
             } catch {
                 guard !Task.isCancelled else {
@@ -292,9 +295,11 @@ private extension MapFeature {
     }
 
     func searchNextPageEffect(keyword: String, pageNo: Int) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase] send in
+        .run { [touristSpotUseCase = self.touristSpotUseCase, minimumLoadingDuration = self.minimumLoadingDuration] send in
             do {
-                let results = try await touristSpotUseCase.searchByKeyword(keyword: keyword, pageNo: pageNo)
+                let results = try await Task.withMinimumDuration(seconds: minimumLoadingDuration) {
+                    try await touristSpotUseCase.searchByKeyword(keyword: keyword, pageNo: pageNo)
+                }
                 await send(.searchNextPageResultsResult(results))
             } catch {
                 guard !Task.isCancelled else {
@@ -308,14 +313,16 @@ private extension MapFeature {
     }
 
     func categorySearchEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase] send in
+        .run { [touristSpotUseCase = self.touristSpotUseCase, minimumLoadingDuration = self.minimumLoadingDuration] send in
             do {
-                let results = try await touristSpotUseCase.fetchNearbySpots(
-                    contentType: category,
-                    coordinate: coordinate,
-                    radiusMeters: radiusMeters,
-                    pageNo: 1
-                )
+                let results = try await Task.withMinimumDuration(seconds: minimumLoadingDuration) {
+                    try await touristSpotUseCase.fetchNearbySpots(
+                        contentType: category,
+                        coordinate: coordinate,
+                        radiusMeters: radiusMeters,
+                        pageNo: 1
+                    )
+                }
                 await send(.searchResultsResult(results))
             } catch {
                 guard !Task.isCancelled else {
@@ -329,14 +336,16 @@ private extension MapFeature {
     }
 
     func categoryResearchEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase] send in
+        .run { [touristSpotUseCase = self.touristSpotUseCase, minimumLoadingDuration = self.minimumLoadingDuration] send in
             do {
-                let results = try await touristSpotUseCase.fetchNearbySpots(
-                    contentType: category,
-                    coordinate: coordinate,
-                    radiusMeters: radiusMeters,
-                    pageNo: 1
-                )
+                let results = try await Task.withMinimumDuration(seconds: minimumLoadingDuration) {
+                    try await touristSpotUseCase.fetchNearbySpots(
+                        contentType: category,
+                        coordinate: coordinate,
+                        radiusMeters: radiusMeters,
+                        pageNo: 1
+                    )
+                }
                 await send(.researchResultsResult(results))
             } catch {
                 guard !Task.isCancelled else {
@@ -350,14 +359,16 @@ private extension MapFeature {
     }
 
     func categoryNextPageEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int, pageNo: Int) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase] send in
+        .run { [touristSpotUseCase = self.touristSpotUseCase, minimumLoadingDuration = self.minimumLoadingDuration] send in
             do {
-                let results = try await touristSpotUseCase.fetchNearbySpots(
-                    contentType: category,
-                    coordinate: coordinate,
-                    radiusMeters: radiusMeters,
-                    pageNo: pageNo
-                )
+                let results = try await Task.withMinimumDuration(seconds: minimumLoadingDuration) {
+                    try await touristSpotUseCase.fetchNearbySpots(
+                        contentType: category,
+                        coordinate: coordinate,
+                        radiusMeters: radiusMeters,
+                        pageNo: pageNo
+                    )
+                }
                 await send(.searchNextPageResultsResult(results))
             } catch {
                 guard !Task.isCancelled else {

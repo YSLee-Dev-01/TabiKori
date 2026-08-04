@@ -54,6 +54,14 @@ struct MapSearchPanelView<Content: View>: View {
         min(self.fullHeight, max(0, self.baseHeight - self.dragOffset))
     }
 
+    private var hiddenOffset: CGFloat {
+        max(0, self.fullHeight - self.currentHeight)
+    }
+
+    private var dragHandleTotalHeight: CGFloat {
+        MapSearchPanelLayout.dragHandleSize.height + MapSearchPanelLayout.dragHandleTouchPadding * 2
+    }
+
     // MARK: - Init
 
     init(
@@ -85,18 +93,25 @@ struct MapSearchPanelView<Content: View>: View {
         VStack(spacing: 0) {
             self.dragHandle()
             self.content
+                // content 영역을 fullHeight 기준으로 고정하면 Spacer로 중앙 정렬하는 하위 뷰
+                // (emptyView 등)가 항상 fullHeight 기준으로 중앙을 계산해, half/collapsed처럼
+                // 실제로 더 작게 보이는 단계에서는 그 중앙 지점이 화면 밖으로 밀려 보이지 않는다.
+                // 컨텐츠에는 현재 단계의 실제 표시 높이(currentHeight)를 별도로 전달해 그
+                // 값 기준으로 중앙 정렬되도록 한다
+                .frame(height: max(0, self.currentHeight - self.dragHandleTotalHeight), alignment: .top)
         }
         .frame(maxWidth: .infinity)
-        // content 영역을 fullHeight로 고정하면 Spacer로 중앙 정렬하는 하위 뷰(emptyView 등)가
-        // 항상 fullHeight 기준으로 중앙을 계산해, half/collapsed처럼 실제로 더 작게 보이는
-        // 단계에서는 그 중앙 지점이 화면 밖으로 밀려 보이지 않는다. 현재 단계의 실제 표시
-        // 높이(currentHeight)에 맞춰야 각 단계 안에서 정확히 중앙에 위치한다
-        .frame(height: self.currentHeight, alignment: .top)
+        // 바깥 컨테이너는 fullHeight로 고정하고 offset(hiddenOffset)으로만 reveal한다.
+        // 컨테이너 높이 자체를 currentHeight로 재계산하면 등장 시 부모의
+        // .transition(.move(edge: .bottom))이 계산하는 삽입 지오메트리와 경합해
+        // 슬라이드업 애니메이션이 보이지 않게 된다
+        .frame(height: self.fullHeight, alignment: .top)
         .background {
             UnevenRoundedRectangle(topLeadingRadius: .tabiRadiusXl, topTrailingRadius: .tabiRadiusXl)
                 .fill(TabiColor.tabiSurface)
                 .ignoresSafeArea(.container, edges: .bottom)
         }
+        .offset(y: self.hiddenOffset)
         .animation(.tabiSpring, value: self.displayedStage)
         .onChange(of: self.isDragActive) { _, newValue in
             if newValue {
