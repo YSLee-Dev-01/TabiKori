@@ -38,7 +38,7 @@ public struct AddTravelPlanView: View {
             .padding(.top, 20)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            AddPlanBottomCTAView(isEnabled: self.store.isConfirmEnabled) {
+            AddPlanBottomCTAView(isEnabled: self.store.isConfirmEnabled, isLoading: self.store.isSaving) {
                 self.store.send(.confirmTapped)
             }
         }

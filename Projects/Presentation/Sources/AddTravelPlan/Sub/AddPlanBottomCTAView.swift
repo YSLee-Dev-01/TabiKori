@@ -13,6 +13,7 @@ import Resource
 
 struct AddPlanBottomCTAView: View {
     let isEnabled: Bool
+    let isLoading: Bool
     let onConfirmTapped: () -> Void
 
     var body: some View {
@@ -20,6 +21,7 @@ struct AddPlanBottomCTAView: View {
             Strings.Plan.confirmButton,
             style: .primary,
             isExpanded: true,
+            isLoading: self.isLoading,
             height: 45,
             cornerRadius: .tabiRadiusFull
         ) {
