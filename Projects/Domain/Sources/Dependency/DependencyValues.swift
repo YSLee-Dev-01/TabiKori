@@ -55,4 +55,9 @@ extension DependencyValues {
         get {self[TravelPlanDetailUseCaseDependencyKey.self]}
         set {self[TravelPlanDetailUseCaseDependencyKey.self] = newValue}
     }
+
+    public var festivalUseCase: FestivalUseCaseProtocol {
+        get {self[FestivalUseCaseDependencyKey.self]}
+        set {self[FestivalUseCaseDependencyKey.self] = newValue}
+    }
 }
