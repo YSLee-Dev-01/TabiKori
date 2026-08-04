@@ -17,6 +17,7 @@ public enum Strings {
     public enum Map {}
     public enum Bookmark {}
     public enum Plan {}
+    public enum Festival {}
 }
 
 public extension Strings.Common {
@@ -297,4 +298,17 @@ public extension Strings.Detail {
     static let shareAddressPrefix = "📍"
     /// 공유 텍스트 - 링크 접두사
     static let shareLinkPrefix = "🔗"
+}
+
+public extension Strings.Festival {
+    /// 개최 기간 섹션 라벨
+    static let periodSectionTitle = "開催期間"
+    /// 종료일 없음/무제한 토글 라벨
+    static let unlimitedEndDateToggleTitle = "終了日なし"
+    /// 지역 필터 섹션 라벨
+    static let regionSectionTitle = "地域"
+    /// 결과 없음 제목
+    static let emptyTitle = "イベントが見つかりませんでした"
+    /// 결과 없음 설명
+    static let emptyDescription = "条件を変更して再度お試しください"
 }
