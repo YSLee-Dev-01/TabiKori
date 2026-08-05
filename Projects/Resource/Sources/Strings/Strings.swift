@@ -313,10 +313,10 @@ public extension Strings.AddToItinerary {
 }
 
 public extension Strings.Festival {
-    /// 시작일 라벨
-    static let startDateLabel = "開始日"
-    /// 종료일 라벨
-    static let endDateLabel = "終了日"
+    /// 검색 시작일 라벨
+    static let startDateLabel = "検索開始日"
+    /// 검색 종료일 라벨
+    static let endDateLabel = "検索終了日"
     /// 결과 없음 제목
     static let emptyTitle = "イベントが見つかりませんでした"
     /// 결과 없음 설명
