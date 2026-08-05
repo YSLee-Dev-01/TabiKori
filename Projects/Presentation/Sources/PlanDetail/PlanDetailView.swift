@@ -15,7 +15,7 @@ import Resource
 /// 일정 상세 화면. NavigationBar와 일자 선택 탭, 선택된 날짜의 스팟 목록(타임라인 + 스와이프 삭제)을 표시한다
 public struct PlanDetailView: View {
 
-    private let store: StoreOf<PlanDetailFeature>
+    @Bindable private var store: StoreOf<PlanDetailFeature>
 
     @Environment(\.dismiss) private var dismiss
 
@@ -52,6 +52,11 @@ public struct PlanDetailView: View {
         }
         .navigationBarBackButtonHidden(true)
         .interactivePopGestureEnabled(true)
+        .sheet(item: self.$store.scope(state: \.addSpotState, action: \.addSpot)) { store in
+            PlanDetailAddSpotView(store: store)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
         .onAppear {
             self.store.send(.onAppear)
         }

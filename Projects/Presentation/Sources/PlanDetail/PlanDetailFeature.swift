@@ -24,6 +24,7 @@ public struct PlanDetailFeature: Sendable {
         var travelPlanDetail: TravelPlanDetail?
         var selectedDayIndex: Int = 0
         fileprivate var hasStartedLoading: Bool = false
+        @Presents var addSpotState: PlanDetailAddSpotFeature.State?
 
         public init(plan: TravelPlan, initialDayIndex: Int = 0) {
             self.plan = plan
@@ -45,6 +46,7 @@ public struct PlanDetailFeature: Sendable {
         case addSpotButtonTapped
         case travelPlanDetailResult(TravelPlanDetail?)
         case spotDeleted(id: UUID)
+        case addSpot(PresentationAction<PlanDetailAddSpotFeature.Action>)
     }
 
     public init() {}
@@ -65,7 +67,13 @@ public struct PlanDetailFeature: Sendable {
                 return self.removeSpotEffect(planId: state.plan.id, spotId: id)
 
             case .addSpotButtonTapped:
-                // TODO: 스팟 추가 플로우 연결
+                guard state.plan.dayDates.indices.contains(state.selectedDayIndex) else { return .none }
+                state.addSpotState = PlanDetailAddSpotFeature.State(
+                    planId: state.plan.id,
+                    dayIndex: state.selectedDayIndex,
+                    date: state.plan.dayDates[state.selectedDayIndex],
+                    detail: state.travelPlanDetail
+                )
                 return .none
 
             case .travelPlanDetailResult(let detail):
@@ -79,7 +87,17 @@ public struct PlanDetailFeature: Sendable {
                     spots: detail.spots.filter { $0.id != id }
                 )
                 return .none
+
+            case .addSpot(.presented(.spotAdded)):
+                state.addSpotState = nil
+                return self.fetchTravelPlanDetailEffect(id: state.plan.id)
+
+            case .addSpot:
+                return .none
             }
+        }
+        .ifLet(\.$addSpotState, action: \.addSpot) {
+            PlanDetailAddSpotFeature()
         }
     }
 }
