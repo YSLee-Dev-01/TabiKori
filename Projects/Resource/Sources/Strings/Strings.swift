@@ -227,6 +227,8 @@ public extension Strings.Plan {
     }
     /// 스팟 추가 버튼 (일자 목록 footer)
     static let spotAddButtonTitle = "スポットを追加"
+    /// 스팟 추가 시트 - 관광지 검색 탭
+    static let spotAddSearchTabTitle = "観光地検索"
 
     /// 추가 화면 타이틀
     static let addScreenTitle = "新しい日程を作成"
