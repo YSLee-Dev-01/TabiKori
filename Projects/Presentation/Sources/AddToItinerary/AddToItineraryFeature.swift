@@ -104,7 +104,11 @@ public struct AddToItineraryFeature: Sendable {
             case .existingDetailResult(let detail):
                 state.existingDetail = detail
                 state.isFetchingDetail = false
-                let range = Self.makeDefaultTimeRange(date: state.selectedDate, dayIndex: state.selectedDayIndex, detail: detail)
+                let range = TravelPlanDetailSpotScheduler.defaultTimeRange(
+                    dayIndex: state.selectedDayIndex,
+                    date: state.selectedDate,
+                    existingDetail: detail
+                )
                 state.startTime = range.start
                 state.endTime = range.end
                 state.step = .configuringTime
@@ -121,7 +125,7 @@ public struct AddToItineraryFeature: Sendable {
                     let plan = state.selectedPlan
                 else { return .none }
                 state.isSaving = true
-                let order = state.existingDetail?.spots.filter { $0.dayIndex == state.selectedDayIndex }.count ?? 0
+                let order = TravelPlanDetailSpotScheduler.nextOrder(dayIndex: state.selectedDayIndex, existingDetail: state.existingDetail)
                 let spot = TravelPlanDetailSpot(
                     id: UUID(),
                     dayIndex: state.selectedDayIndex,
@@ -194,21 +198,5 @@ private extension AddToItineraryFeature {
                 await send(.saveFailed)
             }
         }
-    }
-
-    static func makeDefaultTimeRange(date: Date, dayIndex: Int, detail: TravelPlanDetail?) -> (start: Date, end: Date) {
-        let calendar = Calendar.current
-        let daySpots = (detail?.spots ?? [])
-            .filter { $0.dayIndex == dayIndex }
-            .sorted { $0.order < $1.order }
-
-        let start: Date
-        if let lastSpot = daySpots.last {
-            start = calendar.date(byAdding: .minute, value: lastSpot.durationMinutes, to: lastSpot.startTime) ?? lastSpot.startTime
-        } else {
-            start = calendar.date(bySettingHour: 9, minute: 0, second: 0, of: date) ?? date
-        }
-        let end = calendar.date(byAdding: .minute, value: 60, to: start) ?? start
-        return (start, end)
     }
 }
