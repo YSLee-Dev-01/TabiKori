@@ -120,7 +120,9 @@ private enum CancelID {
 
 private extension FestivalFeature {
     func searchEffect(state: State) -> Effect<Action> {
-        guard let startDate = state.startDate else { return .none }
+        guard let startDate = state.startDate else {
+            return .send(.festivalsResult([]))
+        }
         let endDate = state.endDate
         let regionCode = state.selectedRegionCode
 

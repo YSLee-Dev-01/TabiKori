@@ -23,7 +23,7 @@ public struct FestivalView: View {
     }
 
     public var body: some View {
-        self.festivalList()
+        self.contentScrollView()
             .navigationTitle(Strings.Home.eventFestivalTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -77,7 +77,7 @@ private extension FestivalView {
         }
     }
 
-    func festivalList() -> some View {
+    func contentScrollView() -> some View {
         GeometryReader { proxy in
             ScrollView {
                 self.filterSection()

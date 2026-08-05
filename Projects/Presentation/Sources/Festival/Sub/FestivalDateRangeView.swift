@@ -20,8 +20,8 @@ struct FestivalDateRangeView: View {
     var body: some View {
         VStack(spacing: 16) {
             HStack(spacing: 12) {
-                self.dateBox(label: Strings.Plan.departureLabel, date: self.startDate, field: .start)
-                self.dateBox(label: Strings.Plan.returnLabel, date: self.endDate, field: .end)
+                self.dateBox(label: Strings.Festival.startDateLabel, date: self.startDate, field: .start)
+                self.dateBox(label: Strings.Festival.endDateLabel, date: self.endDate, field: .end)
             }
 
             if let activeField {
