@@ -9,7 +9,6 @@
 import SwiftUI
 
 import ComposableArchitecture
-import DesignSystem
 import Domain
 import Resource
 
@@ -26,7 +25,6 @@ public struct PlanDetailView: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            self.navigationBar(plan: self.store.plan)
             self.dayTabScroll(plan: self.store.plan)
             if let dateTitle = self.selectedDayDateTitle(plan: self.store.plan) {
                 PlanDetailDayHeader(
@@ -40,6 +38,8 @@ public struct PlanDetailView: View {
             EmptyView()
             self.spotList()
         }
+        .navigationTitle("\(self.store.plan.title) · \(self.store.plan.displayRegionTitle)")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
@@ -61,14 +61,6 @@ public struct PlanDetailView: View {
 // MARK: - View
 
 private extension PlanDetailView {
-    func navigationBar(plan: TravelPlan) -> some View {
-        TabiNavigationBar(
-            subtitle: "\(plan.displayRegionTitle) · \(Strings.Plan.durationBadge(plan.dayCount))",
-            title: plan.title
-        )
-        .padding(.top, 20)
-    }
-
     func dayTabScroll(plan: TravelPlan) -> some View {
         ScrollView(.horizontal) {
             HStack(spacing: 8) {
@@ -115,7 +107,7 @@ private extension PlanDetailView {
                     )
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets(top: 4, leading: 20, bottom: 4, trailing: 20))
+                    .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) {
                             self.store.send(.spotDeleteButtonTapped(id: spot.id))

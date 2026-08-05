@@ -21,29 +21,37 @@ struct PlanDetailDayButton: View {
         Button {
             self.action()
         } label: {
-            VStack(spacing: 4) {
+            VStack(spacing: 3) {
                 TabiLabel(
                     title: self.dayTitle,
-                    style: .captionMBold,
+                    style: .bodySBold,
                     color: self.isSelected ? .tabiOnColor : .tabiTextPrimary
                 )
                 TabiLabel(
                     title: self.dateTitle,
-                    style: .captionM,
+                    style: .captionS,
                     color: self.isSelected ? .tabiOnColor : .tabiTextSecondary
                 )
             }
-            .padding(.vertical, 12)
-            .padding(.horizontal, 20)
+            .frame(minWidth: 56)
+            .padding(.vertical, 10)
+            .padding(.horizontal, 16)
             .background(self.isSelected ? TabiColor.tabiPrimary : TabiColor.tabiSurface)
-            .clipShape(Capsule())
+            .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
             .overlay {
-                if !self.isSelected {
-                    Capsule().stroke(TabiColor.tabiBorder, lineWidth: 1)
-                }
+                RoundedRectangle(cornerRadius: .tabiRadiusMd)
+                    .stroke(
+                        self.isSelected ? Color.clear : Color.getTabiColor(.tabiBorder),
+                        lineWidth: 1
+                    )
             }
+            .shadow(
+                color: self.isSelected ? Color.getTabiColor(.tabiPrimary).opacity(0.28) : .clear,
+                radius: 8,
+                y: 4
+            )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.tabiPress)
         .animation(.tabiFast, value: self.isSelected)
     }
 }

@@ -21,6 +21,7 @@ struct PlanDetailSpotRow: View {
         HStack(alignment: .top, spacing: 12) {
             TabiLabel(title: self.spot.startTimeTitle, style: .captionMBold, color: .tabiTextSecondary)
                 .frame(width: 40, alignment: .leading)
+                .padding(.top, 4)
 
             self.timeline
 
@@ -34,7 +35,9 @@ struct PlanDetailSpotRow: View {
                     TabiLabel(title: self.spot.durationTitle, style: .captionM, color: .tabiTextTertiary)
                 }
                 .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .padding(.vertical, 4)
         }
     }
 }
