@@ -80,7 +80,7 @@ private extension TouristSpot {
             id: self.id,
             latitude: self.coordinate.latitude,
             longitude: self.coordinate.longitude,
-            title: self.title.removingHangul,
+            title: self.title.removingBracketedTags.removingHangul.truncated(to: 15),
             icon: self.contentType.icon,
             color: self.contentType.color
         )
