@@ -213,47 +213,18 @@ private extension MapView {
     }
 
     func searchGuideState() -> some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 0)
-
-            VStack(spacing: 10) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 34))
-                    .foregroundStyle(TabiColor.tabiTextTertiary)
-                TabiLabel(
-                    title: Strings.Map.searchEmptyDescription,
-                    style: .bodyS,
-                    color: .tabiTextTertiary,
-                    alignment: .center
-                )
-            }
-
-            Spacer(minLength: 0)
-        }
+        TabiEmptyState(
+            systemImageName: "magnifyingglass",
+            description: Strings.Map.searchEmptyDescription
+        )
     }
 
     func searchResultEmptyState() -> some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 0)
-
-            VStack(spacing: 10) {
-                Image(systemName: "mappin.slash")
-                    .font(.system(size: 34))
-                    .foregroundStyle(TabiColor.tabiTextTertiary)
-
-                VStack(spacing: 3) {
-                    TabiLabel(title: Strings.Map.searchResultEmptyTitle, style: .bodySBold, color: .tabiTextSecondary)
-                    TabiLabel(
-                        title: Strings.Map.searchResultEmptyDescription,
-                        style: .captionM,
-                        color: .tabiTextTertiary,
-                        alignment: .center
-                    )
-                }
-            }
-
-            Spacer(minLength: 0)
-        }
+        TabiEmptyState(
+            systemImageName: "mappin.slash",
+            title: Strings.Map.searchResultEmptyTitle,
+            description: Strings.Map.searchResultEmptyDescription
+        )
     }
 
     func searchResultSkeletonList() -> some View {
