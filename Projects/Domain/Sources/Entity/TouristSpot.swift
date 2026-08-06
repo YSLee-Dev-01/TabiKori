@@ -15,6 +15,8 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
     public let distanceMeters: Double?
     public let contentType: CategoryType
     public let coordinate: Coordinate
+    public let isCustom: Bool
+    public let address: String?
 
     public init(
         id: String,
@@ -22,7 +24,9 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
         thumbnailURLString: String?,
         distanceMeters: Double?,
         contentType: CategoryType,
-        coordinate: Coordinate
+        coordinate: Coordinate,
+        isCustom: Bool = false,
+        address: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -30,6 +34,8 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
         self.distanceMeters = distanceMeters
         self.contentType = contentType
         self.coordinate = coordinate
+        self.isCustom = isCustom
+        self.address = address
     }
     
     public var thumbnailURL: URL? {

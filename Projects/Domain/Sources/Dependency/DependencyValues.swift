@@ -60,4 +60,9 @@ extension DependencyValues {
         get {self[FestivalUseCaseDependencyKey.self]}
         set {self[FestivalUseCaseDependencyKey.self] = newValue}
     }
+
+    public var naverGeocodingUseCase: NaverGeocodingUseCaseProtocol {
+        get {self[NaverGeocodingUseCaseDependencyKey.self]}
+        set {self[NaverGeocodingUseCaseDependencyKey.self] = newValue}
+    }
 }
