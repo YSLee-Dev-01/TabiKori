@@ -18,7 +18,7 @@ struct PlanDetailSpotRow: View {
     let isLast: Bool
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
             TabiLabel(title: self.spot.startTimeTitle, style: .captionMBold, color: .tabiTextSecondary)
                 .frame(width: 40, alignment: .leading)
                 .padding(.top, 4)
