@@ -17,6 +17,11 @@ public struct TravelPlanDetailSpot: Equatable, Sendable, Identifiable {
     public let subtitle: String?
     public let startTime: Date
     public let durationMinutes: Int
+    public let contentId: String
+    public let coordinate: Coordinate
+    public let thumbnailURLString: String?
+    public let isCustom: Bool
+    public let address: String?
 
     public init(
         id: UUID,
@@ -26,7 +31,12 @@ public struct TravelPlanDetailSpot: Equatable, Sendable, Identifiable {
         title: String,
         subtitle: String?,
         startTime: Date,
-        durationMinutes: Int
+        durationMinutes: Int,
+        contentId: String,
+        coordinate: Coordinate,
+        thumbnailURLString: String?,
+        isCustom: Bool,
+        address: String?
     ) {
         self.id = id
         self.dayIndex = dayIndex
@@ -36,5 +46,10 @@ public struct TravelPlanDetailSpot: Equatable, Sendable, Identifiable {
         self.subtitle = subtitle
         self.startTime = startTime
         self.durationMinutes = durationMinutes
+        self.contentId = contentId
+        self.coordinate = coordinate
+        self.thumbnailURLString = thumbnailURLString
+        self.isCustom = isCustom
+        self.address = address
     }
 }
