@@ -18,6 +18,7 @@ public final class BookmarkModelContainer: Sendable {
     public static let shared = BookmarkModelContainer()
 
     public let modelContainer: ModelContainer
+    public let isFallbackToMemory: Bool
 
     // MARK: - Init
 
@@ -26,6 +27,7 @@ public final class BookmarkModelContainer: Sendable {
         do {
             let configuration = ModelConfiguration("Bookmark", schema: schema)
             self.modelContainer = try ModelContainer(for: schema, configurations: configuration)
+            self.isFallbackToMemory = false
         } catch {
             AppLogger.core.log(.error, "BookmarkModelContainer 생성 실패, in-memory로 폴백: \(error.localizedDescription)")
             let fallbackConfig = ModelConfiguration(isStoredInMemoryOnly: true)
@@ -33,6 +35,7 @@ public final class BookmarkModelContainer: Sendable {
                 fatalError("BookmarkModelContainer in-memory 폴백조차 실패: \(error.localizedDescription)")
             }
             self.modelContainer = fallback
+            self.isFallbackToMemory = true
         }
     }
 }

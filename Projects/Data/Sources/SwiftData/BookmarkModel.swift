@@ -18,6 +18,8 @@ final class BookmarkModel {
     var latitude: Double
     var longitude: Double
     var savedAt: Date
+    var isCustom: Bool = false
+    var address: String?
 
     init(
         contentId: String,
@@ -26,7 +28,9 @@ final class BookmarkModel {
         contentTypeRaw: String,
         latitude: Double,
         longitude: Double,
-        savedAt: Date
+        savedAt: Date,
+        isCustom: Bool = false,
+        address: String? = nil
     ) {
         self.contentId = contentId
         self.title = title
@@ -35,5 +39,7 @@ final class BookmarkModel {
         self.latitude = latitude
         self.longitude = longitude
         self.savedAt = savedAt
+        self.isCustom = isCustom
+        self.address = address
     }
 }
