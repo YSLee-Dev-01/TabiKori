@@ -41,19 +41,9 @@ public struct PlanView: View {
 
 private extension PlanView {
     func newPlanButton() -> some View {
-        Button {
+        TabiCapsuleButton(Strings.Plan.newPlanButton, systemImage: "plus") {
             self.store.send(.addButtonTapped)
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "plus")
-                TabiLabel(title: Strings.Plan.newPlanButton, style: .bodyMBold, color: .tabiOnColor)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(TabiColor.tabiPrimary)
-            .clipShape(Capsule())
         }
-        .buttonStyle(TabiPressStyle())
     }
 
     func planList() -> some View {

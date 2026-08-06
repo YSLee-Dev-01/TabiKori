@@ -60,15 +60,15 @@ public struct DetailFeature {
                 tel: nil,
                 homepageURLString: nil,
                 imageURLString: touristSpot.thumbnailURLString,
-                address: "",
-                coordinate: Coordinate(latitude: 0, longitude: 0),
+                address: touristSpot.isCustom ? (touristSpot.address ?? "") : "",
+                coordinate: touristSpot.isCustom ? touristSpot.coordinate : .zero,
                 overview: nil
             )
             self.intro = .empty(for: touristSpot.contentType)
         }
 
         fileprivate var hasReceivedAllResults: Bool {
-            self.hasReceivedDetail && self.hasReceivedIntro && self.hasReceivedImages
+            self.touristSpot.isCustom || (self.hasReceivedDetail && self.hasReceivedIntro && self.hasReceivedImages)
         }
     }
 
@@ -98,6 +98,14 @@ public struct DetailFeature {
             case .onAppear:
                 guard state.hasStartedLoading == false else { return .none }
                 state.hasStartedLoading = true
+
+                if state.touristSpot.isCustom {
+                    state.isLoading = false
+                    let shareURL = self.naverMapUseCase.makeShareURL(query: state.touristSpot.japaneseTitle)
+                    state.shareText = Self.makeShareText(spot: state.touristSpot, address: state.detail.address, shareURL: shareURL)
+                    return self.fetchIsBookmarkedEffect(contentId: state.touristSpot.id)
+                }
+
                 state.isLoading = true
                 return .merge(
                     self.fetchDetailEffect(contentId: state.touristSpot.id),
