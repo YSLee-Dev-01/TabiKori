@@ -9,6 +9,7 @@
 import SwiftUI
 
 import ComposableArchitecture
+import DesignSystem
 import Domain
 import Resource
 
@@ -67,10 +68,9 @@ private extension PlanDetailView {
     func dayTabScroll(plan: TravelPlan) -> some View {
         ScrollView(.horizontal) {
             HStack(spacing: 8) {
-                ForEach(Array(plan.dayDates.enumerated()), id: \.offset) { offset, date in
-                    PlanDetailDayButton(
-                        dayTitle: Strings.Plan.dayChipTitle(offset + 1),
-                        dateTitle: date.planDayDateTitle,
+                ForEach(Array(plan.dayDates.enumerated()), id: \.offset) { offset, _ in
+                    TabiChip(
+                        Strings.Plan.dayChipTitle(offset + 1),
                         isSelected: self.store.selectedDayIndex == offset
                     ) {
                         self.store.send(.dayButtonTapped(index: offset))
