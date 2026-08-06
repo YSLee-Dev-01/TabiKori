@@ -28,6 +28,7 @@ public struct AddCustomPlaceFeature: Sendable {
         var address: String = ""
         var selectedCategory: CategoryType?
         var isSaving: Bool = false
+        var previewCoordinate: Coordinate?
         @Presents var alert: AlertState<Action.Alert>?
 
         public init() {}
@@ -53,8 +54,10 @@ public struct AddCustomPlaceFeature: Sendable {
         case closeTapped
         case categorySelected(CategoryType)
         case confirmTapped
+        case addressSubmitted
         case saveResult(Bool)
         case addressNotFound
+        case addressPreviewResult(Coordinate)
         case alert(PresentationAction<Alert>)
 
         public enum Alert: Equatable {}
@@ -66,6 +69,10 @@ public struct AddCustomPlaceFeature: Sendable {
         BindingReducer()
         Reduce { state, action in
             switch action {
+            case .binding(\.address):
+                state.previewCoordinate = nil
+                return .none
+
             case .binding:
                 return .none
 
@@ -89,6 +96,10 @@ public struct AddCustomPlaceFeature: Sendable {
                     title: state.trimmedTitle,
                     address: state.trimmedAddress
                 )
+
+            case .addressSubmitted:
+                guard state.trimmedAddress.isEmpty == false else { return .none }
+                return self.addressPreviewEffect(address: state.trimmedAddress)
 
             case .saveResult(true):
                 return .none
@@ -119,6 +130,10 @@ public struct AddCustomPlaceFeature: Sendable {
                 }
                 return .none
 
+            case .addressPreviewResult(let coordinate):
+                state.previewCoordinate = coordinate
+                return .none
+
             case .alert:
                 return .none
             }
@@ -131,6 +146,7 @@ public struct AddCustomPlaceFeature: Sendable {
 
 private enum CancelID {
     case save
+    case preview
 }
 
 // MARK: - Method
@@ -140,6 +156,7 @@ private extension AddCustomPlaceFeature {
         .run { [naverGeocodingUseCase = self.naverGeocodingUseCase, bookmarkUseCase = self.bookmarkUseCase] send in
             do {
                 let coordinate = try await naverGeocodingUseCase.geocode(address: address)
+                await send(.addressPreviewResult(coordinate))
                 let spot = TouristSpot(
                     id: "custom_" + UUID().uuidString,
                     title: title,
@@ -161,5 +178,20 @@ private extension AddCustomPlaceFeature {
             }
         }
         .cancellable(id: CancelID.save, cancelInFlight: true)
+    }
+
+    func addressPreviewEffect(address: String) -> Effect<Action> {
+        .run { [naverGeocodingUseCase = self.naverGeocodingUseCase] send in
+            do {
+                let coordinate = try await naverGeocodingUseCase.geocode(address: address)
+                await send(.addressPreviewResult(coordinate))
+            } catch TabiError.dataNotFound {
+                AppLogger.view.log(.error, "커스텀 장소 주소 미리보기 실패: 주소를 찾을 수 없음")
+                await send(.addressNotFound)
+            } catch {
+                AppLogger.view.log(.error, "커스텀 장소 주소 미리보기 실패: \(error.localizedDescription)")
+            }
+        }
+        .cancellable(id: CancelID.preview, cancelInFlight: true)
     }
 }

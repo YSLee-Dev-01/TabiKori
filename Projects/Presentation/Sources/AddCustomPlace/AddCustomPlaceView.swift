@@ -9,7 +9,9 @@
 import SwiftUI
 
 import ComposableArchitecture
+import Core
 import DesignSystem
+import Domain
 import Resource
 
 public struct AddCustomPlaceView: View {
@@ -104,6 +106,38 @@ private extension AddCustomPlaceView {
                 text: self.$store.address,
                 focus: self.$isAddressFocused
             )
+            .onSubmit {
+                self.store.send(.addressSubmitted)
+            }
+            self.mapPreviewSection()
+        }
+    }
+
+    @ViewBuilder
+    func mapPreviewSection() -> some View {
+        if let coordinate = self.store.previewCoordinate {
+            TabiMapView(
+                centerLatitude: coordinate.latitude,
+                centerLongitude: coordinate.longitude,
+                markers: [
+                    TabiMapMarker(
+                        id: "preview",
+                        latitude: coordinate.latitude,
+                        longitude: coordinate.longitude,
+                        title: self.store.trimmedTitle.removingHangul,
+                        icon: (self.store.selectedCategory ?? .sightseeing).icon,
+                        color: (self.store.selectedCategory ?? .sightseeing).color
+                    )
+                ],
+                onMapTapped: { _, _ in },
+                onMarkerTapped: { _ in }
+            )
+            .frame(height: 180)
+            .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusLg))
+            .overlay {
+                RoundedRectangle(cornerRadius: .tabiRadiusLg)
+                    .stroke(TabiColor.tabiBorder.opacity(0.4), lineWidth: 1)
+            }
         }
     }
 }

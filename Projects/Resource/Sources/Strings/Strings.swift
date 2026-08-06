@@ -319,7 +319,7 @@ public extension Strings.AddCustomPlace {
     /// 화면 타이틀
     static let screenTitle = "カスタムスポットを追加"
     /// Bookmark 화면 진입 버튼
-    static let entryButtonTitle = "追加"
+    static let entryButtonTitle = "カスタムスポット"
     /// 타이틀 입력 라벨
     static let titleLabel = "タイトル"
     /// 타이틀 입력 placeholder
