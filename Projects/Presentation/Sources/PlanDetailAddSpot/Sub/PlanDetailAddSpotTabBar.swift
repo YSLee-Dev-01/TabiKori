@@ -17,37 +17,12 @@ struct PlanDetailAddSpotTabBar: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            self.tabButton(title: Strings.Plan.spotAddSearchTabTitle, tab: .search)
-            self.tabButton(title: Strings.Bookmark.title, tab: .bookmark)
-        }
-    }
-}
-
-// MARK: - View
-
-private extension PlanDetailAddSpotTabBar {
-    func tabButton(title: String, tab: PlanDetailAddSpotFeature.State.Tab) -> some View {
-        let isSelected = self.selectedTab == tab
-        return Button {
-            self.onTabSelected(tab)
-        } label: {
-            TabiLabel(
-                title: title,
-                style: isSelected ? .captionMBold : .captionM,
-                color: isSelected ? .tabiOnColor : .tabiTextSecondary
-            )
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .background(isSelected ? TabiColor.tabiPrimary : TabiColor.tabiSurface)
-            .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
-            .overlay {
-                if isSelected == false {
-                    RoundedRectangle(cornerRadius: .tabiRadiusMd)
-                        .stroke(TabiColor.tabiBorder, lineWidth: 1)
-                }
+            TabiChip(Strings.Plan.spotAddSearchTabTitle, isSelected: self.selectedTab == .search) {
+                self.onTabSelected(.search)
+            }
+            TabiChip(Strings.Bookmark.title, isSelected: self.selectedTab == .bookmark) {
+                self.onTabSelected(.bookmark)
             }
         }
-        .buttonStyle(.plain)
-        .animation(.tabiFast, value: isSelected)
     }
 }

@@ -17,6 +17,9 @@ import Resource
 struct PlanDetailAddSpotView: View {
     @Bindable private var store: StoreOf<PlanDetailAddSpotFeature>
 
+    @State private var selectedDetent: PresentationDetent = .medium
+    @FocusState private var isSearchFocused: Bool
+
     init(store: StoreOf<PlanDetailAddSpotFeature>) {
         self.store = store
     }
@@ -26,6 +29,12 @@ struct PlanDetailAddSpotView: View {
             self.header()
             self.stepContent()
                 .animation(.tabiStandard, value: self.store.step)
+        }
+        .presentationDetents([.medium, .large], selection: self.$selectedDetent)
+        .presentationDragIndicator(.visible)
+        .onChange(of: self.isSearchFocused) { _, isFocused in
+            guard isFocused else { return }
+            self.selectedDetent = .large
         }
     }
 }
@@ -50,7 +59,11 @@ private extension PlanDetailAddSpotView {
             } label: {
                 Image(systemName: "xmark")
                     .foregroundStyle(TabiColor.tabiTextSecondary)
+                    .frame(width: 32, height: 32)
+                    .background(TabiColor.tabiSurface)
+                    .clipShape(Circle())
             }
+            .buttonStyle(TabiPressStyle())
         }
         .padding(.horizontal, 20)
         .padding(.top, 26)
@@ -94,10 +107,10 @@ private extension PlanDetailAddSpotView {
                     results: self.store.searchResults,
                     isLoading: self.store.isSearchLoading,
                     hasSearched: self.store.hasSearched,
+                    focus: self.$isSearchFocused,
                     onSubmit: { self.store.send(.searchSubmitted) },
                     onSpotTapped: { self.store.send(.spotRowTapped($0)) }
                 )
-                .padding(.horizontal, 20)
 
             case .bookmark:
                 PlanDetailAddSpotBookmarkListView(
@@ -105,7 +118,6 @@ private extension PlanDetailAddSpotView {
                     isLoading: self.store.isBookmarkLoading,
                     onSpotTapped: { self.store.send(.spotRowTapped($0)) }
                 )
-                .padding(.horizontal, 20)
             }
         }
     }

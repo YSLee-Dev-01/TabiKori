@@ -24,7 +24,7 @@ public struct PlanDetailView: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 10) {
             self.dayTabScroll(plan: self.store.plan)
             if let dateTitle = self.selectedDayDateTitle(plan: self.store.plan) {
                 PlanDetailDayHeader(
@@ -54,8 +54,6 @@ public struct PlanDetailView: View {
         .interactivePopGestureEnabled(true)
         .sheet(item: self.$store.scope(state: \.addSpotState, action: \.addSpot)) { store in
             PlanDetailAddSpotView(store: store)
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
         }
         .onAppear {
             self.store.send(.onAppear)
