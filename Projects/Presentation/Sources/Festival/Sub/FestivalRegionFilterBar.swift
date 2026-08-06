@@ -19,28 +19,39 @@ struct FestivalRegionFilterBar: View {
 
     @State private var isAllRegionsPresented: Bool = false
 
+    private let allRegionsChipID: String = "FestivalRegionFilterBar.allRegions"
+
     var body: some View {
         HStack(spacing: 8) {
-            ScrollView(.horizontal) {
-                HStack(spacing: 8) {
-                    TabiChip(
-                        Strings.Common.contentTypeAll,
-                        isSelected: self.selectedRegionCode == nil
-                    ) {
-                        self.onSelect(nil)
-                    }
-
-                    ForEach(self.regions) { region in
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal) {
+                    HStack(spacing: 8) {
                         TabiChip(
-                            region.name,
-                            isSelected: self.selectedRegionCode == region.code
+                            Strings.Common.contentTypeAll,
+                            isSelected: self.selectedRegionCode == nil
                         ) {
-                            self.onSelect(region.code)
+                            self.onSelect(nil)
+                        }
+                        .id(self.allRegionsChipID)
+
+                        ForEach(self.regions) { region in
+                            TabiChip(
+                                region.name,
+                                isSelected: self.selectedRegionCode == region.code
+                            ) {
+                                self.onSelect(region.code)
+                            }
+                            .id(region.code)
                         }
                     }
                 }
+                .scrollIndicators(.hidden)
+                .onChange(of: self.selectedRegionCode) { _, newValue in
+                    withAnimation(.tabiStandard) {
+                        proxy.scrollTo(newValue ?? self.allRegionsChipID, anchor: .center)
+                    }
+                }
             }
-            .scrollIndicators(.hidden)
 
             Button {
                 self.isAllRegionsPresented = true
