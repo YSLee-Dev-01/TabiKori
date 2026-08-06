@@ -26,6 +26,8 @@
 	<array>
 		<string>nmap</string>
 	</array>
+	<key>NAVER_GEOCODING_CLIENT_SECRET</key>
+	<string>$(NAVER_GEOCODING_CLIENT_SECRET)</string>
 	<key>NMFNcpKeyId</key>
 	<string>$(NAVERMAP_CLIENT_ID)</string>
 	<key>NSAppTransportSecurity</key>
