@@ -134,7 +134,12 @@ public struct AddToItineraryFeature: Sendable {
                     title: state.touristSpot.japaneseTitle,
                     subtitle: state.address,
                     startTime: state.startTime,
-                    durationMinutes: state.durationMinutes
+                    durationMinutes: state.durationMinutes,
+                    contentId: state.touristSpot.id,
+                    coordinate: state.touristSpot.coordinate,
+                    thumbnailURLString: state.touristSpot.thumbnailURLString,
+                    isCustom: state.touristSpot.isCustom,
+                    address: state.touristSpot.address
                 )
                 return self.saveEffect(planId: plan.id, spot: spot)
 

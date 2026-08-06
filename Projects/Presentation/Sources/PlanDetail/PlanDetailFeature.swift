@@ -44,6 +44,7 @@ public struct PlanDetailFeature: Sendable {
         case dayButtonTapped(index: Int)
         case spotDeleteButtonTapped(id: UUID)
         case addSpotButtonTapped
+        case spotRowTapped(TravelPlanDetailSpot)
         case travelPlanDetailResult(TravelPlanDetail?)
         case spotDeleted(id: UUID)
         case addSpot(PresentationAction<PlanDetailAddSpotFeature.Action>)
@@ -74,6 +75,9 @@ public struct PlanDetailFeature: Sendable {
                     date: state.plan.dayDates[state.selectedDayIndex],
                     detail: state.travelPlanDetail
                 )
+                return .none
+
+            case .spotRowTapped:
                 return .none
 
             case .travelPlanDetailResult(let detail):

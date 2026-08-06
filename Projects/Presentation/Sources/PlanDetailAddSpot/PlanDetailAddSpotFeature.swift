@@ -149,7 +149,12 @@ public struct PlanDetailAddSpotFeature: Sendable {
                     title: spot.japaneseTitle,
                     subtitle: spot.koreanTitle,
                     startTime: state.startTime,
-                    durationMinutes: state.durationMinutes
+                    durationMinutes: state.durationMinutes,
+                    contentId: spot.id,
+                    coordinate: spot.coordinate,
+                    thumbnailURLString: spot.thumbnailURLString,
+                    isCustom: spot.isCustom,
+                    address: spot.address
                 )
                 return self.saveEffect(planId: state.planId, spot: detailSpot)
 

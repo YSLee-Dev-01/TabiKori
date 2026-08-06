@@ -108,6 +108,10 @@ private extension PlanDetailView {
                         isFirst: index == 0,
                         isLast: index == spots.count - 1
                     )
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        self.store.send(.spotRowTapped(spot))
+                    }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))

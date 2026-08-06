@@ -8,6 +8,7 @@
 
 import Foundation
 import ComposableArchitecture
+import Domain
 
 @Reducer
 public struct TabBarFeature {
@@ -100,6 +101,20 @@ public struct TabBarFeature {
                 return .none
 
             case .plan:
+                return .none
+
+            case .path(.element(id: _, action: .planDetail(.spotRowTapped(let spot)))):
+                let touristSpot = TouristSpot(
+                    id: spot.contentId,
+                    title: spot.title,
+                    thumbnailURLString: spot.thumbnailURLString,
+                    distanceMeters: nil,
+                    contentType: spot.category,
+                    coordinate: spot.coordinate,
+                    isCustom: spot.isCustom,
+                    address: spot.address
+                )
+                state.path.append(.detail(DetailFeature.State(touristSpot: touristSpot)))
                 return .none
 
             case .path(.element(id: _, action: .detail(.isBookmarkedResult))):
