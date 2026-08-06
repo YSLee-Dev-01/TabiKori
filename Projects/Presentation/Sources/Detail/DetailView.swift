@@ -88,6 +88,7 @@ struct DetailView: View {
             }
             .navigationTransition(.zoom(sourceID: self.store.touristSpot.id, in: self.namespace))
             .navigationBarBackButtonHidden(true)
+            .interactivePopGestureEnabled(true)
             .toolbarBackground(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 DetailBottomCTAView(
@@ -103,6 +104,9 @@ struct DetailView: View {
             }
             .onAppear {
                 self.store.send(.onAppear)
+            }
+            .onDisappear {
+                self.store.send(.onDisappear)
             }
         }
     }

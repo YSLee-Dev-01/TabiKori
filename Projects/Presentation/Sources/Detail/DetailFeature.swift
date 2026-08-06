@@ -75,6 +75,7 @@ public struct DetailFeature {
     public enum Action: Equatable, BindableAction {
         case binding(BindingAction<State>)
         case onAppear
+        case onDisappear
         case tabSelected(DetailTab)
         case saveButtonTapped
         case photoCellTapped(index: Int)
@@ -104,6 +105,10 @@ public struct DetailFeature {
                     self.fetchImagesEffect(contentId: state.touristSpot.id),
                     self.fetchIsBookmarkedEffect(contentId: state.touristSpot.id)
                 )
+
+            case .onDisappear:
+                state.addToItineraryState = nil
+                return .none
 
             case .tabSelected(let tab):
                 state.selectedTab = tab
