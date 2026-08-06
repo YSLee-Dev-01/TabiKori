@@ -27,18 +27,24 @@ public struct PlanDetailView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             self.dayTabScroll(plan: self.store.plan)
-            if let dateTitle = self.selectedDayDateTitle(plan: self.store.plan) {
-                PlanDetailDayHeader(
-                    dateTitle: dateTitle,
-                    spotCountTitle: self.spotCountTitle
-                )
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
+
+            VStack(alignment: .leading, spacing: 10) {
+                if let dateTitle = self.selectedDayDateTitle(plan: self.store.plan) {
+                    PlanDetailDayHeader(
+                        dateTitle: dateTitle,
+                        spotCountTitle: self.spotCountTitle
+                    )
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                }
+                // TODO: 지도 영역 추가
+                EmptyView()
+                self.spotList()
             }
-            // TODO: 지도 영역 추가
-            EmptyView()
-            self.spotList()
+            .id(self.store.selectedDayIndex)
+            .transition(.move(edge: .trailing))
         }
+        .animation(.tabiStandard, value: self.store.selectedDayIndex)
         .navigationTitle("\(self.store.plan.title) · \(self.store.plan.displayRegionTitle)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
