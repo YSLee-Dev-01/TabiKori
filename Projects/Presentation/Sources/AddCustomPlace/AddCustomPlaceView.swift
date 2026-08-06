@@ -16,6 +16,10 @@ public struct AddCustomPlaceView: View {
 
     @Bindable private var store: StoreOf<AddCustomPlaceFeature>
 
+    @State private var selectedDetent: PresentationDetent = .medium
+    @FocusState private var isTitleFocused: Bool
+    @FocusState private var isAddressFocused: Bool
+
     public init(store: StoreOf<AddCustomPlaceFeature>) {
         self.store = store
     }
@@ -41,8 +45,17 @@ public struct AddCustomPlaceView: View {
                 self.store.send(.confirmTapped)
             }
         }
+        .presentationDetents([.medium, .large], selection: self.$selectedDetent)
         .presentationDragIndicator(.visible)
         .alert($store.scope(state: \.alert, action: \.alert))
+        .onChange(of: self.isTitleFocused) { _, isFocused in
+            guard isFocused else { return }
+            self.selectedDetent = .large
+        }
+        .onChange(of: self.isAddressFocused) { _, isFocused in
+            guard isFocused else { return }
+            self.selectedDetent = .large
+        }
     }
 }
 
@@ -75,14 +88,22 @@ private extension AddCustomPlaceView {
     func titleField() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             TabiLabel(title: Strings.AddCustomPlace.titleLabel, style: .bodyMBold, color: .tabiTextPrimary)
-            TabiTextField(placeholder: Strings.AddCustomPlace.titlePlaceholder, text: self.$store.title)
+            TabiTextField(
+                placeholder: Strings.AddCustomPlace.titlePlaceholder,
+                text: self.$store.title,
+                focus: self.$isTitleFocused
+            )
         }
     }
 
     func addressField() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             TabiLabel(title: Strings.AddCustomPlace.addressLabel, style: .bodyMBold, color: .tabiTextPrimary)
-            TabiTextField(placeholder: Strings.AddCustomPlace.addressPlaceholder, text: self.$store.address)
+            TabiTextField(
+                placeholder: Strings.AddCustomPlace.addressPlaceholder,
+                text: self.$store.address,
+                focus: self.$isAddressFocused
+            )
         }
     }
 }
