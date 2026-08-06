@@ -19,6 +19,7 @@ public enum Strings {
     public enum Plan {}
     public enum Festival {}
     public enum AddToItinerary {}
+    public enum AddCustomPlace {}
 }
 
 public extension Strings.Common {
@@ -312,6 +313,27 @@ public extension Strings.AddToItinerary {
     static let durationLabel = "所要時間"
     /// 저장(추가) 버튼
     static let saveButton = "追加する"
+}
+
+public extension Strings.AddCustomPlace {
+    /// 화면 타이틀
+    static let screenTitle = "カスタムスポットを追加"
+    /// Bookmark 화면 진입 버튼
+    static let entryButtonTitle = "追加"
+    /// 타이틀 입력 라벨
+    static let titleLabel = "タイトル"
+    /// 타이틀 입력 placeholder
+    static let titlePlaceholder = "スポット名を入力"
+    /// 주소 입력 라벨
+    static let addressLabel = "住所"
+    /// 주소 입력 placeholder
+    static let addressPlaceholder = "住所を入力"
+    /// 저장 버튼
+    static let saveButton = "保存する"
+    /// 주소를 찾을 수 없음 알림 타이틀
+    static let addressNotFoundAlertTitle = "住所が見つかりませんでした"
+    /// 주소를 찾을 수 없음 알림 메시지
+    static let addressNotFoundAlertMessage = "住所を確認してもう一度お試しください"
 }
 
 public extension Strings.Festival {
