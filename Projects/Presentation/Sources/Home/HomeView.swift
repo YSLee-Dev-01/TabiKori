@@ -524,6 +524,7 @@ fileprivate extension HomeView {
 
     func regionCard(_ region: KoreanRegion) -> some View {
         Button {
+            self.store.send(.regionCardTapped(region))
         } label: {
             VStack(alignment: .leading, spacing: 4) {
                 if let image = region.image {

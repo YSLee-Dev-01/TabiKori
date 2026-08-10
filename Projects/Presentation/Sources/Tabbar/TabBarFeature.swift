@@ -80,6 +80,10 @@ public struct TabBarFeature {
                 state.path.append(.festival(FestivalFeature.State()))
                 return .none
 
+            case .home(.regionCardTapped(let region)):
+                state.path.append(.region(RegionSpotFeature.State(region: region)))
+                return .none
+
             case .home:
                 return .none
 

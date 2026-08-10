@@ -59,6 +59,7 @@ public struct HomeFeature: Sendable {
         case categoryCoordinateResolved(CategoryType, Coordinate)
         case recommendedEventBannerTapped
         case openSettingsButtonTapped
+        case regionCardTapped(KoreanRegion)
     }
 
     public init() {}
@@ -209,6 +210,9 @@ public struct HomeFeature: Sendable {
                         UIApplication.shared.open(url)
                     }
                 }
+
+            case .regionCardTapped:
+                return .none
             }
         }
     }
