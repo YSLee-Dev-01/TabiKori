@@ -29,12 +29,17 @@ public struct TabiCapsuleButton: View {
         Button(action: self.action) {
             HStack(spacing: 6) {
                 Image(systemName: self.systemImage)
-                TabiLabel(title: self.title, style: .bodyMBold, color: .tabiOnColor)
+                    .foregroundStyle(TabiColor.tabiPrimary)
+                TabiLabel(title: self.title, style: .bodyMBold, color: .tabiPrimary)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
-            .background(TabiColor.tabiPrimary)
-            .clipShape(Capsule())
+            .glassEffect()
+            .overlay(
+                Color.getTabiColor(.tabiPrimary)
+                    .opacity(0.1)
+                    .clipShape(.capsule)
+            )
         }
         .buttonStyle(TabiPressStyle())
     }
