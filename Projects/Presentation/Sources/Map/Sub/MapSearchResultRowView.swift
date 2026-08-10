@@ -24,6 +24,7 @@ struct MapSearchResultRowView: View {
             koreanTitle: self.spot.koreanTitle?.removingBracketedTags,
             tagTitle: self.spot.contentType.label,
             tagColor: self.spot.contentType.color,
+            isCustom: self.spot.isCustom,
             distance: self.spot.formattedDistance,
             onTap: self.onTapped
         )

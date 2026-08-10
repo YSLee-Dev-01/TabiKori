@@ -23,6 +23,7 @@ struct PlanDetailAddSpotSpotRow: View {
             koreanTitle: self.spot.koreanTitle?.removingBracketedTags,
             tagTitle: self.spot.contentType.label,
             tagColor: self.spot.contentType.color,
+            isCustom: self.spot.isCustom,
             distance: nil,
             onTap: self.onTap
         )

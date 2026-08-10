@@ -70,6 +70,7 @@ private extension BookmarkView {
                                 koreanTitle: bookmark.touristSpot.koreanTitle,
                                 tagTitle: bookmark.touristSpot.contentType.label,
                                 tagColor: bookmark.touristSpot.contentType.color,
+                                isCustom: bookmark.touristSpot.isCustom,
                                 distance: nil,
                                 onTap: { self.store.send(.spotTapped(bookmark.touristSpot)) }
                             )

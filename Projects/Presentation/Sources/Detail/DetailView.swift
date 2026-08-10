@@ -123,7 +123,12 @@ private extension DetailView {
                     .padding(.top, 4)
             }
             HStack {
-                TabiTag(self.store.detail.contentType.label, color: self.store.detail.contentType.color)
+                HStack(spacing: 6) {
+                    TabiTag(self.store.detail.contentType.label, color: self.store.detail.contentType.color)
+                    if self.store.touristSpot.isCustom {
+                        TabiTag(Strings.AddCustomPlace.customBadgeTitle, color: .tabiTextTertiary)
+                    }
+                }
                 Spacer()
                 HStack(spacing: 3) {
                     Image(systemName: "location.fill")

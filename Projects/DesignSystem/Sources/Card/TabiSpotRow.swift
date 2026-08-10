@@ -17,6 +17,7 @@ public struct TabiSpotRow: View {
     private let koreanTitle: String?
     private let tagTitle: String
     private let tagColor: TabiColor
+    private let isCustom: Bool
     private let distance: String?
     private let onTap: () -> Void
 
@@ -26,6 +27,7 @@ public struct TabiSpotRow: View {
         koreanTitle: String?,
         tagTitle: String,
         tagColor: TabiColor,
+        isCustom: Bool,
         distance: String?,
         onTap: @escaping () -> Void
     ) {
@@ -34,6 +36,7 @@ public struct TabiSpotRow: View {
         self.koreanTitle = koreanTitle
         self.tagTitle = tagTitle
         self.tagColor = tagColor
+        self.isCustom = isCustom
         self.distance = distance
         self.onTap = onTap
     }
@@ -65,7 +68,13 @@ public struct TabiSpotRow: View {
                         }
                     }
 
-                    TabiTag(self.tagTitle, color: self.tagColor)
+                    HStack(spacing: 6) {
+                        TabiTag(self.tagTitle, color: self.tagColor)
+
+                        if self.isCustom {
+                            TabiTag(Strings.AddCustomPlace.customBadgeTitle, color: .tabiTextTertiary)
+                        }
+                    }
                 }
 
                 Spacer()
