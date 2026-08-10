@@ -20,11 +20,11 @@ final class TravelPlanDetailSpotModel {
     var subtitle: String?
     var startTime: Date
     var durationMinutes: Int
-    var contentId: String
-    var latitude: Double
-    var longitude: Double
+    var contentId: String = ""
+    var latitude: Double = 0.0
+    var longitude: Double = 0.0
     var thumbnailURLString: String?
-    var isCustom: Bool
+    var isCustom: Bool = true
     var address: String?
 
     init(
