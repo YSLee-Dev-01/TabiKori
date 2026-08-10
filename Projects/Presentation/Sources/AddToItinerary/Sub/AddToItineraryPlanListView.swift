@@ -31,10 +31,10 @@ struct AddToItineraryPlanListView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(self.plans) { plan in
-                            self.planSection(plan)
-                        }
+                    LazyVStack(alignment: .leading, spacing: 20) {
+                        self.planGroup(.ongoing, plans: self.ongoingPlans)
+                        self.planGroup(.upcoming, plans: self.upcomingPlans)
+                        self.planGroup(.past, plans: self.pastPlans)
                     }
                     .padding(20)
                 }
@@ -52,6 +52,24 @@ struct AddToItineraryPlanListView: View {
 // MARK: - Method
 
 private extension AddToItineraryPlanListView {
+    var ongoingPlans: [TravelPlan] { self.plans.filter { $0.section == .ongoing } }
+    var upcomingPlans: [TravelPlan] { self.plans.filter { $0.section == .upcoming } }
+    var pastPlans: [TravelPlan] { self.plans.filter { $0.section == .past } }
+
+    @ViewBuilder
+    func planGroup(_ section: PlanSection, plans: [TravelPlan]) -> some View {
+        if !plans.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                TabiLabel(title: section.title, style: .bodyMBold, color: .tabiTextPrimary)
+                VStack(spacing: 12) {
+                    ForEach(plans) { plan in
+                        self.planSection(plan)
+                    }
+                }
+            }
+        }
+    }
+
     @ViewBuilder
     func planSection(_ plan: TravelPlan) -> some View {
         let isExpanded = self.expandedPlanId == plan.id
