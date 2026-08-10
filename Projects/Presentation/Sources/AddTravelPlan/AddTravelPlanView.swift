@@ -16,6 +16,9 @@ public struct AddTravelPlanView: View {
 
     @Bindable private var store: StoreOf<AddTravelPlanFeature>
 
+    @State private var selectedDetent: PresentationDetent = .medium
+    @FocusState private var isTitleFocused: Bool
+
     public init(store: StoreOf<AddTravelPlanFeature>) {
         self.store = store
     }
@@ -42,8 +45,13 @@ public struct AddTravelPlanView: View {
                 self.store.send(.confirmTapped)
             }
         }
+        .presentationDetents([.medium, .large], selection: self.$selectedDetent)
         .presentationDragIndicator(.visible)
         .alert($store.scope(state: \.alert, action: \.alert))
+        .onChange(of: self.isTitleFocused) { _, isFocused in
+            guard isFocused else { return }
+            self.selectedDetent = .large
+        }
     }
 }
 
@@ -59,7 +67,7 @@ private extension AddTravelPlanView {
     func nameField() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             TabiLabel(title: Strings.Plan.nameLabel, style: .bodyMBold, color: .tabiTextPrimary)
-            TabiTextField(placeholder: Strings.Plan.namePlaceholder, text: self.$store.title)
+            TabiTextField(placeholder: Strings.Plan.namePlaceholder, text: self.$store.title, focus: self.$isTitleFocused)
         }
     }
 
