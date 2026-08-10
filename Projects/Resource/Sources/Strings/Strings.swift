@@ -20,6 +20,7 @@ public enum Strings {
     public enum Festival {}
     public enum AddToItinerary {}
     public enum AddCustomPlace {}
+    public enum RegionSpot {}
 }
 
 public extension Strings.Common {
@@ -340,6 +341,15 @@ public extension Strings.AddCustomPlace {
     static let addressNotFoundAlertTitle = "住所が見つかりませんでした"
     /// 주소를 찾을 수 없음 알림 메시지
     static let addressNotFoundAlertMessage = "住所を確認してもう一度お試しください"
+    /// 커스텀 스팟 배지 타이틀
+    static let customBadgeTitle = "カスタム"
+}
+
+public extension Strings.RegionSpot {
+    /// 준비 중 안내 제목
+    static let comingSoonTitle = "観光情報を準備中です"
+    /// 준비 중 안내 설명
+    static let comingSoonDescription = "このエリアの観光スポット情報は近日公開予定です。"
 }
 
 public extension Strings.Festival {
@@ -351,4 +361,6 @@ public extension Strings.Festival {
     static let emptyTitle = "イベントが見つかりませんでした"
     /// 결과 없음 설명
     static let emptyDescription = "条件を変更して再度お試しください"
+    /// 종료일 지정 시 기간 내 완결 이벤트만 표시된다는 안내 문구
+    static let dateRangeFilterNotice = "終了日を指定すると、期間内に開催が完結するイベントのみ表示されます"
 }

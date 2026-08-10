@@ -28,12 +28,19 @@ public final class FestivalUseCase: FestivalUseCaseProtocol {
         regionCode: String?,
         pageNo: Int
     ) async throws -> [Festival] {
-        return try await self.repository.fetchFestivals(
+        let festivals = try await self.repository.fetchFestivals(
             startDate: startDate,
             endDate: endDate,
             regionCode: regionCode,
             pageNo: pageNo
         )
+
+        guard let endDate else {
+            return festivals
+        }
+        return festivals.filter { festival in
+            festival.startDate >= startDate && (festival.endDate ?? festival.startDate) <= endDate
+        }
     }
 
     public func fetchRegions() async throws -> [LDongRegion] {

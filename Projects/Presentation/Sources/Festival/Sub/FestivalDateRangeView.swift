@@ -24,6 +24,15 @@ struct FestivalDateRangeView: View {
                 self.dateBox(label: Strings.Festival.endDateLabel, date: self.endDate, field: .end)
             }
 
+            if self.endDate != nil {
+                TabiLabel(
+                    title: Strings.Festival.dateRangeFilterNotice,
+                    style: .captionM,
+                    color: .tabiTextTertiary,
+                    isExpanded: true
+                )
+            }
+
             if let activeField {
                 TabiRangeCalendar(
                     startDate: self.$startDate,
@@ -42,7 +51,21 @@ struct FestivalDateRangeView: View {
 private extension FestivalDateRangeView {
     func dateBox(label: String, date: Date?, field: FestivalDateField) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            TabiLabel(title: label, style: .captionM, color: .tabiTextSecondary)
+            HStack(spacing: 4) {
+                TabiLabel(title: label, style: .captionM, color: .tabiTextSecondary)
+
+                if field == .end, date != nil {
+                    Spacer(minLength: 0)
+                    Button {
+                        self.endDate = nil
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(TabiColor.tabiTextTertiary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
             TabiLabel(
                 title: date?.festivalPeriodDateTitle ?? Strings.Plan.datePlaceholder,
                 style: .bodyMBold,
