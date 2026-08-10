@@ -113,31 +113,31 @@ private extension AddCustomPlaceView {
         }
     }
 
-    @ViewBuilder
     func mapPreviewSection() -> some View {
-        if let coordinate = self.store.previewCoordinate {
-            TabiMapView(
-                centerLatitude: coordinate.latitude,
-                centerLongitude: coordinate.longitude,
-                markers: [
-                    TabiMapMarker(
-                        id: "preview",
-                        latitude: coordinate.latitude,
-                        longitude: coordinate.longitude,
-                        title: self.store.trimmedTitle.removingHangul,
-                        icon: (self.store.selectedCategory ?? .sightseeing).icon,
-                        color: (self.store.selectedCategory ?? .sightseeing).color
-                    )
-                ],
-                onMapTapped: { _, _ in },
-                onMarkerTapped: { _ in }
+        let coordinate = self.store.previewCoordinate ?? .seoulCityHall
+        let markers: [TabiMapMarker] = self.store.previewCoordinate == nil ? [] : [
+            TabiMapMarker(
+                id: "preview",
+                latitude: coordinate.latitude,
+                longitude: coordinate.longitude,
+                title: self.store.trimmedTitle.removingHangul,
+                icon: (self.store.selectedCategory ?? .sightseeing).icon,
+                color: (self.store.selectedCategory ?? .sightseeing).color
             )
-            .frame(height: 180)
-            .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusLg))
-            .overlay {
-                RoundedRectangle(cornerRadius: .tabiRadiusLg)
-                    .stroke(TabiColor.tabiBorder.opacity(0.4), lineWidth: 1)
-            }
+        ]
+
+        return TabiMapView(
+            centerLatitude: coordinate.latitude,
+            centerLongitude: coordinate.longitude,
+            markers: markers,
+            onMapTapped: { _, _ in },
+            onMarkerTapped: { _ in }
+        )
+        .frame(height: 180)
+        .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusLg))
+        .overlay {
+            RoundedRectangle(cornerRadius: .tabiRadiusLg)
+                .stroke(TabiColor.tabiBorder.opacity(0.4), lineWidth: 1)
         }
     }
 }
