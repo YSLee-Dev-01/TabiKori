@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 
 import ComposableArchitecture
 import Core
@@ -57,6 +58,7 @@ public struct HomeFeature: Sendable {
         case categoryTapped(CategoryType)
         case categoryCoordinateResolved(CategoryType, Coordinate)
         case recommendedEventBannerTapped
+        case openSettingsButtonTapped
     }
 
     public init() {}
@@ -196,6 +198,17 @@ public struct HomeFeature: Sendable {
 
             case .recommendedEventBannerTapped:
                 return .none
+
+            case .openSettingsButtonTapped:
+                return .run { _ in
+                    guard let url = URL(string: UIApplication.openSettingsURLString) else {
+                        AppLogger.view.log(.error, "설정 앱 URL 생성 실패")
+                        return
+                    }
+                    await MainActor.run {
+                        UIApplication.shared.open(url)
+                    }
+                }
             }
         }
     }

@@ -189,7 +189,7 @@ fileprivate extension HomeView {
 
     func locationPermissionBanner() -> some View {
         Button {
-            // 설정 탭 이동
+            self.store.send(.openSettingsButtonTapped)
         } label: {
             TabiCard {
                 HStack(alignment: .center, spacing: 10) {
