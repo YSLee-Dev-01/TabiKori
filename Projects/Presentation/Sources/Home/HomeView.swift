@@ -67,12 +67,10 @@ public struct HomeView: View {
                             self.store.send(.searchBarTapped)
                         }
                         .staggeredAppear(index: 1)
-                        self.categoryView()
-                            .staggeredAppear(index: 2)
                         self.recommendedEventBanner()
-                            .staggeredAppear(index: 3)
+                            .staggeredAppear(index: 2)
                         self.recommendedRegionBanner()
-                            .staggeredAppear(index: 4)
+                            .staggeredAppear(index: 3)
                     }
                 }
                 .animation(.tabiStandard, value: self.store.locationStatus)
