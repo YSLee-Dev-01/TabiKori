@@ -6,7 +6,7 @@ description: Git 커밋 컨벤션을 정의한 문서. 커밋 메시지 작성 �
 ## 커밋 메시지 형식
 
 ```
-<type>(변경된 부분 > 상세): 제목 (A)
+<type>(변경된 부분 > 상세): 제목 (CC)
 ```
 
 ---
@@ -23,6 +23,7 @@ description: Git 커밋 컨벤션을 정의한 문서. 커밋 메시지 작성 �
 | `Build` | 빌드와 관련된 작업 수정 시 |
 | `Refactor` | 동일한 기능을 더 나은 코드로 바꿨을 때 |
 | `Chore` | 폴더 작업 시 |
+| `AI` | Claude Code 설정/스킬/규칙 문서 변경 시 (scope 생략, `AI: 제목` 형식) |
 
 ---
 
@@ -46,6 +47,11 @@ description: Git 커밋 컨벤션을 정의한 문서. 커밋 메시지 작성 �
 | `DIContainer` | 의존성 주입 설정 |
 | `Util` | 유틸 |
 | `App` | 빌드 및 앱 전반 |
+| `Map` | 지도 화면 |
+| `Plan` | 여행 일정(전체) 화면 |
+| `Bookmark` | 북마크 화면 |
+| `Festival` | 축제 화면 |
+| `Chore` | 스펙/plan/tasks 등 문서·폴더 작업 |
 
 ---
 
