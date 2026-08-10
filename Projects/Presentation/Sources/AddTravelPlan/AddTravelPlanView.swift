@@ -51,16 +51,9 @@ public struct AddTravelPlanView: View {
 
 private extension AddTravelPlanView {
     func closeButton() -> some View {
-        Button {
+        TabiCircleIconButton(systemName: "xmark") {
             self.store.send(.closeTapped)
-        } label: {
-            Image(systemName: "xmark")
-                .foregroundStyle(TabiColor.tabiTextSecondary)
-                .frame(width: 32, height: 32)
-                .background(TabiColor.tabiSurface)
-                .clipShape(Circle())
         }
-        .buttonStyle(TabiPressStyle())
     }
 
     func nameField() -> some View {

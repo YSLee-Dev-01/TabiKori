@@ -42,7 +42,7 @@ public struct BookmarkView: View {
 
 private extension BookmarkView {
     func addCustomPlaceButton() -> some View {
-        TabiCapsuleButton(Strings.AddCustomPlace.entryButtonTitle, systemImage: "plus") {
+        TabiCircleIconButton(systemName: "plus", foregroundColor: .tabiPrimary) {
             self.store.send(.addCustomPlaceButtonTapped)
         }
     }

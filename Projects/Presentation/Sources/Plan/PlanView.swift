@@ -41,7 +41,7 @@ public struct PlanView: View {
 
 private extension PlanView {
     func newPlanButton() -> some View {
-        TabiCapsuleButton(Strings.Plan.newPlanButton, systemImage: "plus") {
+        TabiCircleIconButton(systemName: "plus", foregroundColor: .tabiPrimary) {
             self.store.send(.addButtonTapped)
         }
     }
