@@ -36,4 +36,33 @@ public final class TestTravelPlanDetailUseCase: TravelPlanDetailUseCaseProtocol,
             spots: detail.spots.filter { $0.id != spotId }
         )
     }
+
+    public func saveEditedSpots(planId: UUID, dayIndex: Int, orderedSpotIds: [UUID]) async throws {
+        guard let index = self.details.firstIndex(where: { $0.planId == planId }) else { return }
+        let detail = self.details[index]
+        let otherDaySpots = detail.spots.filter { $0.dayIndex != dayIndex }
+        let daySpotsById = Dictionary(uniqueKeysWithValues: detail.spots.filter { $0.dayIndex == dayIndex }.map { ($0.id, $0) })
+        let updatedDaySpots: [TravelPlanDetailSpot] = orderedSpotIds.enumerated().compactMap { newOrder, spotId in
+            guard let spot = daySpotsById[spotId] else { return nil }
+            return TravelPlanDetailSpot(
+                id: spot.id,
+                dayIndex: spot.dayIndex,
+                order: newOrder,
+                category: spot.category,
+                title: spot.title,
+                subtitle: spot.subtitle,
+                startTime: spot.startTime,
+                durationMinutes: spot.durationMinutes,
+                contentId: spot.contentId,
+                coordinate: spot.coordinate,
+                thumbnailURLString: spot.thumbnailURLString,
+                isCustom: spot.isCustom,
+                address: spot.address
+            )
+        }
+        self.details[index] = TravelPlanDetail(
+            planId: detail.planId,
+            spots: otherDaySpots + updatedDaySpots
+        )
+    }
 }

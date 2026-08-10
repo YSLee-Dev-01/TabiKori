@@ -77,4 +77,29 @@ extension TravelPlanDetailRepository: TravelPlanDetailRepositoryProtocol {
             throw TabiError.persistenceFailed(message: error.localizedDescription)
         }
     }
+
+    public func saveEditedSpots(planId: UUID, dayIndex: Int, orderedSpotIds: [UUID]) async throws {
+        do {
+            let context = ModelContext(self.modelContainer)
+            let descriptor = FetchDescriptor<TravelPlanDetailSpotModel>(
+                predicate: #Predicate { $0.planId == planId && $0.dayIndex == dayIndex }
+            )
+            let models = try context.fetch(descriptor)
+            let modelsById = Dictionary(uniqueKeysWithValues: models.map { ($0.id, $0) })
+
+            for model in models where !orderedSpotIds.contains(model.id) {
+                context.delete(model)
+            }
+
+            for (newOrder, spotId) in orderedSpotIds.enumerated() {
+                guard let model = modelsById[spotId] else { continue }
+                model.order = newOrder
+            }
+
+            try context.save()
+        } catch {
+            AppLogger.core.log(.error, "일정 상세 스팟 편집 저장 실패: \(error.localizedDescription)")
+            throw TabiError.persistenceFailed(message: error.localizedDescription)
+        }
+    }
 }

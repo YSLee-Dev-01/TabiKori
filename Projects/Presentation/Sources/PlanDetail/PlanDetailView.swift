@@ -43,8 +43,14 @@ public struct PlanDetailView: View {
             }
             .id(self.store.selectedDayIndex)
             .transition(.move(edge: .trailing))
+
+            if self.store.isEditing {
+                self.editActionButtons()
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
         .animation(.tabiStandard, value: self.store.selectedDayIndex)
+        .animation(.tabiStandard, value: self.store.isEditing)
         .navigationTitle("\(self.store.plan.title) · \(self.store.plan.displayRegionTitle)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -55,6 +61,18 @@ public struct PlanDetailView: View {
                     Image(systemName: "chevron.left")
                 }
                 .tint(Color.getTabiColor(.tabiPrimary))
+            }
+            if self.store.isEditing == false {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button(Strings.Plan.editMenuTitle) {
+                            self.store.send(.editButtonTapped)
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                    }
+                    .tint(Color.getTabiColor(.tabiPrimary))
+                }
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -87,6 +105,7 @@ private extension PlanDetailView {
         }
         .scrollIndicators(.hidden)
         .padding(.top, 20)
+        .disabled(self.store.isEditing)
     }
 
     func selectedDayDateTitle(plan: TravelPlan) -> String? {
@@ -95,51 +114,77 @@ private extension PlanDetailView {
     }
 
     var spotCountTitle: String {
-        let count = self.store.selectedDaySpots.count
+        let count = self.store.displayedSpots.count
         return count == 0 ? Strings.Plan.spotCountZero : Strings.Plan.spotCountTitle(count)
     }
 
     func spotList() -> some View {
         List {
-            if self.store.selectedDaySpots.isEmpty {
+            if self.store.displayedSpots.isEmpty {
                 PlanDetailSpotEmptyState()
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
             } else {
-                let spots = self.store.selectedDaySpots
+                let spots = self.store.displayedSpots
                 ForEach(Array(spots.enumerated()), id: \.element.id) { index, spot in
                     PlanDetailSpotRow(
                         spot: spot,
                         isFirst: index == 0,
-                        isLast: index == spots.count - 1
+                        isLast: index == spots.count - 1,
+                        isEditing: self.store.isEditing
                     )
                     .contentShape(Rectangle())
                     .onTapGesture {
+                        guard self.store.isEditing == false else { return }
                         self.store.send(.spotRowTapped(spot))
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button(role: .destructive) {
-                            self.store.send(.spotDeleteButtonTapped(id: spot.id))
-                        } label: {
-                            Text(Strings.Common.delete)
+                        if self.store.isEditing == false {
+                            Button(role: .destructive) {
+                                self.store.send(.spotDeleteButtonTapped(id: spot.id))
+                            } label: {
+                                Text(Strings.Common.delete)
+                            }
                         }
                     }
                 }
+                .onDelete { indexSet in
+                    self.store.send(.spotDeletedInEditMode(at: indexSet))
+                }
+                .onMove { source, destination in
+                    self.store.send(.spotMovedInEditMode(source: source, destination: destination))
+                }
             }
 
-            PlanDetailAddSpotButton {
-                self.store.send(.addSpotButtonTapped)
+            if self.store.isEditing == false {
+                PlanDetailAddSpotButton {
+                    self.store.send(.addSpotButtonTapped)
+                }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
             }
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .environment(\.editMode, .constant(self.store.isEditing ? .active : .inactive))
+    }
+
+    func editActionButtons() -> some View {
+        HStack(spacing: 12) {
+            TabiButton(Strings.Plan.editCancelButton, style: .secondary, isExpanded: true) {
+                self.store.send(.editCancelButtonTapped)
+            }
+            TabiButton(Strings.Plan.editSaveButton, style: .primary, isExpanded: true) {
+                self.store.send(.editSaveButtonTapped)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
     }
 }
 

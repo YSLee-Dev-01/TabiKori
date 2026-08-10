@@ -261,6 +261,12 @@ public extension Strings.Plan {
     static let saveFailedAlertMessage = "もう一度お試しください"
     /// 알림 확인 버튼
     static let alertConfirm = "確認"
+    /// 편집 메뉴 타이틀
+    static let editMenuTitle = "編集"
+    /// 편집 모드 저장 버튼
+    static let editSaveButton = "保存"
+    /// 편집 모드 취소 버튼
+    static let editCancelButton = "キャンセル"
 }
 
 public extension Strings.Detail {

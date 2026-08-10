@@ -23,6 +23,8 @@ public struct PlanDetailFeature: Sendable {
         var plan: TravelPlan
         var travelPlanDetail: TravelPlanDetail?
         var selectedDayIndex: Int = 0
+        var isEditing: Bool = false
+        var editingSpots: [TravelPlanDetailSpot] = []
         fileprivate var hasStartedLoading: Bool = false
         @Presents var addSpotState: PlanDetailAddSpotFeature.State?
 
@@ -37,6 +39,10 @@ public struct PlanDetailFeature: Sendable {
                 .filter { $0.dayIndex == self.selectedDayIndex }
                 .sorted { $0.order < $1.order }
         }
+
+        var displayedSpots: [TravelPlanDetailSpot] {
+            self.isEditing ? self.editingSpots : self.selectedDaySpots
+        }
     }
 
     public enum Action: Equatable {
@@ -45,8 +51,14 @@ public struct PlanDetailFeature: Sendable {
         case spotDeleteButtonTapped(id: UUID)
         case addSpotButtonTapped
         case spotRowTapped(TravelPlanDetailSpot)
+        case editButtonTapped
+        case editCancelButtonTapped
+        case editSaveButtonTapped
+        case spotMovedInEditMode(source: IndexSet, destination: Int)
+        case spotDeletedInEditMode(at: IndexSet)
         case travelPlanDetailResult(TravelPlanDetail?)
         case spotDeleted(id: UUID)
+        case editSaveResult(TravelPlanDetail?)
         case addSpot(PresentationAction<PlanDetailAddSpotFeature.Action>)
     }
 
@@ -66,6 +78,31 @@ public struct PlanDetailFeature: Sendable {
 
             case .spotDeleteButtonTapped(let id):
                 return self.removeSpotEffect(planId: state.plan.id, spotId: id)
+
+            case .editButtonTapped:
+                state.isEditing = true
+                state.editingSpots = state.selectedDaySpots
+                return .none
+
+            case .editCancelButtonTapped:
+                state.isEditing = false
+                state.editingSpots = []
+                return .none
+
+            case .editSaveButtonTapped:
+                return self.saveEditedSpotsEffect(
+                    planId: state.plan.id,
+                    dayIndex: state.selectedDayIndex,
+                    orderedSpotIds: state.editingSpots.map(\.id)
+                )
+
+            case .spotMovedInEditMode(let source, let destination):
+                state.editingSpots.move(fromOffsets: source, toOffset: destination)
+                return .none
+
+            case .spotDeletedInEditMode(let indexSet):
+                state.editingSpots.remove(atOffsets: indexSet)
+                return .none
 
             case .addSpotButtonTapped:
                 guard state.plan.dayDates.indices.contains(state.selectedDayIndex) else { return .none }
@@ -90,6 +127,14 @@ public struct PlanDetailFeature: Sendable {
                     planId: detail.planId,
                     spots: detail.spots.filter { $0.id != id }
                 )
+                return .none
+
+            case .editSaveResult(let detail):
+                state.isEditing = false
+                state.editingSpots = []
+                if let detail {
+                    state.travelPlanDetail = detail
+                }
                 return .none
 
             case .addSpot(.presented(.spotAdded)):
@@ -128,6 +173,19 @@ private extension PlanDetailFeature {
                 await send(.spotDeleted(id: spotId))
             } catch {
                 AppLogger.view.log(.error, "일정 상세 스팟 삭제 실패 (planId: \(planId), spotId: \(spotId)): \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func saveEditedSpotsEffect(planId: UUID, dayIndex: Int, orderedSpotIds: [UUID]) -> Effect<Action> {
+        .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase] send in
+            do {
+                try await travelPlanDetailUseCase.saveEditedSpots(planId: planId, dayIndex: dayIndex, orderedSpotIds: orderedSpotIds)
+                let detail = try await travelPlanDetailUseCase.fetch(planId: planId)
+                await send(.editSaveResult(detail))
+            } catch {
+                AppLogger.view.log(.error, "일정 상세 스팟 편집 저장 실패 (planId: \(planId), dayIndex: \(dayIndex)): \(error.localizedDescription)")
+                await send(.editSaveResult(nil))
             }
         }
     }

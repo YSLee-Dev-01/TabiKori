@@ -16,6 +16,7 @@ struct PlanDetailSpotRow: View {
     let spot: TravelPlanDetailSpot
     let isFirst: Bool
     let isLast: Bool
+    let isEditing: Bool
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
@@ -37,8 +38,10 @@ struct PlanDetailSpotRow: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(TabiColor.tabiTextTertiary)
+                    if self.isEditing == false {
+                        Image(systemName: "chevron.right")
+                            .foregroundStyle(TabiColor.tabiTextTertiary)
+                    }
                 }
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
