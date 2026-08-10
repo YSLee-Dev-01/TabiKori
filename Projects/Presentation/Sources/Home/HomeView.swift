@@ -484,7 +484,11 @@ fileprivate extension HomeView {
                         .opacity(0.6)
 
                     VStack(alignment: .leading, spacing: 3) {
-                        TabiLabel(title: Strings.Home.festivalRecommendationTitle(6), style: .bodyLBold, color: .tabiTextPrimary)
+                        TabiLabel(
+                            title: Strings.Home.festivalRecommendationTitle(Calendar.current.component(.month, from: Date())),
+                            style: .bodyLBold,
+                            color: .tabiTextPrimary
+                        )
                         TabiLabel(
                             title: Strings.Home.eventFestivalTitle,
                             style: .bodyS,
