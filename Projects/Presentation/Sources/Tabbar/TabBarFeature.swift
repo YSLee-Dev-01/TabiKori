@@ -65,6 +65,7 @@ public struct TabBarFeature {
             case .home(.searchBarTapped):
                 state.selectedTab = .map
                 state.mapState.mode = .typing
+                state.mapState.panelStage = .full
                 return .none
 
             case .home(.categoryTapped):
