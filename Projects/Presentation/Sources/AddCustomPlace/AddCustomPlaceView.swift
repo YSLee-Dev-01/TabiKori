@@ -42,7 +42,7 @@ public struct AddCustomPlaceView: View {
             }
             .padding(.top, 20)
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
+        .safeAreaBar(edge: .bottom) {
             AddCustomPlaceBottomCTAView(isEnabled: self.store.isConfirmEnabled, isLoading: self.store.isSaving) {
                 self.store.send(.confirmTapped)
             }

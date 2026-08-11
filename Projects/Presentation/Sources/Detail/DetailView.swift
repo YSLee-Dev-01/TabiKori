@@ -90,7 +90,7 @@ struct DetailView: View {
             .navigationBarBackButtonHidden(true)
             .interactivePopGestureEnabled(true)
             .toolbarBackground(.hidden, for: .navigationBar)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
+            .safeAreaBar(edge: .bottom) {
                 DetailBottomCTAView(
                     onRouteDirectionsTapped: { self.store.send(.routeDirectionsButtonTapped) },
                     onAddToItineraryTapped: { self.store.send(.addToItineraryButtonTapped) },

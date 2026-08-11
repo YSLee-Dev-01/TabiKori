@@ -35,7 +35,7 @@ struct AddToItineraryTimeConfigView: View {
             }
             .padding(20)
         }
-        .safeAreaInset(edge: .bottom) {
+        .safeAreaBar(edge: .bottom) {
             self.saveButton()
                 .padding(.horizontal, 20)
                 .padding(.bottom, 12)
