@@ -54,10 +54,6 @@ public extension Strings.Common {
 }
 
 public extension Strings.Home {
-    /// %d월의 추천
-    nonisolated(unsafe) static let festivalRecommendationTitle: ((Int) -> String) = {
-        "\($0)月のおすすめ"
-    }
     /// 이벤트·축제
     static let eventFestivalTitle = "イベント・お祭り"
     /// 상세보기
@@ -100,6 +96,8 @@ public extension Strings.Home {
     nonisolated(unsafe) static let exchangeRateUpdatedAtTitle: ((String) -> String) = {
         "為替レート基準時刻: \($0)"
     }
+    /// 축제 더보기 버튼
+    static let festivalMoreButtonTitle = "もっと見る"
 }
 
 public extension Strings.Region {

@@ -21,8 +21,10 @@ public struct HomeFeature: Sendable {
     @Dependency(\.locationUseCase) var locationUseCase
     @Dependency(\.exchangeRateUseCase) var exchangeRateUseCase
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
+    @Dependency(\.festivalUseCase) var festivalUseCase
 
     private let nearbySpotRadiusMeters = TouristSpotSearchRadius.nearbyMeters
+    private let festivalListLimit = 10
 
     @ObservableState
     public struct State: Equatable {
@@ -34,10 +36,13 @@ public struct HomeFeature: Sendable {
         var nearbyRestaurants: [TouristSpot] = []
         var isLoadingTouristSpots: Bool = false
         var isLoadingRestaurants: Bool = false
+        var festivals: [Festival] = []
+        var isLoadingFestivals: Bool = false
         var krwAmountText: String = "1000"
         var jpyAmountText: String = "0"
         var exchangeRateUpdatedAtTitle: String = ""
         fileprivate var krwToJPYRate: Double = 0
+        fileprivate var hasLoadedInitialFestivals: Bool = false
 
         public init() {}
     }
@@ -52,12 +57,14 @@ public struct HomeFeature: Sendable {
         case exchangeRateResult(KRWToJPYRate)
         case nearbyTouristSpotsResult([TouristSpot])
         case nearbyRestaurantsResult([TouristSpot])
+        case festivalsResult([Festival])
         case planCreateButtonTapped
         case nearbySpotTapped(TouristSpot)
+        case festivalTapped(Festival)
         case searchBarTapped
         case categoryTapped(CategoryType)
         case categoryCoordinateResolved(CategoryType, Coordinate)
-        case recommendedEventBannerTapped
+        case festivalMoreButtonTapped
         case openSettingsButtonTapped
         case regionCardTapped(KoreanRegion)
     }
@@ -115,7 +122,16 @@ public struct HomeFeature: Sendable {
                     }
                 }
 
-                return .merge(locationEffect, exchangeRateEffect)
+                let festivalEffect: Effect<Action>
+                if state.hasLoadedInitialFestivals {
+                    festivalEffect = .none
+                } else {
+                    state.hasLoadedInitialFestivals = true
+                    state.isLoadingFestivals = true
+                    festivalEffect = self.fetchFestivalsEffect()
+                }
+
+                return .merge(locationEffect, exchangeRateEffect, festivalEffect)
 
             case .refreshTriggered:
                 guard state.currentRegion.isKorea else { return .none }
@@ -169,10 +185,18 @@ public struct HomeFeature: Sendable {
                 state.isLoadingRestaurants = false
                 return .none
 
+            case .festivalsResult(let festivals):
+                state.festivals = festivals
+                state.isLoadingFestivals = false
+                return .none
+
             case .planCreateButtonTapped:
                 return .none
 
             case .nearbySpotTapped:
+                return .none
+
+            case .festivalTapped:
                 return .none
 
             case .searchBarTapped:
@@ -197,7 +221,7 @@ public struct HomeFeature: Sendable {
             case .categoryCoordinateResolved:
                 return .none
 
-            case .recommendedEventBannerTapped:
+            case .festivalMoreButtonTapped:
                 return .none
 
             case .openSettingsButtonTapped:
@@ -259,6 +283,28 @@ private extension HomeFeature {
                 await send(.nearbyTouristSpotsResult([]))
                 await send(.nearbyRestaurantsResult([]))
                 AppLogger.view.log(.error, "주변 관광정보 조회 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func fetchFestivalsEffect() -> Effect<Action> {
+        .run { [festivalUseCase = self.festivalUseCase, limit = self.festivalListLimit] send in
+            do {
+                let festivals = try await festivalUseCase.fetchFestivals(
+                    startDate: Date(),
+                    endDate: nil,
+                    regionCode: nil,
+                    sigunguCode: nil,
+                    pageNo: 1
+                )
+                await send(.festivalsResult(Array(festivals.prefix(limit))))
+            } catch {
+                guard !Task.isCancelled else {
+                    AppLogger.view.log(.debug, "축제 조회 취소됨")
+                    return
+                }
+                await send(.festivalsResult([]))
+                AppLogger.view.log(.error, "축제 조회 실패: \(error.localizedDescription)")
             }
         }
     }

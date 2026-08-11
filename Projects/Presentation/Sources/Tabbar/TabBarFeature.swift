@@ -74,8 +74,12 @@ public struct TabBarFeature {
                 guard state.selectedTab == .map else { return .none }
                 return .send(.map(.categorySelected(category, coordinate: coordinate)))
 
-            case .home(.recommendedEventBannerTapped):
+            case .home(.festivalMoreButtonTapped):
                 state.path.append(.festival(FestivalFeature.State()))
+                return .none
+
+            case .home(.festivalTapped(let festival)):
+                state.path.append(.detail(DetailFeature.State(touristSpot: festival.touristSpot)))
                 return .none
 
             case .home(.regionCardTapped(let region)):

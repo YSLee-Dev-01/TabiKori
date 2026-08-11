@@ -47,7 +47,7 @@ public struct HomeView: View {
                         
                         self.exchangeRateCard()
                             .staggeredAppear(index: 2)
-                        self.recommendedEventBanner()
+                        self.festivalListSection()
                             .staggeredAppear(index: 3)
                         self.categoryView()
                             .staggeredAppear(index: 4)
@@ -67,9 +67,9 @@ public struct HomeView: View {
                             self.store.send(.searchBarTapped)
                         }
                         .staggeredAppear(index: 1)
-                        self.recommendedEventBanner()
-                            .staggeredAppear(index: 2)
                         self.recommendedRegionBanner()
+                            .staggeredAppear(index: 2)
+                        self.festivalListSection()
                             .staggeredAppear(index: 3)
                     }
                 }
@@ -470,39 +470,54 @@ fileprivate extension HomeView {
         }
     }
 
-    func recommendedEventBanner() -> some View {
-        Button {
-            self.store.send(.recommendedEventBannerTapped)
-        } label: {
-            TabiCard {
-                HStack(alignment: .center, spacing: 10) {
-                    Image(.seoulTower)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 70)
-                        .colorMultiply(Color.getTabiColor(.tabiSecondary))
-                        .opacity(0.6)
+    func festivalListSection() -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            TabiLabel(title: Strings.RegionSpot.festivalSectionTitle, style: .titleM, color: .tabiTextPrimary)
 
-                    VStack(alignment: .leading, spacing: 3) {
-                        TabiLabel(
-                            title: Strings.Home.festivalRecommendationTitle(Calendar.current.component(.month, from: Date())),
-                            style: .bodyLBold,
-                            color: .tabiTextPrimary
-                        )
-                        TabiLabel(
-                            title: Strings.Home.eventFestivalTitle,
-                            style: .bodyS,
-                            color: .tabiTextSecondary,
-                            isExpanded: true
-                        )
+            if self.store.isLoadingFestivals {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 24)
+            } else if self.store.festivals.isEmpty {
+                TabiEmptyState(
+                    systemImageName: "calendar.badge.exclamationmark",
+                    description: Strings.RegionSpot.festivalEmptyDescription,
+                    style: .card
+                )
+            } else {
+                TabiCard {
+                    LazyVStack(spacing: 0) {
+                        ForEach(Array(self.store.festivals.enumerated()), id: \.element.id) { index, festival in
+                            if index > 0 {
+                                Divider()
+                                    .padding(.horizontal, 16)
+                            }
+                            TabiFestivalRow(
+                                thumbnailURL: festival.touristSpot.thumbnailURL,
+                                japaneseTitle: festival.touristSpot.japaneseTitle,
+                                koreanTitle: festival.touristSpot.koreanTitle,
+                                periodTitle: festival.periodTitle,
+                                onTap: { self.store.send(.festivalTapped(festival)) }
+                            )
+                        }
                     }
-
-                    self.chevronIcon()
                 }
-                .frame(maxWidth: .infinity)
-                .padding(16)
             }
-            .contentShape(RoundedRectangle(cornerRadius: .tabiRadiusLg))
+
+            self.festivalMoreButton()
+        }
+    }
+
+    func festivalMoreButton() -> some View {
+        Button {
+            self.store.send(.festivalMoreButtonTapped)
+        } label: {
+            HStack(spacing: 4) {
+                TabiLabel(title: Strings.Home.festivalMoreButtonTitle, style: .bodySBold, color: .tabiTextSecondary)
+                self.chevronIcon()
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
         }
         .buttonStyle(TabiPressStyle())
     }
