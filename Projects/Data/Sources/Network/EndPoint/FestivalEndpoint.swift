@@ -33,7 +33,7 @@ enum FestivalEndpoint: Endpoint {
                 URLQueryItem(name: "MobileApp", value: "TabiKori"),
                 URLQueryItem(name: "serviceKey", value: Secret.tourAPIKey),
                 URLQueryItem(name: "_type", value: "json"),
-                URLQueryItem(name: "arrange", value: "A"),
+                URLQueryItem(name: "arrange", value: "O"),
                 URLQueryItem(name: "numOfRows", value: "50"),
                 URLQueryItem(name: "pageNo", value: "\(pageNo)"),
                 URLQueryItem(name: "eventStartDate", value: startDate.festivalQueryDateString)
