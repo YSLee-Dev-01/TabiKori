@@ -20,6 +20,8 @@ public struct PlanDetailView: View {
 
     @Environment(\.dismiss) private var dismiss
 
+    @State private var isMovingForward: Bool = true
+
     public init(store: StoreOf<PlanDetailFeature>) {
         self.store = store
     }
@@ -42,7 +44,10 @@ public struct PlanDetailView: View {
                 self.spotList()
             }
             .id(self.store.selectedDayIndex)
-            .transition(.move(edge: .trailing))
+            .transition(.asymmetric(
+                insertion: .move(edge: self.isMovingForward ? .trailing : .leading),
+                removal: .move(edge: self.isMovingForward ? .leading : .trailing)
+            ))
 
             if self.store.isEditing {
                 self.editActionButtons()
@@ -97,6 +102,7 @@ private extension PlanDetailView {
                         Strings.Plan.dayChipTitle(offset + 1),
                         isSelected: self.store.selectedDayIndex == offset
                     ) {
+                        self.isMovingForward = offset >= self.store.selectedDayIndex
                         self.store.send(.dayButtonTapped(index: offset))
                     }
                 }
