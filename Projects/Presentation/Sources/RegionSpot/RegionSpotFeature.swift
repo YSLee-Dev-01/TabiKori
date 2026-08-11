@@ -9,14 +9,32 @@
 import Foundation
 
 import ComposableArchitecture
+import Core
 import Domain
+
+public enum RegionSpotLoadState: Equatable, Sendable {
+    case idle
+    case loading
+    case loaded
+    case failed
+}
 
 @Reducer
 public struct RegionSpotFeature: Sendable {
 
+    @Dependency(\.touristSpotUseCase) var touristSpotUseCase
+    @Dependency(\.festivalUseCase) var festivalUseCase
+
     @ObservableState
     public struct State: Equatable {
         let region: KoreanRegion
+        var selectedCategory: CategoryType = .sightseeing
+        var spots: [TouristSpot] = []
+        var spotLoadState: RegionSpotLoadState = .idle
+        var festivals: [Festival] = []
+        var festivalLoadState: RegionSpotLoadState = .idle
+
+        fileprivate var hasLoadedInitialContent: Bool = false
 
         public init(region: KoreanRegion) {
             self.region = region
@@ -25,6 +43,14 @@ public struct RegionSpotFeature: Sendable {
 
     public enum Action: Equatable {
         case onAppear
+        case categoryTabTapped(CategoryType)
+        case retryButtonTapped
+        case spotTapped(TouristSpot)
+        case festivalTapped(Festival)
+        case spotsResult(CategoryType, [TouristSpot])
+        case spotsFailed(CategoryType)
+        case festivalsResult([Festival])
+        case festivalsFailed
     }
 
     public init() {}
@@ -33,8 +59,111 @@ public struct RegionSpotFeature: Sendable {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                guard state.hasLoadedInitialContent == false else { return .none }
+                state.hasLoadedInitialContent = true
+                state.spotLoadState = .loading
+                state.festivalLoadState = .loading
+                return .merge(
+                    self.fetchSpotsEffect(state: state),
+                    self.fetchFestivalsEffect(state: state)
+                )
+
+            case .categoryTabTapped(let category):
+                guard state.selectedCategory != category else { return .none }
+                state.selectedCategory = category
+                state.spotLoadState = .loading
+                return self.fetchSpotsEffect(state: state)
+
+            case .retryButtonTapped:
+                state.spotLoadState = .loading
+                state.festivalLoadState = .loading
+                return .merge(
+                    self.fetchSpotsEffect(state: state),
+                    self.fetchFestivalsEffect(state: state)
+                )
+
+            case .spotTapped, .festivalTapped:
+                return .none
+
+            case .spotsResult(let category, let spots):
+                guard state.selectedCategory == category else { return .none }
+                state.spots = spots
+                state.spotLoadState = .loaded
+                return .none
+
+            case .spotsFailed(let category):
+                guard state.selectedCategory == category else { return .none }
+                state.spotLoadState = .failed
+                return .none
+
+            case .festivalsResult(let festivals):
+                state.festivals = festivals
+                state.festivalLoadState = .loaded
+                return .none
+
+            case .festivalsFailed:
+                state.festivalLoadState = .failed
                 return .none
             }
         }
+    }
+}
+
+// MARK: - CancelID
+
+private enum CancelID {
+    case regionSpots
+    case regionFestivals
+}
+
+// MARK: - Method
+
+private extension RegionSpotFeature {
+    func fetchSpotsEffect(state: State) -> Effect<Action> {
+        let region = state.region
+        let category = state.selectedCategory
+
+        return .run { [touristSpotUseCase = self.touristSpotUseCase] send in
+            do {
+                let spots = try await touristSpotUseCase.fetchRegionSpots(
+                    region: region,
+                    contentType: category,
+                    pageNo: 1
+                )
+                await send(.spotsResult(category, spots))
+            } catch {
+                guard !Task.isCancelled else {
+                    AppLogger.view.log(.debug, "지역 관광지 조회 취소됨")
+                    return
+                }
+                AppLogger.view.log(.error, "지역 관광지 조회 실패: \(error.localizedDescription)")
+                await send(.spotsFailed(category))
+            }
+        }
+        .cancellable(id: CancelID.regionSpots, cancelInFlight: true)
+    }
+
+    func fetchFestivalsEffect(state: State) -> Effect<Action> {
+        let region = state.region
+
+        return .run { [festivalUseCase = self.festivalUseCase] send in
+            do {
+                let festivals = try await festivalUseCase.fetchRegionFestivals(
+                    startDate: Date(),
+                    endDate: nil,
+                    region: region,
+                    pageNo: 1
+                )
+                await send(.festivalsResult(festivals))
+            } catch {
+                guard !Task.isCancelled else {
+                    AppLogger.view.log(.debug, "지역 축제 조회 취소됨")
+                    return
+                }
+                AppLogger.view.log(.error, "지역 축제 조회 실패: \(error.localizedDescription)")
+                await send(.festivalsFailed)
+            }
+        }
+        .cancellable(id: CancelID.regionFestivals, cancelInFlight: true)
     }
 }

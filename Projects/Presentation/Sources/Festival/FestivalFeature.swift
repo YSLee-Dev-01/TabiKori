@@ -132,6 +132,7 @@ private extension FestivalFeature {
                     startDate: startDate,
                     endDate: endDate,
                     regionCode: regionCode,
+                    sigunguCode: nil,
                     pageNo: 1
                 )
                 await send(.festivalsResult(festivals))

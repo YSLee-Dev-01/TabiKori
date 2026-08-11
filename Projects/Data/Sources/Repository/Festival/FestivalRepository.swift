@@ -28,6 +28,7 @@ public final class FestivalRepository: FestivalRepositoryProtocol {
         startDate: Date,
         endDate: Date?,
         regionCode: String?,
+        sigunguCode: String?,
         pageNo: Int
     ) async throws -> [Festival] {
         let dto = try await self.networkService.request(
@@ -35,11 +36,30 @@ public final class FestivalRepository: FestivalRepositoryProtocol {
                 startDate: startDate,
                 endDate: endDate,
                 regionCode: regionCode,
+                sigunguCode: sigunguCode,
                 pageNo: pageNo
             ),
             responseType: FestivalResponseDTO.self
         )
         return try dto.toEntities()
+    }
+
+    public func fetchRegionFestivals(
+        startDate: Date,
+        endDate: Date?,
+        region: KoreanRegion,
+        pageNo: Int
+    ) async throws -> [Festival] {
+        guard region.lDongRegnCd != nil else {
+            return []
+        }
+        return try await self.fetchFestivals(
+            startDate: startDate,
+            endDate: endDate,
+            regionCode: region.lDongRegnCd,
+            sigunguCode: region.lDongSignguCd,
+            pageNo: pageNo
+        )
     }
 
     public func fetchRegions() async throws -> [LDongRegion] {

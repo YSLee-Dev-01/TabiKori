@@ -9,7 +9,7 @@
 import Foundation
 
 enum FestivalEndpoint: Endpoint {
-    case searchFestival(startDate: Date, endDate: Date?, regionCode: String?, pageNo: Int)
+    case searchFestival(startDate: Date, endDate: Date?, regionCode: String?, sigunguCode: String?, pageNo: Int)
     case ldongCode
 
     var baseURL: String {
@@ -27,7 +27,7 @@ enum FestivalEndpoint: Endpoint {
 
     var queryItems: [URLQueryItem] {
         switch self {
-        case .searchFestival(let startDate, let endDate, let regionCode, let pageNo):
+        case .searchFestival(let startDate, let endDate, let regionCode, let sigunguCode, let pageNo):
             var items = [
                 URLQueryItem(name: "MobileOS", value: "IOS"),
                 URLQueryItem(name: "MobileApp", value: "TabiKori"),
@@ -43,6 +43,9 @@ enum FestivalEndpoint: Endpoint {
             }
             if let regionCode {
                 items.append(URLQueryItem(name: "lDongRegnCd", value: regionCode))
+            }
+            if let sigunguCode {
+                items.append(URLQueryItem(name: "lDongSignguCd", value: sigunguCode))
             }
             return items
 

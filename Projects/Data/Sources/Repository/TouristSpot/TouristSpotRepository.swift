@@ -42,6 +42,25 @@ public final class TouristSpotRepository: TouristSpotRepositoryProtocol {
         return try dto.toEntities()
     }
 
+    public func fetchRegionSpots(
+        region: KoreanRegion,
+        contentType: CategoryType,
+        pageNo: Int
+    ) async throws -> [TouristSpot] {
+        guard region.areaCode != nil else {
+            return []
+        }
+        let dto = try await self.networkService.request(
+            endPoint: TouristSpotEndpoint.areaBasedSpots(
+                region: region,
+                contentType: contentType,
+                pageNo: pageNo
+            ),
+            responseType: TouristSpotResponseDTO.self
+        )
+        return try dto.toEntities()
+    }
+
     public func fetchDetail(contentId: String) async throws -> TouristSpotDetail {
         let dto = try await self.networkService.request(
             endPoint: TouristSpotEndpoint.detail(contentId: contentId),

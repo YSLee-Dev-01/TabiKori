@@ -23,21 +23,8 @@ public struct RegionSpotView: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            self.regionHeaderImage()
-
-            VStack(alignment: .leading, spacing: 4) {
-                TabiLabel(title: self.store.region.jaTitle, style: .titleL, color: .tabiTextPrimary)
-                TabiLabel(title: self.store.region.koTitle, style: .bodyM, color: .tabiTextSecondary)
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-
-            self.comingSoonState()
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
-
-            Spacer()
+        ScrollView {
+            self.content()
         }
         .navigationTitle(self.store.region.jaTitle)
         .navigationBarTitleDisplayMode(.inline)
@@ -62,6 +49,44 @@ public struct RegionSpotView: View {
 // MARK: - View
 
 private extension RegionSpotView {
+    func content() -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            self.regionHeaderImage()
+
+            VStack(alignment: .leading, spacing: 4) {
+                TabiLabel(title: self.store.region.jaTitle, style: .titleL, color: .tabiTextPrimary)
+                TabiLabel(title: self.store.region.koTitle, style: .bodyM, color: .tabiTextSecondary)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+
+            RegionSpotCategoryTabBar(
+                selectedCategory: self.store.selectedCategory,
+                onSelect: { self.store.send(.categoryTabTapped($0)) }
+            )
+            .padding(.top, 20)
+
+            RegionSpotSpotSection(
+                loadState: self.store.spotLoadState,
+                spots: self.store.spots,
+                onRetry: { self.store.send(.retryButtonTapped) },
+                onSpotTapped: { self.store.send(.spotTapped($0)) }
+            )
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+
+            RegionSpotFestivalSection(
+                loadState: self.store.festivalLoadState,
+                festivals: self.store.festivals,
+                onRetry: { self.store.send(.retryButtonTapped) },
+                onFestivalTapped: { self.store.send(.festivalTapped($0)) }
+            )
+            .padding(.horizontal, 20)
+            .padding(.top, 24)
+            .padding(.bottom, 20)
+        }
+    }
+
     @ViewBuilder
     func regionHeaderImage() -> some View {
         if let image = self.store.region.image {
@@ -71,22 +96,6 @@ private extension RegionSpotView {
                 .frame(maxWidth: .infinity)
                 .frame(height: 200)
                 .clipped()
-        }
-    }
-
-    func comingSoonState() -> some View {
-        TabiCard {
-            VStack(alignment: .leading, spacing: 6) {
-                TabiLabel(title: Strings.RegionSpot.comingSoonTitle, style: .bodyLBold, color: .tabiTextPrimary)
-                TabiLabel(
-                    title: Strings.RegionSpot.comingSoonDescription,
-                    style: .bodyS,
-                    color: .tabiTextSecondary,
-                    isExpanded: true
-                )
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
         }
     }
 }

@@ -16,6 +16,12 @@ public protocol TouristSpotRepositoryProtocol: Sendable {
         pageNo: Int
     ) async throws -> [TouristSpot]
 
+    func fetchRegionSpots(
+        region: KoreanRegion,
+        contentType: CategoryType,
+        pageNo: Int
+    ) async throws -> [TouristSpot]
+
     func fetchDetail(contentId: String) async throws -> TouristSpotDetail
 
     func fetchIntro(contentId: String, contentType: CategoryType) async throws -> TouristSpotIntro

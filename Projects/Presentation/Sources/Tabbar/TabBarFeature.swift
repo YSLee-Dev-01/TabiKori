@@ -136,6 +136,14 @@ public struct TabBarFeature {
                 state.path.append(.detail(DetailFeature.State(touristSpot: festival.touristSpot)))
                 return .none
 
+            case .path(.element(id: _, action: .region(.spotTapped(let spot)))):
+                state.path.append(.detail(DetailFeature.State(touristSpot: spot)))
+                return .none
+
+            case .path(.element(id: _, action: .region(.festivalTapped(let festival)))):
+                state.path.append(.detail(DetailFeature.State(touristSpot: festival.touristSpot)))
+                return .none
+
             case .path:
                 return .none
             }

@@ -36,6 +36,18 @@ public final class TouristSpotUseCase: TouristSpotUseCaseProtocol {
         )
     }
 
+    public func fetchRegionSpots(
+        region: KoreanRegion,
+        contentType: CategoryType,
+        pageNo: Int
+    ) async throws -> [TouristSpot] {
+        return try await self.repository.fetchRegionSpots(
+            region: region,
+            contentType: contentType,
+            pageNo: pageNo
+        )
+    }
+
     public func fetchDetail(contentId: String) async throws -> TouristSpotDetail {
         return try await self.repository.fetchDetail(contentId: contentId)
     }

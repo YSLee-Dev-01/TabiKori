@@ -25,6 +25,16 @@ public final class TestFestivalUseCase: FestivalUseCaseProtocol, @unchecked Send
         startDate: Date,
         endDate: Date?,
         regionCode: String?,
+        sigunguCode: String?,
+        pageNo: Int
+    ) async throws -> [Festival] {
+        return self.festivals
+    }
+
+    public func fetchRegionFestivals(
+        startDate: Date,
+        endDate: Date?,
+        region: KoreanRegion,
         pageNo: Int
     ) async throws -> [Festival] {
         return self.festivals

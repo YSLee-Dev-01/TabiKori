@@ -12,6 +12,7 @@ import Domain
 
 enum TouristSpotEndpoint: Endpoint {
     case nearbySpots(contentType: CategoryType, coordinate: Coordinate, radiusMeters: Int, pageNo: Int)
+    case areaBasedSpots(region: KoreanRegion, contentType: CategoryType, pageNo: Int)
     case detail(contentId: String)
     case intro(contentId: String, contentType: CategoryType)
     case images(contentId: String)
@@ -19,13 +20,14 @@ enum TouristSpotEndpoint: Endpoint {
 
     var baseURL: String {
         switch self {
-        case .nearbySpots, .detail, .intro, .images, .searchKeyword: return "https://apis.data.go.kr"
+        case .nearbySpots, .areaBasedSpots, .detail, .intro, .images, .searchKeyword: return "https://apis.data.go.kr"
         }
     }
 
     var path: String {
         switch self {
         case .nearbySpots: return "/B551011/JpnService2/locationBasedList2"
+        case .areaBasedSpots: return "/B551011/JpnService2/areaBasedList2"
         case .detail: return "/B551011/JpnService2/detailCommon2"
         case .intro: return "/B551011/JpnService2/detailIntro2"
         case .images: return "/B551011/JpnService2/detailImage2"
@@ -49,6 +51,22 @@ enum TouristSpotEndpoint: Endpoint {
                 URLQueryItem(name: "mapY", value: "\(coordinate.latitude)"),
                 URLQueryItem(name: "radius", value: "\(radiusMeters)")
             ]
+        case .areaBasedSpots(let region, let contentType, let pageNo):
+            var items = [
+                URLQueryItem(name: "MobileOS", value: "IOS"),
+                URLQueryItem(name: "MobileApp", value: "TabiKori"),
+                URLQueryItem(name: "serviceKey", value: Secret.tourAPIKey),
+                URLQueryItem(name: "_type", value: "json"),
+                URLQueryItem(name: "arrange", value: "Q"),
+                URLQueryItem(name: "numOfRows", value: "50"),
+                URLQueryItem(name: "pageNo", value: "\(pageNo)"),
+                URLQueryItem(name: "contentTypeId", value: contentType.apiCode),
+                URLQueryItem(name: "areaCode", value: region.areaCode)
+            ]
+            if let sigunguCode = region.sigunguCode {
+                items.append(URLQueryItem(name: "sigunguCode", value: sigunguCode))
+            }
+            return items
         case .detail(let contentId):
             return [
                 URLQueryItem(name: "MobileOS", value: "IOS"),

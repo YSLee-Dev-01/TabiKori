@@ -346,10 +346,22 @@ public extension Strings.AddCustomPlace {
 }
 
 public extension Strings.RegionSpot {
-    /// 준비 중 안내 제목
-    static let comingSoonTitle = "観光情報を準備中です"
-    /// 준비 중 안내 설명
-    static let comingSoonDescription = "このエリアの観光スポット情報は近日公開予定です。"
+    /// 관광지 섹션 제목
+    static let spotSectionTitle = "観光スポット"
+    /// 축제 섹션 제목
+    static let festivalSectionTitle = "開催中のイベント"
+    /// 관광지 빈 상태 제목
+    static let spotEmptyTitle = "観光スポットが見つかりませんでした"
+    /// 관광지 빈 상태 설명
+    static let spotEmptyDescription = "他のカテゴリーもお試しください"
+    /// 축제 빈 상태 설명
+    static let festivalEmptyDescription = "現在開催中のイベントはありません"
+    /// 에러 상태 제목
+    static let errorTitle = "読み込みに失敗しました"
+    /// 에러 상태 설명
+    static let errorDescription = "通信状態を確認してもう一度お試しください"
+    /// 재시도 버튼 라벨
+    static let retryButtonTitle = "再試行"
 }
 
 public extension Strings.Festival {
