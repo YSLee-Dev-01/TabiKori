@@ -47,7 +47,7 @@ public struct HomeView: View {
                         
                         self.exchangeRateCard()
                             .staggeredAppear(index: 2)
-                        self.festivalListSection()
+                        self.recommendedEventBanner()
                             .staggeredAppear(index: 3)
                         self.categoryView()
                             .staggeredAppear(index: 4)
@@ -468,6 +468,43 @@ fileprivate extension HomeView {
             }
             .scrollIndicators(.hidden)
         }
+    }
+
+    func recommendedEventBanner() -> some View {
+        Button {
+            self.store.send(.festivalMoreButtonTapped)
+        } label: {
+            TabiCard {
+                HStack(alignment: .center, spacing: 10) {
+                    Image(.seoulTower)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 70)
+                        .colorMultiply(Color.getTabiColor(.tabiSecondary))
+                        .opacity(0.6)
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        TabiLabel(
+                            title: Strings.Home.festivalRecommendationTitle(Calendar.current.component(.month, from: Date())),
+                            style: .bodyLBold,
+                            color: .tabiTextPrimary
+                        )
+                        TabiLabel(
+                            title: Strings.Home.eventFestivalTitle,
+                            style: .bodyS,
+                            color: .tabiTextSecondary,
+                            isExpanded: true
+                        )
+                    }
+
+                    self.chevronIcon()
+                }
+                .frame(maxWidth: .infinity)
+                .padding(16)
+            }
+            .contentShape(RoundedRectangle(cornerRadius: .tabiRadiusLg))
+        }
+        .buttonStyle(TabiPressStyle())
     }
 
     func festivalListSection() -> some View {

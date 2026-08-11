@@ -54,6 +54,10 @@ public extension Strings.Common {
 }
 
 public extension Strings.Home {
+    /// %d월의 추천
+    nonisolated(unsafe) static let festivalRecommendationTitle: ((Int) -> String) = {
+        "\($0)月のおすすめ"
+    }
     /// 이벤트·축제
     static let eventFestivalTitle = "イベント・お祭り"
     /// 상세보기
