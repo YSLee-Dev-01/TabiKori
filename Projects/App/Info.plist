@@ -41,5 +41,7 @@
 	<string>$(TOUR_API_KEY)</string>
 	<key>UILaunchScreen</key>
 	<dict/>
+	<key>UIUserInterfaceStyle</key>
+	<string>Light</string>
 </dict>
 </plist>
