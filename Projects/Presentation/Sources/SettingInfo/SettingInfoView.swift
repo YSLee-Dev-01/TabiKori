@@ -21,28 +21,37 @@ public struct SettingInfoView: View {
     }
 
     public var body: some View {
-        NavigationStack {
-            ScrollView {
-                TabiLabel(
-                    title: self.store.contentType.content,
-                    style: .bodyM,
-                    color: .tabiTextPrimary,
-                    isExpanded: true
-                )
-                .padding(20)
-            }
-            .navigationTitle(self.store.contentType.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        self.store.send(.closeTapped)
-                    } label: {
-                        Image(systemName: "xmark")
-                    }
-                    .tint(Color.getTabiColor(.tabiPrimary))
-                }
-            }
+        ScrollView {
+            TabiLabel(
+                title: self.store.contentType.content,
+                style: .bodyM,
+                color: .tabiTextPrimary,
+                isExpanded: true
+            )
+            .padding(20)
         }
+        .safeAreaBar(edge: .top) {
+            TabiNavigationBar(title: self.store.contentType.title) {
+                self.closeButton()
+            }
+            .padding(.top, 20)
+        }
+    }
+}
+
+// MARK: - View
+
+private extension SettingInfoView {
+    func closeButton() -> some View {
+        Button {
+            self.store.send(.closeTapped)
+        } label: {
+            Image(systemName: "xmark")
+                .foregroundStyle(TabiColor.tabiTextSecondary)
+                .frame(width: 32, height: 32)
+                .background(TabiColor.tabiSurface)
+                .clipShape(Circle())
+        }
+        .buttonStyle(TabiPressStyle())
     }
 }
