@@ -20,8 +20,6 @@ struct RegionSpotSpotSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            TabiLabel(title: Strings.RegionSpot.spotSectionTitle, style: .titleS, color: .tabiTextPrimary)
-
             switch self.loadState {
             case .idle, .loading:
                 ProgressView()
@@ -30,6 +28,7 @@ struct RegionSpotSpotSection: View {
 
             case .failed:
                 self.errorState()
+                    .padding(.horizontal, 20)
 
             case .loaded where self.spots.isEmpty:
                 TabiEmptyState(
@@ -37,6 +36,7 @@ struct RegionSpotSpotSection: View {
                     title: Strings.RegionSpot.spotEmptyTitle,
                     description: Strings.RegionSpot.spotEmptyDescription
                 )
+                .padding(.horizontal, 20)
                 .padding(.vertical, 24)
 
             case .loaded:
@@ -54,6 +54,7 @@ struct RegionSpotSpotSection: View {
                         )
                     }
                 }
+                .padding(.horizontal, 4)
             }
         }
         .animation(.tabiStandard, value: self.loadState)

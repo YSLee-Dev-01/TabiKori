@@ -20,8 +20,6 @@ struct RegionSpotFestivalSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            TabiLabel(title: Strings.RegionSpot.festivalSectionTitle, style: .titleS, color: .tabiTextPrimary)
-
             switch self.loadState {
             case .idle, .loading:
                 ProgressView()
@@ -37,6 +35,7 @@ struct RegionSpotFestivalSection: View {
                     )
                     TabiButton(Strings.RegionSpot.retryButtonTitle, style: .secondary, action: self.onRetry)
                 }
+                .padding(.horizontal, 20)
 
             case .loaded where self.festivals.isEmpty:
                 TabiEmptyState(
@@ -44,6 +43,7 @@ struct RegionSpotFestivalSection: View {
                     description: Strings.RegionSpot.festivalEmptyDescription,
                     style: .card
                 )
+                .padding(.horizontal, 20)
 
             case .loaded:
                 LazyVStack(spacing: 0) {
@@ -57,6 +57,7 @@ struct RegionSpotFestivalSection: View {
                         )
                     }
                 }
+                .padding(.horizontal, 4)
             }
         }
         .animation(.tabiStandard, value: self.loadState)

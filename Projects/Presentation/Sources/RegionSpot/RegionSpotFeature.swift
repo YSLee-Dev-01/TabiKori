@@ -11,12 +11,25 @@ import Foundation
 import ComposableArchitecture
 import Core
 import Domain
+import Resource
 
 public enum RegionSpotLoadState: Equatable, Sendable {
     case idle
     case loading
     case loaded
     case failed
+}
+
+public enum RegionSpotContentTab: String, CaseIterable, Equatable, Sendable {
+    case spot
+    case festival
+
+    var label: String {
+        switch self {
+        case .spot: return Strings.RegionSpot.spotTabLabel
+        case .festival: return Strings.RegionSpot.festivalTabLabel
+        }
+    }
 }
 
 @Reducer
@@ -28,6 +41,7 @@ public struct RegionSpotFeature: Sendable {
     @ObservableState
     public struct State: Equatable {
         let region: KoreanRegion
+        var selectedContentTab: RegionSpotContentTab = .spot
         var selectedCategory: CategoryType = .sightseeing
         var spots: [TouristSpot] = []
         var spotLoadState: RegionSpotLoadState = .idle
@@ -43,6 +57,7 @@ public struct RegionSpotFeature: Sendable {
 
     public enum Action: Equatable {
         case onAppear
+        case contentTabSelected(RegionSpotContentTab)
         case categoryTabTapped(CategoryType)
         case retryButtonTapped
         case spotTapped(TouristSpot)
@@ -67,6 +82,11 @@ public struct RegionSpotFeature: Sendable {
                     self.fetchSpotsEffect(state: state),
                     self.fetchFestivalsEffect(state: state)
                 )
+
+            case .contentTabSelected(let tab):
+                guard state.selectedContentTab != tab else { return .none }
+                state.selectedContentTab = tab
+                return .none
 
             case .categoryTabTapped(let category):
                 guard state.selectedCategory != category else { return .none }
