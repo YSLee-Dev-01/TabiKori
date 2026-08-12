@@ -59,6 +59,7 @@ public struct FestivalFeature: Sendable {
         Reduce { state, action in
             switch action {
             case .binding(\.startDate):
+                self.clearEndDateIfInvalid(state: &state)
                 state.isLoading = true
                 return self.searchEffect(state: state)
 
@@ -146,6 +147,11 @@ private extension FestivalFeature {
             }
         }
         .cancellable(id: CancelID.festivalSearch, cancelInFlight: true)
+    }
+
+    func clearEndDateIfInvalid(state: inout State) {
+        guard let startDate = state.startDate, let endDate = state.endDate, endDate < startDate else { return }
+        state.endDate = nil
     }
 
     func fetchRegionsEffect() -> Effect<Action> {

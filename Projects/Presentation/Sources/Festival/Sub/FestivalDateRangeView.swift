@@ -31,18 +31,20 @@ struct FestivalDateRangeView: View {
                     color: .tabiTextTertiary,
                     isExpanded: true
                 )
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
             if let activeField {
                 TabiRangeCalendar(
                     startDate: self.$startDate,
-                    endDate: self.$endDate,
+                    endDate: self.validatedEndDate,
                     initialMonth: self.initialMonth(for: activeField),
                     editingField: self.calendarField(for: activeField)
                 )
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+        .animation(.tabiStandard, value: self.endDate)
     }
 }
 
@@ -90,6 +92,19 @@ private extension FestivalDateRangeView {
 // MARK: - Method
 
 private extension FestivalDateRangeView {
+    /// 종료일이 시작일보다 이전인 탭은 store에 전달하지 않고 무시한다
+    var validatedEndDate: Binding<Date?> {
+        Binding(
+            get: { self.endDate },
+            set: { newValue in
+                if let newValue, let startDate = self.startDate, newValue < startDate {
+                    return
+                }
+                self.endDate = newValue
+            }
+        )
+    }
+
     func initialMonth(for field: FestivalDateField) -> Date {
         switch field {
         case .start:
