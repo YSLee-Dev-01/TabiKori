@@ -102,8 +102,11 @@ private extension PlanDetailView {
                         Strings.Plan.dayChipTitle(offset + 1),
                         isSelected: self.store.selectedDayIndex == offset
                     ) {
+                        guard offset != self.store.selectedDayIndex else { return }
                         self.isMovingForward = offset >= self.store.selectedDayIndex
-                        self.store.send(.dayButtonTapped(index: offset))
+                        DispatchQueue.main.async {
+                            self.store.send(.dayButtonTapped(index: offset))
+                        }
                     }
                 }
             }
