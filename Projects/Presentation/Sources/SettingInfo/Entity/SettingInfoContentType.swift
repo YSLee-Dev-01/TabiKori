@@ -13,11 +13,13 @@ import Resource
 public enum SettingInfoContentType: Equatable, Sendable {
     case dataSource
     case license
+    case etcInfo
 
     var title: String {
         switch self {
         case .dataSource: return Strings.Setting.etcDataSourceTitle
         case .license: return Strings.Setting.etcLicenseTitle
+        case .etcInfo: return Strings.Setting.etcInfoTitle
         }
     }
 
@@ -25,6 +27,7 @@ public enum SettingInfoContentType: Equatable, Sendable {
         switch self {
         case .dataSource: return Strings.Setting.dataSourceContent
         case .license: return Strings.Setting.licenseContent
+        case .etcInfo: return Strings.Setting.etcInfoContent
         }
     }
 }

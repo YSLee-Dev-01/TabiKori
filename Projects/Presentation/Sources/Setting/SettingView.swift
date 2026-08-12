@@ -49,6 +49,7 @@ public struct SettingView: View {
         .interactivePopGestureEnabled(self.store.isResetting == false)
         .sheet(item: self.$store.scope(state: \.infoState, action: \.info)) { store in
             SettingInfoView(store: store)
+                .presentationDetents([.medium, .large])
         }
         .alert($store.scope(state: \.alert, action: \.alert))
         .onAppear {

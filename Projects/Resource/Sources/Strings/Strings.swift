@@ -349,10 +349,12 @@ public extension Strings.AddCustomPlace {
 }
 
 public extension Strings.RegionSpot {
-    /// 관광지 섹션 제목
-    static let spotSectionTitle = "観光スポット"
     /// 축제 섹션 제목
     static let festivalSectionTitle = "開催中のイベント"
+    /// 관광지 탭 라벨
+    static let spotTabLabel = "観光スポット"
+    /// 이벤트 탭 라벨
+    static let festivalTabLabel = "イベント"
     /// 관광지 빈 상태 제목
     static let spotEmptyTitle = "観光スポットが見つかりませんでした"
     /// 관광지 빈 상태 설명
@@ -422,6 +424,8 @@ public extension Strings.Setting {
     static let etcPrivacyPolicyTitle = "プライバシーポリシー"
     /// 오픈소스 라이선스 행 타이틀
     static let etcLicenseTitle = "オープンソースライセンス"
+    /// 기타 정보 행 타이틀
+    static let etcInfoTitle = "その他の情報"
     /// 문의하기 행 타이틀
     static let etcContactTitle = "お問い合わせ"
     /// 버전 정보 행 타이틀
@@ -433,6 +437,8 @@ public extension Strings.Setting {
     static let dataSourceContent = "本アプリは韓国観光公社 多言語観光情報サービス(EngService2)、NAVER 地図・Geocoding API、為替レートAPIの情報を利用しています。"
     /// 오픈소스 라이선스 안내 본문
     static let licenseContent = "本アプリは以下のオープンソースライブラリを使用しています。\n\n・swift-composable-architecture\n・Kingfisher\n・lottie-ios\n・firebase-ios-sdk\n・SPM-NMapsMap"
+    /// 기타 정보 안내 본문 (TODO: 내용 추가 예정)
+    static let etcInfoContent = ""
     /// 버전 정보 표시 (%@: 버전, %@: 빌드번호)
     nonisolated(unsafe) static let versionTitle: ((String, String) -> String) = { version, build in
         "バージョン \(version) (\(build))"

@@ -14,6 +14,7 @@ public enum SettingEtcItem: CaseIterable, Identifiable, Equatable {
     case dataSource
     case privacyPolicy
     case license
+    case etcInfo
     case contact
     case version
 
@@ -30,6 +31,7 @@ public enum SettingEtcItem: CaseIterable, Identifiable, Equatable {
         case .dataSource: return Strings.Setting.etcDataSourceTitle
         case .privacyPolicy: return Strings.Setting.etcPrivacyPolicyTitle
         case .license: return Strings.Setting.etcLicenseTitle
+        case .etcInfo: return Strings.Setting.etcInfoTitle
         case .contact: return Strings.Setting.etcContactTitle
         case .version: return Strings.Setting.etcVersionTitle
         }
@@ -39,6 +41,7 @@ public enum SettingEtcItem: CaseIterable, Identifiable, Equatable {
         switch self {
         case .dataSource: return .staticText(.dataSource)
         case .license: return .staticText(.license)
+        case .etcInfo: return .staticText(.etcInfo)
         case .version: return .versionDisplay
         case .privacyPolicy, .contact: return .disabled
         }
