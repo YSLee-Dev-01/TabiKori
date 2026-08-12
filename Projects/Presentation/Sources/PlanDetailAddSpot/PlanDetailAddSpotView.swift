@@ -78,7 +78,7 @@ private extension PlanDetailAddSpotView {
                 .transition(.move(edge: .leading))
 
         case .configuringTime:
-            AddToItineraryTimeConfigView(
+            TabiItineraryTimeConfigView(
                 planTitle: self.store.selectedSpot?.japaneseTitle ?? "",
                 dayTitle: Strings.Plan.dayChipTitle(self.store.dayIndex + 1),
                 dateTitle: self.store.date.planDayHeaderTitle,

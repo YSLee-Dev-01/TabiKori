@@ -1,6 +1,6 @@
 //
-//  AddToItineraryTimeForm.swift
-//  Presentation
+//  TabiItineraryTimeForm.swift
+//  DesignSystem
 //
 //  Created by 이윤수 on 8/4/26.
 //  Copyright © 2026 yslee. All rights reserved.
@@ -8,11 +8,10 @@
 
 import SwiftUI
 
-import DesignSystem
 import Resource
 
 /// Step 2 — 시작/종료 시각 입력 폼. 계산된 소요시간을 함께 표시한다
-struct AddToItineraryTimeForm: View {
+struct TabiItineraryTimeForm: View {
     @Binding var startTime: Date
     @Binding var endTime: Date
     let durationMinutes: Int
@@ -37,7 +36,7 @@ struct AddToItineraryTimeForm: View {
 
 // MARK: - Method
 
-private extension AddToItineraryTimeForm {
+private extension TabiItineraryTimeForm {
     func timeRow(title: String, selection: Binding<Date>) -> some View {
         HStack {
             TabiLabel(title: title, style: .bodyM, color: .tabiTextPrimary)

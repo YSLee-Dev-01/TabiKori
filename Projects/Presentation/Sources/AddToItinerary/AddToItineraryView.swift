@@ -40,7 +40,7 @@ struct AddToItineraryView: View {
                     .transition(.move(edge: .leading))
 
                 case .configuringTime:
-                    AddToItineraryTimeConfigView(
+                    TabiItineraryTimeConfigView(
                         planTitle: self.store.selectedPlan?.title ?? "",
                         dayTitle: Strings.Plan.dayChipTitle(self.store.selectedDayIndex + 1),
                         dateTitle: self.store.selectedDate.planDayHeaderTitle,
