@@ -18,10 +18,12 @@ import Domain
 public struct PlanFeature: Sendable {
 
     @Dependency(\.travelPlanUseCase) var travelPlanUseCase
+    @Dependency(\.travelPlanDetailUseCase) var travelPlanDetailUseCase
 
     @ObservableState
     public struct State: Equatable {
         var plans: [TravelPlan] = []
+        var spotCounts: [UUID: Int] = [:]
         var isLoading: Bool = false
         @Presents var addPlanState: AddTravelPlanFeature.State?
 
@@ -38,6 +40,7 @@ public struct PlanFeature: Sendable {
         case planTapped(plan: TravelPlan)
         case planDeleteButtonTapped(id: UUID)
         case plansResult([TravelPlan])
+        case spotCountsResult([UUID: Int])
         case planDeleted(id: UUID)
         case addPlan(PresentationAction<AddTravelPlanFeature.Action>)
     }
@@ -64,10 +67,15 @@ public struct PlanFeature: Sendable {
             case .plansResult(let plans):
                 state.plans = plans
                 state.isLoading = false
+                return self.fetchSpotCountsEffect(plans: plans)
+
+            case .spotCountsResult(let counts):
+                state.spotCounts = counts
                 return .none
 
             case .planDeleted(let id):
                 state.plans.removeAll { $0.id == id }
+                state.spotCounts.removeValue(forKey: id)
                 return .none
 
             case .addPlan(.presented(.saveResult(true))):
@@ -96,6 +104,29 @@ private extension PlanFeature {
                 AppLogger.view.log(.error, "일정 목록 조회 실패: \(error.localizedDescription)")
                 await send(.plansResult([]))
             }
+        }
+    }
+
+    func fetchSpotCountsEffect(plans: [TravelPlan]) -> Effect<Action> {
+        .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase] send in
+            var counts: [UUID: Int] = [:]
+            await withTaskGroup(of: (UUID, Int).self) { group in
+                for plan in plans {
+                    group.addTask {
+                        do {
+                            let detail = try await travelPlanDetailUseCase.fetch(planId: plan.id)
+                            return (plan.id, detail?.spots.count ?? 0)
+                        } catch {
+                            AppLogger.view.log(.error, "일정 스팟 개수 조회 실패 (planId: \(plan.id)): \(error.localizedDescription)")
+                            return (plan.id, 0)
+                        }
+                    }
+                }
+                for await (id, count) in group {
+                    counts[id] = count
+                }
+            }
+            await send(.spotCountsResult(counts))
         }
     }
 

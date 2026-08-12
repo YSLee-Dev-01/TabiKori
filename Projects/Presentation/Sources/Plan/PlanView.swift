@@ -78,6 +78,7 @@ private extension PlanView {
                 ForEach(plans) { plan in
                     PlanCardView(
                         plan: plan,
+                        spotCount: self.store.spotCounts[plan.id] ?? 0,
                         onTapped: { self.store.send(.planTapped(plan: plan)) }
                     )
                     .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))

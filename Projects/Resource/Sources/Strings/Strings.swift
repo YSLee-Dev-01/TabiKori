@@ -207,10 +207,10 @@ public extension Strings.Plan {
     nonisolated(unsafe) static let dayChipTitle: ((Int) -> String) = {
         "\($0)日目"
     }
-    /// 합계 스팟 (Detail 미구현으로 항상 0 고정)
-    static let totalSpotCountFixed = "合計 0スポット"
-    /// 탭하여 상세를 표시 안내 문구
-    static let tapToViewDetail = "タップして詳細を表示"
+    /// 합계 스팟 (%d: 스팟 개수)
+    nonisolated(unsafe) static let totalSpotCount: ((Int) -> String) = {
+        "合計 \($0)スポット"
+    }
     /// 빈 상태 제목
     static let emptyTitle = "登録された日程がありません"
     /// 빈 상태 설명
