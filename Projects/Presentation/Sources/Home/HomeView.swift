@@ -84,7 +84,11 @@ public struct HomeView: View {
             }
         }
         .safeAreaBar(edge: .top) {
-            TabiNavigationBar(subtitle: self.store.currentDate, title: Strings.Common.tabicori)
+            TabiNavigationBar(subtitle: self.store.currentDate, title: Strings.Common.tabicori) {
+                TabiCircleIconButton(systemName: "gearshape") {
+                    self.store.send(.settingButtonTapped)
+                }
+            }
         }
         .onAppear {
             self.store.send(.onAppear)

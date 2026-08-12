@@ -21,6 +21,7 @@ public enum Strings {
     public enum AddToItinerary {}
     public enum AddCustomPlace {}
     public enum RegionSpot {}
+    public enum Setting {}
 }
 
 public extension Strings.Common {
@@ -377,4 +378,63 @@ public extension Strings.Festival {
     static let emptyDescription = "条件を変更して再度お試しください"
     /// 종료일 지정 시 기간 내 완결 이벤트만 표시된다는 안내 문구
     static let dateRangeFilterNotice = "終了日を指定すると、期間内に開催が完結するイベントのみ表示されます"
+}
+
+public extension Strings.Setting {
+    /// 화면 타이틀
+    static let screenTitle = "設定"
+
+    /// GPS 권한 섹션 타이틀
+    static let gpsSectionTitle = "位置情報の権限"
+    /// GPS 권한 행 타이틀
+    static let gpsRowTitle = "位置情報へのアクセス"
+    /// GPS 권한 상태 - 허용
+    static let gpsStatusAllowed = "許可済み"
+    /// GPS 권한 상태 - 거부
+    static let gpsStatusDenied = "拒否"
+    /// GPS 권한 상태 - 미결정
+    static let gpsStatusUndetermined = "未設定"
+
+    /// 데이터 초기화 섹션 타이틀
+    static let dataResetSectionTitle = "データの初期化"
+    /// 데이터 초기화 행 타이틀
+    static let dataResetRowTitle = "すべてのデータを初期化"
+    /// 데이터 초기화 행 설명
+    static let dataResetRowDescription = "保存したスポット、旅程、最近の検索履歴が削除されます"
+    /// 초기화 확인 Alert 타이틀
+    static let dataResetAlertTitle = "データを初期化しますか？"
+    /// 초기화 확인 Alert 메시지
+    static let dataResetAlertMessage = "保存済みスポット・旅程・最近の検索履歴が削除されます。この操作は取り消せません。"
+    /// 초기화 확인 Alert 삭제(확정) 버튼
+    static let dataResetAlertConfirmButton = "初期化する"
+    /// 초기화 성공 Alert 타이틀
+    static let dataResetSuccessAlertTitle = "初期化が完了しました"
+    /// 초기화 실패 Alert 타이틀
+    static let dataResetFailureAlertTitle = "初期化に失敗しました"
+    /// 초기화 실패 Alert 메시지
+    static let dataResetFailureAlertMessage = "一部のデータが削除できませんでした。もう一度お試しください"
+
+    /// 기타 섹션 타이틀
+    static let etcSectionTitle = "その他"
+    /// 데이터 출처 행 타이틀
+    static let etcDataSourceTitle = "データ出典"
+    /// 개인정보처리방침 행 타이틀
+    static let etcPrivacyPolicyTitle = "プライバシーポリシー"
+    /// 오픈소스 라이선스 행 타이틀
+    static let etcLicenseTitle = "オープンソースライセンス"
+    /// 문의하기 행 타이틀
+    static let etcContactTitle = "お問い合わせ"
+    /// 버전 정보 행 타이틀
+    static let etcVersionTitle = "バージョン情報"
+    /// 비활성화(TODO) 행 보조 라벨
+    static let etcComingSoonLabel = "準備中"
+
+    /// 데이터 출처 안내 본문
+    static let dataSourceContent = "本アプリは韓国観光公社 多言語観光情報サービス(EngService2)、NAVER 地図・Geocoding API、為替レートAPIの情報を利用しています。"
+    /// 오픈소스 라이선스 안내 본문
+    static let licenseContent = "本アプリは以下のオープンソースライブラリを使用しています。\n\n・swift-composable-architecture\n・Kingfisher\n・lottie-ios\n・firebase-ios-sdk\n・SPM-NMapsMap"
+    /// 버전 정보 표시 (%@: 버전, %@: 빌드번호)
+    nonisolated(unsafe) static let versionTitle: ((String, String) -> String) = { version, build in
+        "バージョン \(version) (\(build))"
+    }
 }

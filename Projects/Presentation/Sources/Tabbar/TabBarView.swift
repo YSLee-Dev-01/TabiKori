@@ -65,6 +65,8 @@ public struct TabBarView: View {
                 FestivalView(store: store)
             case .region(let store):
                 RegionSpotView(store: store)
+            case .setting(let store):
+                SettingView(store: store)
             }
         }
     }

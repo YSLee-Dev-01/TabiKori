@@ -86,6 +86,10 @@ public struct TabBarFeature {
                 state.path.append(.region(RegionSpotFeature.State(region: region)))
                 return .none
 
+            case .home(.settingButtonTapped):
+                state.path.append(.setting(SettingFeature.State()))
+                return .none
+
             case .home:
                 return .none
 
@@ -126,6 +130,9 @@ public struct TabBarFeature {
 
             case .path(.element(id: _, action: .detail(.isBookmarkedResult))):
                 return .send(.bookmark(.onAppear))
+
+            case .path(.element(id: _, action: .setting(.resetCompleted))):
+                return .merge(.send(.bookmark(.onAppear)), .send(.plan(.onAppear)))
 
             case .path(.element(id: let id, action: .detail(.photoCellTapped(let index)))):
                 guard case .detail(let detailState) = state.path[id: id] else { return .none }

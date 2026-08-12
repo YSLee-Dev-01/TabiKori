@@ -66,6 +66,8 @@ public struct HomeFeature: Sendable {
         case categoryCoordinateResolved(CategoryType, Coordinate)
         case festivalMoreButtonTapped
         case openSettingsButtonTapped
+        /// 앱 내 설정 화면으로 진입 (iOS 설정 앱으로 이동하는 openSettingsButtonTapped와 다름)
+        case settingButtonTapped
         case regionCardTapped(KoreanRegion)
     }
 
@@ -234,6 +236,9 @@ public struct HomeFeature: Sendable {
                         UIApplication.shared.open(url)
                     }
                 }
+
+            case .settingButtonTapped:
+                return .none
 
             case .regionCardTapped:
                 return .none

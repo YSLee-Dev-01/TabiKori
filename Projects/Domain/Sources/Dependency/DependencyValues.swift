@@ -65,4 +65,9 @@ extension DependencyValues {
         get {self[NaverGeocodingUseCaseDependencyKey.self]}
         set {self[NaverGeocodingUseCaseDependencyKey.self] = newValue}
     }
+
+    public var dataResetUseCase: DataResetUseCaseProtocol {
+        get {self[DataResetUseCaseDependencyKey.self]}
+        set {self[DataResetUseCaseDependencyKey.self] = newValue}
+    }
 }

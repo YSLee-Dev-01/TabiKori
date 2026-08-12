@@ -84,4 +84,17 @@ extension TravelPlanRepository: TravelPlanRepositoryProtocol {
             throw TabiError.persistenceFailed(message: error.localizedDescription)
         }
     }
+
+    public func removeAll() async throws {
+        do {
+            let context = ModelContext(self.modelContainer)
+            try context.delete(model: TravelPlanModel.self)
+            try context.delete(model: TravelPlanDetailModel.self)
+            try context.delete(model: TravelPlanDetailSpotModel.self)
+            try context.save()
+        } catch {
+            AppLogger.core.log(.error, "일정 전체 삭제 실패: \(error.localizedDescription)")
+            throw TabiError.persistenceFailed(message: error.localizedDescription)
+        }
+    }
 }

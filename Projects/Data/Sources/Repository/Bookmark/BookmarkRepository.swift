@@ -74,6 +74,17 @@ extension BookmarkRepository: BookmarkRepositoryProtocol {
             throw TabiError.persistenceFailed(message: error.localizedDescription)
         }
     }
+
+    public func removeAll() async throws {
+        do {
+            let context = ModelContext(self.modelContainer)
+            try context.delete(model: BookmarkModel.self)
+            try context.save()
+        } catch {
+            AppLogger.core.log(.error, "북마크 전체 삭제 실패: \(error.localizedDescription)")
+            throw TabiError.persistenceFailed(message: error.localizedDescription)
+        }
+    }
 }
 
 // MARK: - Method
