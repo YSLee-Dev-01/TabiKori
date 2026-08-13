@@ -57,12 +57,7 @@ public struct TabiGlassIconButton: View {
                 .frame(width: self.size.iconSize, height: self.size.iconSize)
                 .padding(self.size.padding)
                 .foregroundStyle(Color.getTabiColor(self.foregroundColor))
-                .glassEffect()
-                .overlay(
-                    Color.getTabiColor(.tabiPrimary)
-                        .opacity(0.1)
-                        .clipShape(.circle)
-                )
+                .glassEffect(.regular, in: .circle)
         }
     }
 }

@@ -26,7 +26,7 @@ public struct TabiNavigationBar<Trailing: View>: View {
     }
 
     public var body: some View {
-        HStack(alignment: .top) {
+        HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 5) {
                 if let subtitle = self.subtitle {
                     TabiLabel(title: subtitle, style: .bodyMBold, color: .tabiTextPrimary)
