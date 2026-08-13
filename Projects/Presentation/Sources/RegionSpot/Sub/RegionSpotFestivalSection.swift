@@ -38,11 +38,14 @@ struct RegionSpotFestivalSection: View {
                 .padding(.horizontal, 20)
 
             case .loaded where self.festivals.isEmpty:
-                TabiEmptyState(
-                    systemImageName: "calendar.badge.exclamationmark",
-                    description: Strings.RegionSpot.festivalEmptyDescription,
-                    style: .card
-                )
+                VStack(spacing: 12) {
+                    TabiEmptyState(
+                        systemImageName: "calendar.badge.exclamationmark",
+                        description: Strings.RegionSpot.festivalEmptyDescription,
+                        style: .card
+                    )
+                    TabiButton(Strings.RegionSpot.retryButtonTitle, style: .secondary, action: self.onRetry)
+                }
                 .padding(.horizontal, 20)
 
             case .loaded:

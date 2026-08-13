@@ -49,6 +49,7 @@ public struct RegionSpotFeature: Sendable {
         var festivalLoadState: RegionSpotLoadState = .idle
 
         fileprivate var hasLoadedInitialContent: Bool = false
+        @Presents var addPlanState: AddTravelPlanFeature.State?
 
         public init(region: KoreanRegion) {
             self.region = region
@@ -62,10 +63,12 @@ public struct RegionSpotFeature: Sendable {
         case retryButtonTapped
         case spotTapped(TouristSpot)
         case festivalTapped(Festival)
+        case addPlanButtonTapped
         case spotsResult(CategoryType, [TouristSpot])
         case spotsFailed(CategoryType)
         case festivalsResult([Festival])
         case festivalsFailed
+        case addPlan(PresentationAction<AddTravelPlanFeature.Action>)
     }
 
     public init() {}
@@ -105,6 +108,15 @@ public struct RegionSpotFeature: Sendable {
             case .spotTapped, .festivalTapped:
                 return .none
 
+            case .addPlanButtonTapped:
+                var addPlanState = AddTravelPlanFeature.State()
+                addPlanState.selectedRegion = state.region
+                if let emoji = state.region.emoji {
+                    addPlanState.emojiText = emoji
+                }
+                state.addPlanState = addPlanState
+                return .none
+
             case .spotsResult(let category, let spots):
                 guard state.selectedCategory == category else { return .none }
                 state.spots = spots
@@ -124,7 +136,17 @@ public struct RegionSpotFeature: Sendable {
             case .festivalsFailed:
                 state.festivalLoadState = .failed
                 return .none
+
+            case .addPlan(.presented(.saveResult(true))):
+                state.addPlanState = nil
+                return .none
+
+            case .addPlan:
+                return .none
             }
+        }
+        .ifLet(\.$addPlanState, action: \.addPlan) {
+            AddTravelPlanFeature()
         }
     }
 }

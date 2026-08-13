@@ -18,6 +18,8 @@ public struct RegionSpotView: View {
     @Bindable private var store: StoreOf<RegionSpotFeature>
     @Environment(\.dismiss) private var dismiss
 
+    @State private var isMovingForward: Bool = true
+
     private static let heroTopAnchorID = "regionSpotHeroTop"
 
     public init(store: StoreOf<RegionSpotFeature>) {
@@ -44,6 +46,9 @@ public struct RegionSpotView: View {
             .navigationBarBackButtonHidden(true)
             .interactivePopGestureEnabled(true)
             .toolbarBackground(.hidden, for: .navigationBar)
+            .sheet(item: self.$store.scope(state: \.addPlanState, action: \.addPlan)) { store in
+                AddTravelPlanView(store: store)
+            }
             .onAppear {
                 self.store.send(.onAppear)
             }
@@ -59,9 +64,15 @@ private extension RegionSpotView {
             RegionSpotHeroView(image: self.store.region.image)
                 .id(Self.heroTopAnchorID)
 
-            VStack(alignment: .leading, spacing: 4) {
-                TabiLabel(title: self.store.region.jaTitle, style: .titleL, color: .tabiTextPrimary)
-                TabiLabel(title: self.store.region.koTitle, style: .bodyM, color: .tabiTextSecondary)
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    TabiLabel(title: self.store.region.jaTitle, style: .titleL, color: .tabiTextPrimary)
+                    TabiLabel(title: self.store.region.koTitle, style: .bodyM, color: .tabiTextSecondary)
+                }
+                Spacer()
+                TabiCircleIconButton(systemName: "plus", foregroundColor: .tabiPrimary) {
+                    self.store.send(.addPlanButtonTapped)
+                }
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
@@ -84,6 +95,7 @@ private extension RegionSpotView {
             }
 
             self.tabContentSection()
+                .animation(.tabiStandard, value: self.store.selectedContentTab)
                 .padding(.bottom, 20)
         }
     }
@@ -102,34 +114,41 @@ private extension RegionSpotView {
     }
 
     func selectTab(_ tab: RegionSpotContentTab, proxy: ScrollViewProxy) {
+        if let currentIndex = RegionSpotContentTab.allCases.firstIndex(of: self.store.selectedContentTab),
+           let newIndex = RegionSpotContentTab.allCases.firstIndex(of: tab) {
+            self.isMovingForward = newIndex >= currentIndex
+        }
         withAnimation(.tabiStandard) {
             proxy.scrollTo(Self.heroTopAnchorID, anchor: .top)
         } completion: {
-            withAnimation(.tabiStandard) {
-                _ = self.store.send(.contentTabSelected(tab))
-            }
+            self.store.send(.contentTabSelected(tab))
         }
     }
 
     @ViewBuilder
     func tabContentSection() -> some View {
-        if self.store.selectedContentTab == .spot {
-            RegionSpotSpotSection(
-                loadState: self.store.spotLoadState,
-                spots: self.store.spots,
-                onRetry: { self.store.send(.retryButtonTapped) },
-                onSpotTapped: { self.store.send(.spotTapped($0)) }
-            )
-            .transition(.opacity)
+        Group {
+            if self.store.selectedContentTab == .spot {
+                RegionSpotSpotSection(
+                    loadState: self.store.spotLoadState,
+                    spots: self.store.spots,
+                    onRetry: { self.store.send(.retryButtonTapped) },
+                    onSpotTapped: { self.store.send(.spotTapped($0)) }
+                )
+            }
+            if self.store.selectedContentTab == .festival {
+                RegionSpotFestivalSection(
+                    loadState: self.store.festivalLoadState,
+                    festivals: self.store.festivals,
+                    onRetry: { self.store.send(.retryButtonTapped) },
+                    onFestivalTapped: { self.store.send(.festivalTapped($0)) }
+                )
+            }
         }
-        if self.store.selectedContentTab == .festival {
-            RegionSpotFestivalSection(
-                loadState: self.store.festivalLoadState,
-                festivals: self.store.festivals,
-                onRetry: { self.store.send(.retryButtonTapped) },
-                onFestivalTapped: { self.store.send(.festivalTapped($0)) }
-            )
-            .transition(.opacity)
-        }
+        .id(self.store.selectedContentTab)
+        .transition(.asymmetric(
+            insertion: .move(edge: self.isMovingForward ? .trailing : .leading),
+            removal: .move(edge: self.isMovingForward ? .leading : .trailing)
+        ))
     }
 }

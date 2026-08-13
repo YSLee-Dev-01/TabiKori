@@ -68,10 +68,9 @@ private extension RegionSpotSpotSection {
         VStack(spacing: 16) {
             TabiEmptyState(
                 systemImageName: "exclamationmark.triangle",
-                title: Strings.RegionSpot.errorTitle,
                 description: Strings.RegionSpot.errorDescription
             )
-            TabiButton(Strings.RegionSpot.retryButtonTitle, style: .secondary, action: self.onRetry)
+            TabiButton(Strings.RegionSpot.retryButtonTitle, style: .ghost, action: self.onRetry)
         }
         .padding(.vertical, 24)
     }
