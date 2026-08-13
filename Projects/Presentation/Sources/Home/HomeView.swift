@@ -67,10 +67,14 @@ public struct HomeView: View {
                             self.store.send(.searchBarTapped)
                         }
                         .staggeredAppear(index: 1)
+                        if self.store.currentRegion.isKorea {
+                            self.exchangeRateCard()
+                                .staggeredAppear(index: 2)
+                        }
                         self.recommendedRegionBanner()
-                            .staggeredAppear(index: 2)
-                        self.festivalListSection()
                             .staggeredAppear(index: 3)
+                        self.festivalListSection()
+                            .staggeredAppear(index: 4)
                     }
                 }
                 .animation(.tabiStandard, value: self.store.locationStatus)

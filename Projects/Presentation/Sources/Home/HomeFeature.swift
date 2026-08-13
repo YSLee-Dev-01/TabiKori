@@ -61,6 +61,7 @@ public struct HomeFeature: Sendable {
         case nearbyTouristSpotsResult([TouristSpot])
         case nearbyRestaurantsResult([TouristSpot])
         case festivalsResult([Festival])
+        case festivalsFailed
         case travelPlansResult([TravelPlan])
         case planCreateButtonTapped
         case nearbySpotTapped(TouristSpot)
@@ -141,8 +142,10 @@ public struct HomeFeature: Sendable {
                 return .merge(locationEffect, exchangeRateEffect, festivalEffect)
 
             case .refreshTriggered:
-                guard state.currentRegion.isKorea else { return .none }
-                return self.fetchNearbySpotsEffect()
+                state.isLoadingFestivals = true
+                let festivalEffect = self.fetchFestivalsEffect()
+                guard state.currentRegion.isKorea else { return festivalEffect }
+                return .merge(self.fetchNearbySpotsEffect(), festivalEffect)
 
             case .requestLocationPermission:
                 return .run { send in
@@ -202,6 +205,11 @@ public struct HomeFeature: Sendable {
             case .festivalsResult(let festivals):
                 state.festivals = festivals
                 state.isLoadingFestivals = false
+                return .none
+
+            case .festivalsFailed:
+                state.isLoadingFestivals = false
+                state.hasLoadedInitialFestivals = false
                 return .none
 
             case .travelPlansResult(let plans):
@@ -335,7 +343,7 @@ private extension HomeFeature {
                     AppLogger.view.log(.debug, "축제 조회 취소됨")
                     return
                 }
-                await send(.festivalsResult([]))
+                await send(.festivalsFailed)
                 AppLogger.view.log(.error, "축제 조회 실패: \(error.localizedDescription)")
             }
         }
