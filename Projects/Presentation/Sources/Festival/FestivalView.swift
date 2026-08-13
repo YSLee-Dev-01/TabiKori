@@ -82,14 +82,21 @@ private extension FestivalView {
             ScrollView {
                 self.filterSection()
 
-                if self.store.isLoading {
+                switch self.store.loadState {
+                case .idle, .loading:
                     ProgressView()
                         .frame(height: max(proxy.size.height - self.headerHeight, 0))
                         .frame(maxWidth: .infinity)
-                } else if self.store.festivals.isEmpty {
+
+                case .failed:
+                    self.errorState()
+                        .frame(height: max(proxy.size.height - self.headerHeight, 0))
+
+                case .loaded where self.store.festivals.isEmpty:
                     FestivalEmptyState()
                         .frame(height: max(proxy.size.height - self.headerHeight, 0))
-                } else {
+
+                case .loaded:
                     LazyVStack(spacing: 0) {
                         ForEach(self.store.festivals) { festival in
                             TabiFestivalRow(
@@ -104,5 +111,18 @@ private extension FestivalView {
                 }
             }
         }
+    }
+
+    func errorState() -> some View {
+        VStack(spacing: 16) {
+            TabiEmptyState(
+                systemImageName: "exclamationmark.triangle",
+                description: Strings.RegionSpot.errorDescription
+            )
+            TabiButton(Strings.RegionSpot.retryButtonTitle, style: .ghost) {
+                self.store.send(.retryButtonTapped)
+            }
+        }
+        .padding(.horizontal, 20)
     }
 }
