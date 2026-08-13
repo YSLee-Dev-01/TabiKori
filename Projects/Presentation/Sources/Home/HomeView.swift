@@ -750,15 +750,28 @@ fileprivate extension HomeView {
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
                 TabiLabel(title: Strings.Region.seoul, style: .titleM, color: .tabiOnColor)
-                TabiLabel(title: Strings.Home.inKoreaBannerSubtitle, style: .bodyS, color: .tabiOnColor)
+                if self.store.ongoingMatchedPlan != nil {
+                    TabiLabel(
+                        title: Strings.Home.inKoreaBannerOngoingPlanSubtitle(
+                            Strings.Plan.dayChipTitle(self.store.ongoingMatchedPlanDayIndex + 1)
+                        ),
+                        style: .bodyS,
+                        color: .tabiOnColor
+                    )
                     .opacity(0.85)
+                } else {
+                    TabiLabel(title: Strings.Home.inKoreaBannerSubtitle, style: .bodyS, color: .tabiOnColor)
+                        .opacity(0.85)
+                }
                 Spacer()
             }
             .padding(16)
 
             HStack(spacing: 0) {
                 Spacer()
-                TabiButton(Strings.Home.moveToPlanButton, style: .glass(on: .accent)) {}
+                TabiButton(Strings.Home.moveToPlanButton, style: .glass(on: .accent)) {
+                    self.store.send(.moveToPlanButtonTapped)
+                }
             }
             .padding(16)
         }

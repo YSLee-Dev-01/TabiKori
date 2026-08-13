@@ -90,6 +90,16 @@ public struct TabBarFeature {
                 state.path.append(.setting(SettingFeature.State()))
                 return .none
 
+            case .home(.moveToPlanButtonTapped):
+                state.selectedTab = .plan
+                if let matchedPlan = state.homeState.ongoingMatchedPlan {
+                    state.path.append(.planDetail(PlanDetailFeature.State(
+                        plan: matchedPlan,
+                        initialDayIndex: state.homeState.ongoingMatchedPlanDayIndex
+                    )))
+                }
+                return .none
+
             case .home:
                 return .none
 

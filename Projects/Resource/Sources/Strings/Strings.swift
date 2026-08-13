@@ -95,6 +95,10 @@ public extension Strings.Home {
     static let nearbyRestaurantEmptyDescription = "周辺に飲食店はありません。"
     /// 한국 배너 부제목 (서울)
     static let inKoreaBannerSubtitle = "ソウルにいますね！"
+    /// 진행중인 플랜이 있을 때 한국 배너 부제목 (%@: 일차)
+    nonisolated(unsafe) static let inKoreaBannerOngoingPlanSubtitle: ((String) -> String) = {
+        "\($0) 旅です！"
+    }
     /// 플랜으로 이동 버튼
     static let moveToPlanButton = "プランへ移動"
     /// 환율 기준 시각 (%@: 날짜/시간)
