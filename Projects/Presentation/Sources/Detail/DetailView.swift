@@ -18,7 +18,9 @@ struct DetailView: View {
     let namespace: Namespace.ID
 
     @Environment(\.dismiss) private var dismiss
-    
+
+    @State private var isMovingForward: Bool = true
+
     fileprivate var visibleTabs: [DetailTab] {
         DetailTab.allCases.filter { tab in
             switch tab {
@@ -47,10 +49,16 @@ struct DetailView: View {
                     )
                     .id(Self.heroTopAnchorID)
                     self.contentHeaderSection()
-                    self.tabBarSection(proxy: proxy)
-                    self.tabContentSection()
-                        .animation(.tabiStandard, value: self.store.selectedTab)
-                        .animation(.tabiStandard, value: self.store.isLoading)
+                    if self.store.loadFailed {
+                        self.errorState()
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 24)
+                    } else {
+                        self.tabBarSection(proxy: proxy)
+                        self.tabContentSection()
+                            .animation(.tabiStandard, value: self.store.selectedTab)
+                            .animation(.tabiStandard, value: self.store.isLoading)
+                    }
                 }
                 .padding(.bottom, 115)
             }
@@ -79,11 +87,12 @@ struct DetailView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        self.store.send(.saveButtonTapped)
+                        self.store.send(.routeDirectionsButtonTapped)
                     } label: {
-                        Image(systemName: self.store.isSaved ? "heart.fill" : "heart")
+                        Image(systemName: "arrow.triangle.turn.up.right.diamond")
                     }
                     .tint(Color.getTabiColor(.tabiPrimary))
+                    .disabled(self.store.isLoading || self.store.loadFailed)
                 }
             }
             .navigationTransition(.zoom(sourceID: self.store.touristSpot.id, in: self.namespace))
@@ -92,9 +101,9 @@ struct DetailView: View {
             .toolbarBackground(.hidden, for: .navigationBar)
             .safeAreaBar(edge: .bottom) {
                 DetailBottomCTAView(
-                    onRouteDirectionsTapped: { self.store.send(.routeDirectionsButtonTapped) },
-                    onAddToItineraryTapped: { self.store.send(.addToItineraryButtonTapped) },
-                    isRouteDirectionsDisabled: self.store.isLoading
+                    isSaved: self.store.isSaved,
+                    onSaveTapped: { self.store.send(.saveButtonTapped) },
+                    onAddToItineraryTapped: { self.store.send(.addToItineraryButtonTapped) }
                 )
             }
             .sheet(item: self.$store.scope(state: \.addToItineraryState, action: \.addToItinerary)) { store in
@@ -158,6 +167,10 @@ private extension DetailView {
     }
 
     func selectTab(_ tab: DetailTab, proxy: ScrollViewProxy) {
+        if let currentIndex = self.visibleTabs.firstIndex(of: self.store.selectedTab),
+           let newIndex = self.visibleTabs.firstIndex(of: tab) {
+            self.isMovingForward = newIndex >= currentIndex
+        }
         withAnimation(.tabiStandard) {
             proxy.scrollTo(Self.heroTopAnchorID, anchor: .top)
         } completion: {
@@ -167,36 +180,54 @@ private extension DetailView {
 
     @ViewBuilder
     func tabContentSection() -> some View {
-        if self.store.selectedTab == .info {
-            if self.store.isLoading {
-                self.infoLoadingPlaceholder()
-                    .transition(.opacity)
-            } else {
-                DetailInfoTabView(intro: self.$store.intro, detail: self.$store.detail)
-                    .transition(.opacity)
+        Group {
+            if self.store.selectedTab == .info {
+                if self.store.isLoading {
+                    self.infoLoadingPlaceholder()
+                } else {
+                    DetailInfoTabView(intro: self.$store.intro, detail: self.$store.detail)
+                }
+            }
+            if self.store.selectedTab == .photos {
+                DetailPhotosTabView(
+                    images: self.store.images,
+                    onImageTapped: { self.store.send(.photoCellTapped(index: $0)) }
+                )
+            }
+            if self.store.selectedTab == .map {
+                DetailMapTabView(
+                    touristSpotID: self.store.touristSpot.id,
+                    title: self.store.touristSpot.title,
+                    contentType: self.store.touristSpot.contentType,
+                    coordinate: self.store.detail.coordinate,
+                    onViewInMapTapped: { self.store.send(.mapSearchButtonTapped) }
+                )
             }
         }
-        if self.store.selectedTab == .photos {
-            DetailPhotosTabView(
-                images: self.store.images,
-                onImageTapped: { self.store.send(.photoCellTapped(index: $0)) }
-            )
-        }
-        if self.store.selectedTab == .map {
-            DetailMapTabView(
-                touristSpotID: self.store.touristSpot.id,
-                title: self.store.touristSpot.title,
-                contentType: self.store.touristSpot.contentType,
-                coordinate: self.store.detail.coordinate,
-                onViewInMapTapped: { self.store.send(.mapSearchButtonTapped) }
-            )
-        }
+        .id(self.store.selectedTab)
+        .transition(.asymmetric(
+            insertion: .move(edge: self.isMovingForward ? .trailing : .leading),
+            removal: .move(edge: self.isMovingForward ? .leading : .trailing)
+        ))
     }
 
     func infoLoadingPlaceholder() -> some View {
         ProgressView()
             .frame(maxWidth: .infinity)
             .padding(.vertical, 40)
+    }
+
+    func errorState() -> some View {
+        VStack(spacing: 16) {
+            TabiEmptyState(
+                systemImageName: "exclamationmark.triangle",
+                description: Strings.RegionSpot.errorDescription
+            )
+            TabiButton(Strings.RegionSpot.retryButtonTitle, style: .ghost) {
+                self.store.send(.retryButtonTapped)
+            }
+        }
+        .padding(.vertical, 24)
     }
 }
 
