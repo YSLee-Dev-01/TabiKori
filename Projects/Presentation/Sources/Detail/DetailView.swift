@@ -184,10 +184,13 @@ private extension DetailView {
     func tabContentSection() -> some View {
         Group {
             if self.store.selectedTab == .info {
-                if self.store.isLoading {
+                ZStack {
                     self.infoLoadingPlaceholder()
-                } else {
+                        .opacity(self.store.isLoading ? 1 : 0)
+                        .allowsHitTesting(self.store.isLoading)
                     DetailInfoTabView(intro: self.$store.intro, detail: self.$store.detail)
+                        .opacity(self.store.isLoading ? 0 : 1)
+                        .allowsHitTesting(self.store.isLoading == false)
                 }
             }
             if self.store.selectedTab == .photos {
