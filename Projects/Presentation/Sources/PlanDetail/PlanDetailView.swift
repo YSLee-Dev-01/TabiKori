@@ -85,6 +85,7 @@ public struct PlanDetailView: View {
         .sheet(item: self.$store.scope(state: \.addSpotState, action: \.addSpot)) { store in
             PlanDetailAddSpotView(store: store)
         }
+        .alert($store.scope(state: \.alert, action: \.alert))
         .onAppear {
             self.store.send(.onAppear)
         }
@@ -188,7 +189,7 @@ private extension PlanDetailView {
             TabiButton(Strings.Plan.editCancelButton, style: .secondary, isExpanded: true) {
                 self.store.send(.editCancelButtonTapped)
             }
-            TabiButton(Strings.Plan.editSaveButton, style: .primary, isExpanded: true) {
+            TabiButton(Strings.Plan.editSaveButton, style: .primary, isExpanded: true, isLoading: self.store.isSaving) {
                 self.store.send(.editSaveButtonTapped)
             }
         }

@@ -275,6 +275,10 @@ public extension Strings.Plan {
     static let editSaveButton = "保存"
     /// 편집 모드 취소 버튼
     static let editCancelButton = "キャンセル"
+    /// 스팟 삭제 실패 알림 타이틀
+    static let spotDeleteFailedAlertTitle = "削除に失敗しました"
+    /// 스팟 삭제 실패 알림 메시지
+    static let spotDeleteFailedAlertMessage = "もう一度お試しください"
 }
 
 public extension Strings.Detail {

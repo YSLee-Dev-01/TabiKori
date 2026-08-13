@@ -92,6 +92,13 @@ public struct PlanFeature: Sendable {
     }
 }
 
+// MARK: - CancelID
+
+private enum CancelID {
+    case fetchPlans
+    case fetchSpotCounts
+}
+
 // MARK: - Method
 
 private extension PlanFeature {
@@ -105,6 +112,7 @@ private extension PlanFeature {
                 await send(.plansResult([]))
             }
         }
+        .cancellable(id: CancelID.fetchPlans, cancelInFlight: true)
     }
 
     func fetchSpotCountsEffect(plans: [TravelPlan]) -> Effect<Action> {
@@ -128,6 +136,7 @@ private extension PlanFeature {
             }
             await send(.spotCountsResult(counts))
         }
+        .cancellable(id: CancelID.fetchSpotCounts, cancelInFlight: true)
     }
 
     func removePlanEffect(planId: UUID) -> Effect<Action> {

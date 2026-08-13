@@ -11,6 +11,7 @@ import Foundation
 import ComposableArchitecture
 import Core
 import Domain
+import Resource
 
 /// 일정 상세 화면. NavigationBar와 일자 선택 탭, 선택된 날짜의 스팟 목록 표시 + 스와이프 삭제를 담당한다
 @Reducer
@@ -25,8 +26,10 @@ public struct PlanDetailFeature: Sendable {
         var selectedDayIndex: Int = 0
         var isEditing: Bool = false
         var editingSpots: [TravelPlanDetailSpot] = []
+        var isSaving: Bool = false
         fileprivate var hasStartedLoading: Bool = false
         @Presents var addSpotState: PlanDetailAddSpotFeature.State?
+        @Presents var alert: AlertState<Action.Alert>?
 
         public init(plan: TravelPlan, initialDayIndex: Int = 0) {
             self.plan = plan
@@ -58,8 +61,12 @@ public struct PlanDetailFeature: Sendable {
         case spotDeletedInEditMode(at: IndexSet)
         case travelPlanDetailResult(TravelPlanDetail?)
         case spotDeleted(id: UUID)
+        case spotDeleteFailed
         case editSaveResult(TravelPlanDetail?)
         case addSpot(PresentationAction<PlanDetailAddSpotFeature.Action>)
+        case alert(PresentationAction<Alert>)
+
+        public enum Alert: Equatable {}
     }
 
     public init() {}
@@ -87,14 +94,18 @@ public struct PlanDetailFeature: Sendable {
             case .editCancelButtonTapped:
                 state.isEditing = false
                 state.editingSpots = []
-                return .none
+                state.isSaving = false
+                return .cancel(id: CancelID.saveEditedSpots)
 
             case .editSaveButtonTapped:
+                guard state.isSaving == false else { return .none }
+                state.isSaving = true
                 return self.saveEditedSpotsEffect(
                     planId: state.plan.id,
                     dayIndex: state.selectedDayIndex,
                     orderedSpotIds: state.editingSpots.map(\.id)
                 )
+                .cancellable(id: CancelID.saveEditedSpots)
 
             case .spotMovedInEditMode(let source, let destination):
                 state.editingSpots.move(fromOffsets: source, toOffset: destination)
@@ -129,11 +140,34 @@ public struct PlanDetailFeature: Sendable {
                 )
                 return .none
 
+            case .spotDeleteFailed:
+                state.alert = AlertState {
+                    TextState(Strings.Plan.spotDeleteFailedAlertTitle)
+                } actions: {
+                    ButtonState {
+                        TextState(Strings.Plan.alertConfirm)
+                    }
+                } message: {
+                    TextState(Strings.Plan.spotDeleteFailedAlertMessage)
+                }
+                return .none
+
             case .editSaveResult(let detail):
-                state.isEditing = false
-                state.editingSpots = []
+                state.isSaving = false
                 if let detail {
+                    state.isEditing = false
+                    state.editingSpots = []
                     state.travelPlanDetail = detail
+                } else {
+                    state.alert = AlertState {
+                        TextState(Strings.Plan.saveFailedAlertTitle)
+                    } actions: {
+                        ButtonState {
+                            TextState(Strings.Plan.alertConfirm)
+                        }
+                    } message: {
+                        TextState(Strings.Plan.saveFailedAlertMessage)
+                    }
                 }
                 return .none
 
@@ -143,12 +177,22 @@ public struct PlanDetailFeature: Sendable {
 
             case .addSpot:
                 return .none
+
+            case .alert:
+                return .none
             }
         }
         .ifLet(\.$addSpotState, action: \.addSpot) {
             PlanDetailAddSpotFeature()
         }
+        .ifLet(\.$alert, action: \.alert)
     }
+}
+
+// MARK: - CancelID
+
+private enum CancelID {
+    case saveEditedSpots
 }
 
 // MARK: - Method
@@ -173,6 +217,7 @@ private extension PlanDetailFeature {
                 await send(.spotDeleted(id: spotId))
             } catch {
                 AppLogger.view.log(.error, "일정 상세 스팟 삭제 실패 (planId: \(planId), spotId: \(spotId)): \(error.localizedDescription)")
+                await send(.spotDeleteFailed)
             }
         }
     }
