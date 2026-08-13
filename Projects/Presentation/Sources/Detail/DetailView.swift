@@ -50,9 +50,11 @@ struct DetailView: View {
                     .id(Self.heroTopAnchorID)
                     self.contentHeaderSection()
                     if self.store.loadFailed {
-                        self.errorState()
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 24)
+                        TabiRetryableEmptyState(description: Strings.RegionSpot.errorDescription) {
+                            self.store.send(.retryButtonTapped)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 24)
                     } else {
                         self.tabBarSection(proxy: proxy)
                         self.tabContentSection()
@@ -215,19 +217,6 @@ private extension DetailView {
         ProgressView()
             .frame(maxWidth: .infinity)
             .padding(.vertical, 40)
-    }
-
-    func errorState() -> some View {
-        VStack(spacing: 16) {
-            TabiEmptyState(
-                systemImageName: "exclamationmark.triangle",
-                description: Strings.RegionSpot.errorDescription
-            )
-            TabiButton(Strings.RegionSpot.retryButtonTitle, style: .ghost) {
-                self.store.send(.retryButtonTapped)
-            }
-        }
-        .padding(.vertical, 24)
     }
 }
 

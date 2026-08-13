@@ -27,25 +27,15 @@ struct RegionSpotFestivalSection: View {
                     .padding(.vertical, 24)
 
             case .failed:
-                VStack(spacing: 12) {
-                    TabiEmptyState(
-                        systemImageName: "exclamationmark.triangle",
-                        description: Strings.RegionSpot.errorDescription,
-                        style: .card
-                    )
-                    TabiButton(Strings.RegionSpot.retryButtonTitle, style: .secondary, action: self.onRetry)
-                }
-                .padding(.horizontal, 20)
+                TabiRetryableEmptyState(description: Strings.RegionSpot.errorDescription, onRetry: self.onRetry)
+                    .padding(.horizontal, 20)
 
             case .loaded where self.festivals.isEmpty:
-                VStack(spacing: 12) {
-                    TabiEmptyState(
-                        systemImageName: "calendar.badge.exclamationmark",
-                        description: Strings.RegionSpot.festivalEmptyDescription,
-                        style: .card
-                    )
-                    TabiButton(Strings.RegionSpot.retryButtonTitle, style: .secondary, action: self.onRetry)
-                }
+                TabiRetryableEmptyState(
+                    systemImageName: "calendar.badge.exclamationmark",
+                    description: Strings.RegionSpot.festivalEmptyDescription,
+                    onRetry: self.onRetry
+                )
                 .padding(.horizontal, 20)
 
             case .loaded:

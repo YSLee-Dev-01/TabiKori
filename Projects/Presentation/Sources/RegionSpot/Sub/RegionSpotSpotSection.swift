@@ -27,8 +27,9 @@ struct RegionSpotSpotSection: View {
                     .padding(.vertical, 32)
 
             case .failed:
-                self.errorState()
+                TabiRetryableEmptyState(description: Strings.RegionSpot.errorDescription, onRetry: self.onRetry)
                     .padding(.horizontal, 20)
+                    .padding(.vertical, 24)
 
             case .loaded where self.spots.isEmpty:
                 TabiEmptyState(
@@ -58,20 +59,5 @@ struct RegionSpotSpotSection: View {
             }
         }
         .animation(.tabiStandard, value: self.loadState)
-    }
-}
-
-// MARK: - View
-
-private extension RegionSpotSpotSection {
-    func errorState() -> some View {
-        VStack(spacing: 16) {
-            TabiEmptyState(
-                systemImageName: "exclamationmark.triangle",
-                description: Strings.RegionSpot.errorDescription
-            )
-            TabiButton(Strings.RegionSpot.retryButtonTitle, style: .ghost, action: self.onRetry)
-        }
-        .padding(.vertical, 24)
     }
 }

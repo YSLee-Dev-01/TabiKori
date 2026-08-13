@@ -89,8 +89,12 @@ private extension FestivalView {
                         .frame(maxWidth: .infinity)
 
                 case .failed:
-                    self.errorState()
-                        .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                    TabiRetryableEmptyState(description: Strings.RegionSpot.errorDescription) {
+                        self.store.send(.retryButtonTapped)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 24)
+                    .frame(height: max(proxy.size.height - self.headerHeight, 0), alignment: .top)
 
                 case .loaded where self.store.festivals.isEmpty:
                     FestivalEmptyState()
@@ -111,18 +115,5 @@ private extension FestivalView {
                 }
             }
         }
-    }
-
-    func errorState() -> some View {
-        VStack(spacing: 16) {
-            TabiEmptyState(
-                systemImageName: "exclamationmark.triangle",
-                description: Strings.RegionSpot.errorDescription
-            )
-            TabiButton(Strings.RegionSpot.retryButtonTitle, style: .ghost) {
-                self.store.send(.retryButtonTapped)
-            }
-        }
-        .padding(.horizontal, 20)
     }
 }
