@@ -142,8 +142,14 @@ public struct HomeFeature: Sendable {
                 return .merge(locationEffect, exchangeRateEffect, festivalEffect)
 
             case .refreshTriggered:
-                state.isLoadingFestivals = true
-                let festivalEffect = self.fetchFestivalsEffect()
+                let festivalEffect: Effect<Action>
+                if state.festivals.isEmpty {
+                    state.isLoadingFestivals = true
+                    festivalEffect = self.fetchFestivalsEffect()
+                } else {
+                    festivalEffect = .none
+                }
+
                 guard state.currentRegion.isKorea else { return festivalEffect }
                 return .merge(self.fetchNearbySpotsEffect(), festivalEffect)
 
