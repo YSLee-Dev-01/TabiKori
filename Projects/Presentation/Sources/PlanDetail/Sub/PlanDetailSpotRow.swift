@@ -30,10 +30,8 @@ struct PlanDetailSpotRow: View {
             TabiCard {
                 HStack(alignment: .center, spacing: 8) {
                     VStack(alignment: .leading, spacing: 6) {
-                        HStack(alignment: .center, spacing: 6) {
-                            TabiTag(self.spot.category.label, color: self.spot.category.color)
-                            TabiLabel(title: self.spot.title, style: .bodyMBold, color: .tabiTextPrimary)
-                        }
+                        TabiTag(self.spot.category.label, color: self.spot.category.color)
+                        TabiLabel(title: self.spot.title, style: .bodyMBold, color: .tabiTextPrimary)
                         if let subtitle = self.spot.subtitle {
                             TabiLabel(title: subtitle, style: .captionM, color: .tabiTextSecondary)
                         }
