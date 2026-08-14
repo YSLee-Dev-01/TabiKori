@@ -15,6 +15,7 @@ public struct TabiSpotRow: View {
     private let thumbnailURL: URL?
     private let japaneseTitle: String
     private let koreanTitle: String?
+    private let address: String?
     private let tagTitle: String
     private let tagColor: TabiColor
     private let isCustom: Bool
@@ -25,6 +26,7 @@ public struct TabiSpotRow: View {
         thumbnailURL: URL?,
         japaneseTitle: String,
         koreanTitle: String?,
+        address: String? = nil,
         tagTitle: String,
         tagColor: TabiColor,
         isCustom: Bool,
@@ -34,6 +36,7 @@ public struct TabiSpotRow: View {
         self.thumbnailURL = thumbnailURL
         self.japaneseTitle = japaneseTitle
         self.koreanTitle = koreanTitle
+        self.address = address
         self.tagTitle = tagTitle
         self.tagColor = tagColor
         self.isCustom = isCustom
@@ -66,6 +69,10 @@ public struct TabiSpotRow: View {
 
                         if let koreanTitle = self.koreanTitle {
                             TabiLabel(title: koreanTitle, style: .captionM, color: .tabiTextSecondary, lineLimit: 1)
+                        }
+
+                        if let address = self.address {
+                            TabiLabel(title: address, style: .captionM, color: .tabiTextTertiary, lineLimit: 1)
                         }
                     }
 

@@ -13,6 +13,7 @@ import Resource
 
 struct DetailBottomCTAView: View {
     let isSaved: Bool
+    let isSaveDisabled: Bool
     let onSaveTapped: () -> Void
     let onAddToItineraryTapped: () -> Void
 
@@ -25,6 +26,7 @@ struct DetailBottomCTAView: View {
             ) {
                 self.onSaveTapped()
             }
+            .disabled(self.isSaveDisabled)
 
             TabiButton(
                 Strings.Detail.ctaAddToItinerary,

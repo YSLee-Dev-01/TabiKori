@@ -142,7 +142,7 @@ public struct DetailFeature {
                         .cancellable(id: CancelID.bookmarkToggle, cancelInFlight: true)
                 } else {
                     state.isSaved = true
-                    return self.addBookmarkEffect(spot: state.touristSpot)
+                    return self.addBookmarkEffect(spot: state.touristSpot, address: state.detail.address)
                         .cancellable(id: CancelID.bookmarkToggle, cancelInFlight: true)
                 }
 
@@ -302,10 +302,20 @@ private extension DetailFeature {
         }
     }
 
-    func addBookmarkEffect(spot: TouristSpot) -> Effect<Action> {
+    func addBookmarkEffect(spot: TouristSpot, address: String) -> Effect<Action> {
         .run { [bookmarkUseCase = self.bookmarkUseCase] send in
+            let spotToSave = TouristSpot(
+                id: spot.id,
+                title: spot.title,
+                thumbnailURLString: spot.thumbnailURLString,
+                distanceMeters: spot.distanceMeters,
+                contentType: spot.contentType,
+                coordinate: spot.coordinate,
+                isCustom: spot.isCustom,
+                address: address.isEmpty ? spot.address : address
+            )
             do {
-                try await bookmarkUseCase.add(spot)
+                try await bookmarkUseCase.add(spotToSave)
                 await send(.isBookmarkedResult(true))
             } catch {
                 AppLogger.view.log(.error, "북마크 저장 실패: \(error.localizedDescription)")

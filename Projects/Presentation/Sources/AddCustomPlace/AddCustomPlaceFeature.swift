@@ -155,17 +155,17 @@ private extension AddCustomPlaceFeature {
     func saveEffect(category: CategoryType, title: String, address: String) -> Effect<Action> {
         .run { [naverGeocodingUseCase = self.naverGeocodingUseCase, bookmarkUseCase = self.bookmarkUseCase] send in
             do {
-                let coordinate = try await naverGeocodingUseCase.geocode(address: address)
-                await send(.addressPreviewResult(coordinate))
+                let geocoded = try await naverGeocodingUseCase.geocode(address: address)
+                await send(.addressPreviewResult(geocoded.coordinate))
                 let spot = TouristSpot(
                     id: "custom_" + UUID().uuidString,
                     title: title,
                     thumbnailURLString: nil,
                     distanceMeters: nil,
                     contentType: category,
-                    coordinate: coordinate,
+                    coordinate: geocoded.coordinate,
                     isCustom: true,
-                    address: address
+                    address: geocoded.formattedAddress.isEmpty ? address : geocoded.formattedAddress
                 )
                 try await bookmarkUseCase.add(spot)
                 await send(.saveResult(true))
@@ -183,8 +183,8 @@ private extension AddCustomPlaceFeature {
     func addressPreviewEffect(address: String) -> Effect<Action> {
         .run { [naverGeocodingUseCase = self.naverGeocodingUseCase] send in
             do {
-                let coordinate = try await naverGeocodingUseCase.geocode(address: address)
-                await send(.addressPreviewResult(coordinate))
+                let geocoded = try await naverGeocodingUseCase.geocode(address: address)
+                await send(.addressPreviewResult(geocoded.coordinate))
             } catch TabiError.dataNotFound {
                 AppLogger.view.log(.error, "커스텀 장소 주소 미리보기 실패: 주소를 찾을 수 없음")
                 await send(.addressNotFound)

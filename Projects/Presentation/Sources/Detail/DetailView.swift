@@ -104,6 +104,7 @@ struct DetailView: View {
             .safeAreaBar(edge: .bottom) {
                 DetailBottomCTAView(
                     isSaved: self.store.isSaved,
+                    isSaveDisabled: self.store.isLoading && self.store.isSaved == false,
                     onSaveTapped: { self.store.send(.saveButtonTapped) },
                     onAddToItineraryTapped: { self.store.send(.addToItineraryButtonTapped) }
                 )

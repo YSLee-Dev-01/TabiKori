@@ -68,6 +68,7 @@ private extension BookmarkView {
                                 thumbnailURL: bookmark.touristSpot.thumbnailURL,
                                 japaneseTitle: bookmark.touristSpot.japaneseTitle,
                                 koreanTitle: bookmark.touristSpot.koreanTitle,
+                                address: bookmark.touristSpot.address,
                                 tagTitle: bookmark.touristSpot.contentType.label,
                                 tagColor: bookmark.touristSpot.contentType.color,
                                 isCustom: bookmark.touristSpot.isCustom,

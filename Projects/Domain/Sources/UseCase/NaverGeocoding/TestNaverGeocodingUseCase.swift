@@ -13,6 +13,7 @@ public final class TestNaverGeocodingUseCase: NaverGeocodingUseCaseProtocol, @un
     // MARK: - Properties
 
     public var coordinate: Coordinate = .seoulCityHall
+    public var formattedAddress: String = ""
     public var error: Error?
 
     // MARK: - Init
@@ -21,10 +22,10 @@ public final class TestNaverGeocodingUseCase: NaverGeocodingUseCaseProtocol, @un
 
     // MARK: - Method
 
-    public func geocode(address: String) async throws -> Coordinate {
+    public func geocode(address: String) async throws -> GeocodedAddress {
         if let error {
             throw error
         }
-        return self.coordinate
+        return GeocodedAddress(coordinate: self.coordinate, formattedAddress: self.formattedAddress)
     }
 }

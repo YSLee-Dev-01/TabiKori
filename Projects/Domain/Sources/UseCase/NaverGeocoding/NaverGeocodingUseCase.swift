@@ -22,7 +22,7 @@ public final class NaverGeocodingUseCase: NaverGeocodingUseCaseProtocol {
 
     // MARK: - Method
 
-    public func geocode(address: String) async throws -> Coordinate {
+    public func geocode(address: String) async throws -> GeocodedAddress {
         return try await self.repository.geocode(address: address)
     }
 }

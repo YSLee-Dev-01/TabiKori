@@ -9,5 +9,5 @@
 import Foundation
 
 public protocol NaverGeocodingRepositoryProtocol: Sendable {
-    func geocode(address: String) async throws -> Coordinate
+    func geocode(address: String) async throws -> GeocodedAddress
 }

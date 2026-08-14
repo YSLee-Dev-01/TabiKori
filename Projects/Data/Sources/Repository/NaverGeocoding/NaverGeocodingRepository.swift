@@ -24,7 +24,7 @@ public final class NaverGeocodingRepository: NaverGeocodingRepositoryProtocol {
 
     // MARK: - Method
 
-    public func geocode(address: String) async throws -> Coordinate {
+    public func geocode(address: String) async throws -> GeocodedAddress {
         let dto = try await self.networkService.request(
             endPoint: NaverGeocodingEndpoint.geocode(address: address),
             responseType: NaverGeocodingResponseDTO.self

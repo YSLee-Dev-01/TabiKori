@@ -22,6 +22,8 @@ struct NaverGeocodingResponseDTO: Decodable {
     }
 
     struct AddressDTO: Decodable {
+        let roadAddress: String
+        let jibunAddress: String
         let x: String
         let y: String
     }
@@ -30,7 +32,7 @@ struct NaverGeocodingResponseDTO: Decodable {
 // MARK: - Mapping
 
 extension NaverGeocodingResponseDTO {
-    func toEntity() throws -> Coordinate {
+    func toEntity() throws -> GeocodedAddress {
         guard self.status == "OK" else {
             AppLogger.network.log(.error, "❌ Geocoding 실패: \(self.status) \(self.errorMessage ?? "")")
             throw TabiError.dataNotFound
@@ -43,6 +45,11 @@ extension NaverGeocodingResponseDTO {
             throw TabiError.dataNotFound
         }
 
-        return Coordinate(latitude: latitude, longitude: longitude)
+        let formattedAddress = firstAddress.roadAddress.isEmpty ? firstAddress.jibunAddress : firstAddress.roadAddress
+
+        return GeocodedAddress(
+            coordinate: Coordinate(latitude: latitude, longitude: longitude),
+            formattedAddress: formattedAddress
+        )
     }
 }
