@@ -224,6 +224,8 @@ public extension Strings.Plan {
     static let spotEmptyTitle = "まだスポットがありません"
     /// 스팟 빈 상태 설명
     static let spotEmptyDescription = "観光地や飲食店の詳細ページから「日程に追加する」で追加できます"
+    /// 지도 빈 상태 설명
+    static let mapEmptyDescription = "地図に表示するスポットがありません"
     /// 스팟 0건 안내
     static let spotCountZero = "スポットがまだ追加されていません"
     /// 스팟 N건 안내 (%d: 스팟 개수)

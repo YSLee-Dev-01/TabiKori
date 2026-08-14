@@ -176,6 +176,9 @@ private extension TabiMapView.Coordinator {
         }
         overlay.width = Self.polylineWidth
         overlay.color = UIColor(Color.getTabiColor(.tabiPrimary))
+        // NMFPolylineOverlay.pattern의 실제 기본값은 실선이 아니라 NMFDefaultLinePattern(@[@2, @1], 2pt 실선 + 1pt 공백)이므로
+        // 별도 설정 없이 생성하면 점선으로 보임. 헤더 주석상 빈 배열을 지정하면 실선으로 그려짐(NMFPolylineOverlay.h 참고)
+        overlay.pattern = []
         overlay.mapView = mapView
 
         self.polylineOverlay?.mapView = nil
@@ -188,7 +191,13 @@ private extension TabiMapView.Coordinator {
         self.polylineMarkers.removeAll()
     }
 
-    func applyBoundsFitIfNeeded(token: Int, markers: [TabiMapMarker], on mapView: NMFMapView, retryCount: Int = 0) {
+    func applyBoundsFitIfNeeded(
+        token: Int,
+        markers: [TabiMapMarker],
+        on mapView: NMFMapView,
+        retryCount: Int = 0,
+        previousBoundsSize: CGSize? = nil
+    ) {
         guard token != self.lastAppliedFitToken else { return }
         guard markers.isEmpty == false else {
             self.lastAppliedFitToken = token
@@ -196,20 +205,30 @@ private extension TabiMapView.Coordinator {
         }
 
         // makeUIView 시점의 NMFNaverMapView는 아직 SwiftUI 레이아웃을 거치지 않아 bounds가 .zero일 수 있음.
-        // 이 상태로 fit(bounds:)를 계산하면 잘못된 카메라 줌/위치가 적용되므로,
-        // 유효한 프레임을 가질 때까지 토큰을 소비하지 않고 다음 런루프에서 재시도함
+        // 뿐만 아니라 bounds가 0이 아니게 된 첫 시점도 SwiftUI/UIHostingController의 중간(transient) 레이아웃
+        // 패스일 수 있어(최종 확정 크기보다 작은 값), 그 값을 그대로 fit 계산에 쓰면 카메라가 실제보다
+        // 좁은 영역 기준으로 확대되어 일부 스팟만 보이는 문제가 생김. 그래서 bounds가 0이 아닐 뿐 아니라
+        // 연속된 두 번의 런루프에서 동일한 값으로 안정화됐을 때만 fit을 계산해 적용함
         // NMFMapView는 UIView(→ UIResponder)를 상속해 bounds 접근이 @MainActor로 격리됨. sync(...)는
         // UIViewRepresentable의 makeUIView/updateUIView(둘 다 메인 액터)에서만 호출되므로 안전함
-        let hasValidBounds = MainActor.assumeIsolated { mapView.bounds.width > 0 && mapView.bounds.height > 0 }
-        guard hasValidBounds else {
+        let currentBoundsSize = MainActor.assumeIsolated { mapView.bounds.size }
+        let hasValidBounds = currentBoundsSize.width > 0 && currentBoundsSize.height > 0
+        let isStable = hasValidBounds && currentBoundsSize == previousBoundsSize
+        guard isStable else {
             guard retryCount < self.boundsFitMaxRetryCount else {
-                AppLogger.view.log(.error, "지도 bounds fit 재시도 초과: mapView 프레임이 계속 0으로 유지됨")
+                AppLogger.view.log(.error, "지도 bounds fit 재시도 초과: mapView 프레임이 안정화되지 않음(마지막 크기: \(currentBoundsSize))")
                 self.lastAppliedFitToken = token
                 return
             }
             DispatchQueue.main.async { [weak self, weak mapView] in
                 guard let self, let mapView else { return }
-                self.applyBoundsFitIfNeeded(token: token, markers: markers, on: mapView, retryCount: retryCount + 1)
+                self.applyBoundsFitIfNeeded(
+                    token: token,
+                    markers: markers,
+                    on: mapView,
+                    retryCount: retryCount + 1,
+                    previousBoundsSize: hasValidBounds ? currentBoundsSize : nil
+                )
             }
             return
         }

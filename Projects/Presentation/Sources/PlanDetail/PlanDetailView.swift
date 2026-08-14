@@ -22,6 +22,7 @@ public struct PlanDetailView: View {
 
     @State private var isMovingForward: Bool = true
     @State private var scrolledDayIndex: Int?
+    @State private var isModeSwitchTransition: Bool = false
 
     public init(store: StoreOf<PlanDetailFeature>) {
         self.store = store
@@ -34,17 +35,15 @@ public struct PlanDetailView: View {
             }
 
             if self.store.isFullOverview {
-                if self.selectedDayMarkers.isEmpty == false {
-                    PlanDetailMapSection(markers: self.selectedDayMarkers, fitToken: self.store.dayMapFitToken)
-                }
+                self.mapSection()
+                    .id(self.mapSectionIdentity(dayIndex: self.store.visibleDayIndex))
+                    .transition(self.fullOverviewMapTransition)
                 self.fullOverviewList(plan: self.store.plan)
             } else {
                 VStack(alignment: .leading, spacing: 10) {
                     self.dayHeader(plan: self.store.plan)
 
-                    if self.selectedDayMarkers.isEmpty == false {
-                        PlanDetailMapSection(markers: self.selectedDayMarkers, fitToken: self.store.dayMapFitToken)
-                    }
+                    self.mapSection()
 
                     self.spotList()
                 }
@@ -60,6 +59,7 @@ public struct PlanDetailView: View {
         .animation(.tabiStandard, value: self.store.selectedDayIndex)
         .animation(.tabiStandard, value: self.store.isEditing)
         .animation(.tabiStandard, value: self.store.isFullOverview)
+        .animation(.tabiStandard, value: self.store.visibleDayIndex)
         .navigationTitle("\(self.store.plan.title) · \(self.store.plan.displayRegionTitle)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -74,7 +74,7 @@ public struct PlanDetailView: View {
             if self.store.isEditing == false {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        self.store.send(.fullOverviewToggleTapped)
+                        self.handleFullOverviewToggleTapped()
                     } label: {
                         Image(systemName: self.store.isFullOverview ? "rectangle.grid.1x2.fill" : "rectangle.grid.1x2")
                     }
@@ -120,16 +120,25 @@ public struct PlanDetailView: View {
             guard isFullOverview else { return }
             self.scrolledDayIndex = self.store.visibleDayIndex
         }
-        .onChange(of: self.scrolledDayIndex) { _, newValue in
-            guard let newValue else { return }
-            self.store.send(.visibleDayIndexChanged(newValue))
-        }
+    }
+}
+
+// MARK: - DayHeaderOffsetPreferenceKey
+
+private struct DayHeaderOffsetPreferenceKey: PreferenceKey {
+    static let defaultValue: [Int: CGFloat] = [:]
+
+    static func reduce(value: inout [Int: CGFloat], nextValue: () -> [Int: CGFloat]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
     }
 }
 
 // MARK: - View
 
 private extension PlanDetailView {
+    static let fullOverviewScrollSpace = "PlanDetailFullOverviewScroll"
+    static let dayHeaderVisibilityThreshold: CGFloat = 1
+
     func dayTabScroll(plan: TravelPlan) -> some View {
         ScrollView(.horizontal) {
             HStack(spacing: 8) {
@@ -174,17 +183,50 @@ private extension PlanDetailView {
         }
     }
 
+    /// 전체보기 진입/이탈(모드 전환) 중에는 좌우 슬라이드 대신 페이드를 사용하고,
+    /// 같은 모드 안에서 일자를 탐색할 때만 좌우 슬라이드를 사용한다
     var dayTransition: AnyTransition {
-        .asymmetric(
+        guard self.isModeSwitchTransition == false else { return .opacity }
+        return .asymmetric(
             insertion: .move(edge: self.isMovingForward ? .trailing : .leading),
             removal: .move(edge: self.isMovingForward ? .leading : .trailing)
         )
+    }
+
+    var fullOverviewMapTransition: AnyTransition {
+        self.isModeSwitchTransition ? .opacity : .move(edge: .top).combined(with: .opacity)
+    }
+
+    func handleFullOverviewToggleTapped() {
+        self.isModeSwitchTransition = true
+        self.store.send(.fullOverviewToggleTapped)
+        // isModeSwitchTransition을 곧바로 되돌리면 모드 전환 렌더와 같은 프레임에 묶여
+        // dayTransition/fullOverviewMapTransition이 이미 원래 방향 애니메이션으로 평가될 수 있으므로,
+        // 전환이 실제로 캡처된 다음 프레임에 되돌린다
+        _ = PlanDetailNextFrameTrigger { [isModeSwitchTransition = self.$isModeSwitchTransition] in
+            isModeSwitchTransition.wrappedValue = false
+        }
     }
 
     var selectedDayMarkers: [TabiMapMarker] {
         self.store.mapMarkerSpots.enumerated().compactMap { offset, spot in
             spot.toMapMarker(index: offset + 1)
         }
+    }
+
+    @ViewBuilder
+    func mapSection() -> some View {
+        if self.selectedDayMarkers.isEmpty {
+            PlanDetailMapEmptyState()
+        } else {
+            PlanDetailMapSection(markers: self.selectedDayMarkers, fitToken: self.store.dayMapFitToken)
+        }
+    }
+
+    /// 스팟이 없는 일자끼리 세션이 넘어갈 때는 지도 영역이 항상 동일한 빈 상태이므로,
+    /// 굳이 sameness를 깨고 애니메이션을 재생하지 않도록 빈 상태끼리는 같은 identity(-1)를 공유한다
+    func mapSectionIdentity(dayIndex: Int) -> Int {
+        self.selectedDayMarkers.isEmpty ? -1 : dayIndex
     }
 
     func selectedDayDateTitle(plan: TravelPlan) -> String? {
@@ -271,7 +313,9 @@ private extension PlanDetailView {
     }
 
     /// 모든 일자를 세션(Section)으로 구분해 하나의 스크롤 뷰에 표시한다.
-    /// `scrollPosition(id:)`으로 현재 화면 최상단에 보이는 세션을 추적/프로그래매틱 스크롤 양쪽에 사용한다
+    /// `scrollPosition(id:)`은 전체보기 진입 시 이전에 보던 일자로 프로그래매틱 스크롤하는 데만 쓰고,
+    /// 실제 스크롤 중 최상단에 보이는 세션 추적은 `List` Section 단위로는 read-back이 보장되지 않아
+    /// 각 헤더의 위치를 GeometryReader로 직접 측정해 판단한다
     func fullOverviewList(plan: TravelPlan) -> some View {
         List {
             ForEach(Array(plan.dayDates.indices), id: \.self) { dayIndex in
@@ -310,6 +354,14 @@ private extension PlanDetailView {
                         .padding(.top, 16)
                         .padding(.bottom, 8)
                         .listRowInsets(EdgeInsets())
+                        .background(
+                            GeometryReader { proxy in
+                                Color.clear.preference(
+                                    key: DayHeaderOffsetPreferenceKey.self,
+                                    value: [dayIndex: proxy.frame(in: .named(Self.fullOverviewScrollSpace)).minY]
+                                )
+                            }
+                        )
                     }
                 }
                 .id(dayIndex)
@@ -317,7 +369,21 @@ private extension PlanDetailView {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .coordinateSpace(name: Self.fullOverviewScrollSpace)
         .scrollPosition(id: self.$scrolledDayIndex, anchor: .top)
+        .onPreferenceChange(DayHeaderOffsetPreferenceKey.self) { offsets in
+            self.handleDayHeaderOffsetsChanged(offsets)
+        }
+    }
+
+    /// 상단 임계값을 통과한(스크롤된) 헤더 중 가장 아래쪽(가장 최근에 통과한) 일자를 현재 보이는 세션으로 판단한다.
+    /// 아직 어떤 헤더도 임계값을 통과하지 않은 초기 상태에서는 가장 위에 있는(첫) 일자를 사용한다
+    func handleDayHeaderOffsetsChanged(_ offsets: [Int: CGFloat]) {
+        let passedHeaders = offsets.filter { $0.value <= Self.dayHeaderVisibilityThreshold }
+        let visibleDay = passedHeaders.max { $0.value < $1.value }?.key
+            ?? offsets.min { $0.value < $1.value }?.key
+        guard let visibleDay else { return }
+        self.store.send(.visibleDayIndexChanged(visibleDay))
     }
 
     func editActionButtons() -> some View {
