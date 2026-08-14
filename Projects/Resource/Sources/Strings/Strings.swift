@@ -291,6 +291,24 @@ public extension Strings.Plan {
     }
     /// 알림 취소 버튼
     static let alertCancel = "キャンセル"
+    /// 전체보기 토글 타이틀
+    static let fullOverviewToggleTitle = "全体表示"
+    /// 일자별 보기로 돌아가기 타이틀
+    static let dayOverviewToggleTitle = "日別表示に戻る"
+    /// 내보내기 메뉴 타이틀
+    static let exportMenuTitle = "エクスポート"
+    /// 추가 메뉴 타이틀
+    static let addMenuTitle = "追加"
+    /// 가져오기 메뉴 타이틀
+    static let importMenuTitle = "インポート"
+    /// 가져오기 성공 알림 타이틀
+    static let importSuccessAlertTitle = "インポートが完了しました"
+    /// 가져오기 성공 알림 메시지
+    static let importSuccessAlertMessage = "日程一覧に追加されました"
+    /// 가져오기 실패 알림 타이틀
+    static let importFailedAlertTitle = "インポートに失敗しました"
+    /// 가져오기 실패 알림 메시지
+    static let importFailedAlertMessage = "ファイルを確認してもう一度お試しください"
 }
 
 public extension Strings.Detail {

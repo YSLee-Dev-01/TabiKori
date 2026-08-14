@@ -11,6 +11,7 @@ import Foundation
 import ComposableArchitecture
 import Core
 import Domain
+import Resource
 
 // MARK: - PlanFeature
 
@@ -19,13 +20,17 @@ public struct PlanFeature: Sendable {
 
     @Dependency(\.travelPlanUseCase) var travelPlanUseCase
     @Dependency(\.travelPlanDetailUseCase) var travelPlanDetailUseCase
+    @Dependency(\.travelPlanShareUseCase) var travelPlanShareUseCase
 
     @ObservableState
     public struct State: Equatable {
         var plans: [TravelPlan] = []
         var spotCounts: [UUID: Int] = [:]
         var isLoading: Bool = false
+        var isImporterPresented: Bool = false
+        var isImporting: Bool = false
         @Presents var addPlanState: AddTravelPlanFeature.State?
+        @Presents var alert: AlertState<Action.Alert>?
 
         public init() {}
 
@@ -37,12 +42,19 @@ public struct PlanFeature: Sendable {
     public enum Action: Equatable {
         case onAppear
         case addButtonTapped
+        case importButtonTapped
+        case importerPresentationChanged(Bool)
         case planTapped(plan: TravelPlan)
         case planDeleteButtonTapped(id: UUID)
         case plansResult([TravelPlan])
         case spotCountsResult([UUID: Int])
         case planDeleted(id: UUID)
+        case importFileSelected(URL?)
+        case importResult(Bool)
         case addPlan(PresentationAction<AddTravelPlanFeature.Action>)
+        case alert(PresentationAction<Alert>)
+
+        public enum Alert: Equatable {}
     }
 
     public init() {}
@@ -56,6 +68,14 @@ public struct PlanFeature: Sendable {
 
             case .addButtonTapped:
                 state.addPlanState = AddTravelPlanFeature.State()
+                return .none
+
+            case .importButtonTapped:
+                state.isImporterPresented = true
+                return .none
+
+            case .importerPresentationChanged(let isPresented):
+                state.isImporterPresented = isPresented
                 return .none
 
             case .planTapped:
@@ -78,17 +98,53 @@ public struct PlanFeature: Sendable {
                 state.spotCounts.removeValue(forKey: id)
                 return .none
 
+            case .importFileSelected(let url):
+                guard let url else { return .none }
+                guard state.isImporting == false else { return .none }
+                state.isImporting = true
+                return self.importPlanEffect(url: url)
+
+            case .importResult(let success):
+                state.isImporting = false
+                if success {
+                    state.alert = AlertState {
+                        TextState(Strings.Plan.importSuccessAlertTitle)
+                    } actions: {
+                        ButtonState {
+                            TextState(Strings.Plan.alertConfirm)
+                        }
+                    } message: {
+                        TextState(Strings.Plan.importSuccessAlertMessage)
+                    }
+                    return self.fetchPlansEffect()
+                } else {
+                    state.alert = AlertState {
+                        TextState(Strings.Plan.importFailedAlertTitle)
+                    } actions: {
+                        ButtonState {
+                            TextState(Strings.Plan.alertConfirm)
+                        }
+                    } message: {
+                        TextState(Strings.Plan.importFailedAlertMessage)
+                    }
+                    return .none
+                }
+
             case .addPlan(.presented(.saveResult(true))):
                 state.addPlanState = nil
                 return self.fetchPlansEffect()
 
             case .addPlan:
                 return .none
+
+            case .alert:
+                return .none
             }
         }
         .ifLet(\.$addPlanState, action: \.addPlan) {
             AddTravelPlanFeature()
         }
+        .ifLet(\.$alert, action: \.alert)
     }
 }
 
@@ -146,6 +202,27 @@ private extension PlanFeature {
                 await send(.planDeleted(id: planId))
             } catch {
                 AppLogger.view.log(.error, "일정 삭제 실패 (planId: \(planId)): \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func importPlanEffect(url: URL) -> Effect<Action> {
+        .run { [
+            travelPlanShareUseCase = self.travelPlanShareUseCase,
+            travelPlanUseCase = self.travelPlanUseCase,
+            travelPlanDetailUseCase = self.travelPlanDetailUseCase
+        ] send in
+            _ = url.startAccessingSecurityScopedResource()
+            defer { url.stopAccessingSecurityScopedResource() }
+            do {
+                let data = try Data(contentsOf: url)
+                let (plan, detail) = try travelPlanShareUseCase.importPlan(from: data)
+                try await travelPlanUseCase.add(plan)
+                try await travelPlanDetailUseCase.add(detail)
+                await send(.importResult(true))
+            } catch {
+                AppLogger.view.log(.error, "일정 가져오기 실패 (fileName: \(url.lastPathComponent)): \(error.localizedDescription)")
+                await send(.importResult(false))
             }
         }
     }

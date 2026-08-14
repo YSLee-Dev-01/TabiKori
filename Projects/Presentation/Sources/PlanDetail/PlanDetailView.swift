@@ -21,6 +21,7 @@ public struct PlanDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var isMovingForward: Bool = true
+    @State private var scrolledDayIndex: Int?
 
     public init(store: StoreOf<PlanDetailFeature>) {
         self.store = store
@@ -30,17 +31,24 @@ public struct PlanDetailView: View {
         VStack(alignment: .leading, spacing: 10) {
             self.dayTabScroll(plan: self.store.plan)
 
-            self.dayHeader(plan: self.store.plan)
+            if self.store.isFullOverview {
+                if self.selectedDayMarkers.isEmpty == false {
+                    PlanDetailMapSection(markers: self.selectedDayMarkers, fitToken: self.store.dayMapFitToken)
+                }
+                self.fullOverviewList(plan: self.store.plan)
+            } else {
+                VStack(alignment: .leading, spacing: 10) {
+                    self.dayHeader(plan: self.store.plan)
+
+                    if self.selectedDayMarkers.isEmpty == false {
+                        PlanDetailMapSection(markers: self.selectedDayMarkers, fitToken: self.store.dayMapFitToken)
+                    }
+
+                    self.spotList()
+                }
                 .id(self.store.selectedDayIndex)
                 .transition(self.dayTransition)
-
-            if self.selectedDayMarkers.isEmpty == false {
-                PlanDetailMapSection(markers: self.selectedDayMarkers, fitToken: self.store.dayMapFitToken)
             }
-
-            self.spotList()
-                .id(self.store.selectedDayIndex)
-                .transition(self.dayTransition)
 
             if self.store.isEditing {
                 self.editActionButtons()
@@ -49,6 +57,7 @@ public struct PlanDetailView: View {
         }
         .animation(.tabiStandard, value: self.store.selectedDayIndex)
         .animation(.tabiStandard, value: self.store.isEditing)
+        .animation(.tabiStandard, value: self.store.isFullOverview)
         .navigationTitle("\(self.store.plan.title) · \(self.store.plan.displayRegionTitle)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -62,12 +71,29 @@ public struct PlanDetailView: View {
             }
             if self.store.isEditing == false {
                 ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        self.store.send(.fullOverviewToggleTapped)
+                    } label: {
+                        Image(systemName: self.store.isFullOverview ? "rectangle.grid.1x2.fill" : "rectangle.grid.1x2")
+                    }
+                    .tint(Color.getTabiColor(.tabiPrimary))
+                    .accessibilityLabel(
+                        self.store.isFullOverview ? Strings.Plan.dayOverviewToggleTitle : Strings.Plan.fullOverviewToggleTitle
+                    )
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button(Strings.Plan.editMenuTitle) {
                             self.store.send(.editButtonTapped)
                         }
+                        .disabled(self.store.isFullOverview)
                         Button(Strings.Plan.planEditMenuTitle) {
                             self.store.send(.planEditMenuButtonTapped)
+                        }
+                        if let shareFileURL = self.store.shareFileURL {
+                            ShareLink(item: shareFileURL) {
+                                Text(Strings.Plan.exportMenuTitle)
+                            }
                         }
                     } label: {
                         Image(systemName: "ellipsis")
@@ -88,6 +114,14 @@ public struct PlanDetailView: View {
         .onAppear {
             self.store.send(.onAppear)
         }
+        .onChange(of: self.store.isFullOverview) { _, isFullOverview in
+            guard isFullOverview else { return }
+            self.scrolledDayIndex = self.store.visibleDayIndex
+        }
+        .onChange(of: self.scrolledDayIndex) { _, newValue in
+            guard let newValue else { return }
+            self.store.send(.visibleDayIndexChanged(newValue))
+        }
     }
 }
 
@@ -100,13 +134,9 @@ private extension PlanDetailView {
                 ForEach(Array(plan.dayDates.enumerated()), id: \.offset) { offset, _ in
                     TabiChip(
                         Strings.Plan.dayChipTitle(offset + 1),
-                        isSelected: self.store.selectedDayIndex == offset
+                        isSelected: self.currentDayIndex == offset
                     ) {
-                        guard offset != self.store.selectedDayIndex else { return }
-                        self.isMovingForward = offset >= self.store.selectedDayIndex
-                        DispatchQueue.main.async {
-                            self.store.send(.dayButtonTapped(index: offset))
-                        }
+                        self.handleDayChipTapped(offset)
                     }
                 }
             }
@@ -115,6 +145,31 @@ private extension PlanDetailView {
         .scrollIndicators(.hidden)
         .padding(.top, 20)
         .disabled(self.store.isEditing)
+    }
+
+    /// 전체보기 모드에서는 selectedDayIndex 대신 스크롤로 갱신되는 visibleDayIndex를 칩 하이라이트 기준으로 사용한다
+    var currentDayIndex: Int {
+        self.store.isFullOverview ? self.store.visibleDayIndex : self.store.selectedDayIndex
+    }
+
+    func handleDayChipTapped(_ offset: Int) {
+        if self.store.isFullOverview {
+            guard offset != self.scrolledDayIndex else { return }
+            withAnimation(.tabiStandard) {
+                self.scrolledDayIndex = offset
+            }
+            return
+        }
+
+        guard offset != self.store.selectedDayIndex else { return }
+        self.isMovingForward = offset >= self.store.selectedDayIndex
+        // 방향 플래그 변경과 selectedDayIndex 변경이 같은 렌더 프레임에서 처리되면
+        // 사라지는 뷰의 removal transition이 직전 프레임의 방향을 그대로 사용해버림.
+        // DispatchQueue.main.async는 같은 화면 갱신 프레임 안에서 실행될 수 있어
+        // 이를 보장하지 못하므로, 실제 프레임 경계(CADisplayLink)를 기다린 뒤 전송
+        _ = PlanDetailNextFrameTrigger { [store = self.store] in
+            store.send(.dayButtonTapped(index: offset))
+        }
     }
 
     func dayHeader(plan: TravelPlan) -> some View {
@@ -138,19 +193,35 @@ private extension PlanDetailView {
     }
 
     var selectedDayMarkers: [TabiMapMarker] {
-        self.store.displayedSpots.enumerated().compactMap { offset, spot in
+        self.store.mapMarkerSpots.enumerated().compactMap { offset, spot in
             spot.toMapMarker(index: offset + 1)
         }
     }
 
     func selectedDayDateTitle(plan: TravelPlan) -> String? {
-        guard plan.dayDates.indices.contains(self.store.selectedDayIndex) else { return nil }
-        return plan.dayDates[self.store.selectedDayIndex].planDayHeaderTitle
+        self.dayDateTitle(plan: plan, dayIndex: self.store.selectedDayIndex)
+    }
+
+    func dayDateTitle(plan: TravelPlan, dayIndex: Int) -> String? {
+        guard plan.dayDates.indices.contains(dayIndex) else { return nil }
+        return plan.dayDates[dayIndex].planDayHeaderTitle
+    }
+
+    // Store는 @dynamicMemberLookup으로 State의 프로퍼티(KeyPath)만 노출하므로,
+    // State.spots(forDay:) 같은 파라미터를 받는 메서드는 store를 통해 직접 호출할 수 없어 View에서 동일 로직을 사용한다
+    func spots(forDay dayIndex: Int) -> [TravelPlanDetailSpot] {
+        guard let spots = self.store.travelPlanDetail?.spots else { return [] }
+        return spots
+            .filter { $0.dayIndex == dayIndex }
+            .sorted { $0.order < $1.order }
     }
 
     var spotCountTitle: String {
-        let count = self.store.displayedSpots.count
-        return count == 0 ? Strings.Plan.spotCountZero : Strings.Plan.spotCountTitle(count)
+        Self.spotCountTitle(count: self.store.displayedSpots.count)
+    }
+
+    static func spotCountTitle(count: Int) -> String {
+        count == 0 ? Strings.Plan.spotCountZero : Strings.Plan.spotCountTitle(count)
     }
 
     func spotList() -> some View {
@@ -208,6 +279,56 @@ private extension PlanDetailView {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .environment(\.editMode, .constant(self.store.isEditing ? .active : .inactive))
+    }
+
+    /// 모든 일자를 세션(Section)으로 구분해 하나의 스크롤 뷰에 표시한다.
+    /// `scrollPosition(id:)`으로 현재 화면 최상단에 보이는 세션을 추적/프로그래매틱 스크롤 양쪽에 사용한다
+    func fullOverviewList(plan: TravelPlan) -> some View {
+        List {
+            ForEach(Array(plan.dayDates.indices), id: \.self) { dayIndex in
+                let spots = self.spots(forDay: dayIndex)
+                Section {
+                    if spots.isEmpty {
+                        PlanDetailSpotEmptyState()
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
+                    } else {
+                        ForEach(Array(spots.enumerated()), id: \.element.id) { index, spot in
+                            PlanDetailSpotRow(
+                                spot: spot,
+                                index: index + 1,
+                                isFirst: index == 0,
+                                isLast: index == spots.count - 1,
+                                isEditing: false
+                            )
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                self.store.send(.spotRowTapped(spot))
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
+                        }
+                    }
+                } header: {
+                    if let dateTitle = self.dayDateTitle(plan: plan, dayIndex: dayIndex) {
+                        PlanDetailDayHeader(
+                            dateTitle: dateTitle,
+                            spotCountTitle: Self.spotCountTitle(count: spots.count)
+                        )
+                        .padding(.horizontal, 20)
+                        .padding(.top, 16)
+                        .padding(.bottom, 8)
+                        .listRowInsets(EdgeInsets())
+                    }
+                }
+                .id(dayIndex)
+            }
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .scrollPosition(id: self.$scrolledDayIndex, anchor: .top)
     }
 
     func editActionButtons() -> some View {

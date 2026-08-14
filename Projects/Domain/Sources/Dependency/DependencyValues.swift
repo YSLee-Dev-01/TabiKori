@@ -56,6 +56,11 @@ extension DependencyValues {
         set {self[TravelPlanDetailUseCaseDependencyKey.self] = newValue}
     }
 
+    public var travelPlanShareUseCase: TravelPlanShareUseCaseProtocol {
+        get {self[TravelPlanShareUseCaseDependencyKey.self]}
+        set {self[TravelPlanShareUseCaseDependencyKey.self] = newValue}
+    }
+
     public var festivalUseCase: FestivalUseCaseProtocol {
         get {self[FestivalUseCaseDependencyKey.self]}
         set {self[FestivalUseCaseDependencyKey.self] = newValue}

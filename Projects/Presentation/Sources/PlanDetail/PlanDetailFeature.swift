@@ -18,6 +18,7 @@ import Resource
 public struct PlanDetailFeature: Sendable {
 
     @Dependency(\.travelPlanDetailUseCase) var travelPlanDetailUseCase
+    @Dependency(\.travelPlanShareUseCase) var travelPlanShareUseCase
 
     @ObservableState
     public struct State: Equatable {
@@ -28,6 +29,9 @@ public struct PlanDetailFeature: Sendable {
         var editingSpots: [TravelPlanDetailSpot] = []
         var isSaving: Bool = false
         var dayMapFitToken: Int = 0
+        var isFullOverview: Bool = false
+        var visibleDayIndex: Int = 0
+        var shareFileURL: URL?
         fileprivate var hasStartedLoading: Bool = false
         @Presents var addSpotState: PlanDetailAddSpotFeature.State?
         @Presents var editPlanState: PlanDetailEditFeature.State?
@@ -36,17 +40,26 @@ public struct PlanDetailFeature: Sendable {
         public init(plan: TravelPlan, initialDayIndex: Int = 0) {
             self.plan = plan
             self.selectedDayIndex = min(max(initialDayIndex, 0), plan.dayCount - 1)
+            self.visibleDayIndex = self.selectedDayIndex
+        }
+
+        func spots(forDay dayIndex: Int) -> [TravelPlanDetailSpot] {
+            guard let spots = self.travelPlanDetail?.spots else { return [] }
+            return spots
+                .filter { $0.dayIndex == dayIndex }
+                .sorted { $0.order < $1.order }
         }
 
         var selectedDaySpots: [TravelPlanDetailSpot] {
-            guard let spots = self.travelPlanDetail?.spots else { return [] }
-            return spots
-                .filter { $0.dayIndex == self.selectedDayIndex }
-                .sorted { $0.order < $1.order }
+            self.spots(forDay: self.selectedDayIndex)
         }
 
         var displayedSpots: [TravelPlanDetailSpot] {
             self.isEditing ? self.editingSpots : self.selectedDaySpots
+        }
+
+        var mapMarkerSpots: [TravelPlanDetailSpot] {
+            self.isFullOverview ? self.spots(forDay: self.visibleDayIndex) : self.displayedSpots
         }
     }
 
@@ -60,6 +73,8 @@ public struct PlanDetailFeature: Sendable {
         case editButtonTapped
         case editCancelButtonTapped
         case editSaveButtonTapped
+        case fullOverviewToggleTapped
+        case visibleDayIndexChanged(Int)
         case spotMovedInEditMode(source: IndexSet, destination: Int)
         case spotDeletedInEditMode(at: IndexSet)
         case travelPlanDetailResult(TravelPlanDetail?)
@@ -94,6 +109,7 @@ public struct PlanDetailFeature: Sendable {
                 return self.removeSpotEffect(planId: state.plan.id, spotId: id)
 
             case .editButtonTapped:
+                guard state.isFullOverview == false else { return .none }
                 state.isEditing = true
                 state.editingSpots = state.selectedDaySpots
                 return .none
@@ -103,6 +119,24 @@ public struct PlanDetailFeature: Sendable {
                 state.editingSpots = []
                 state.isSaving = false
                 return .cancel(id: CancelID.saveEditedSpots)
+
+            case .fullOverviewToggleTapped:
+                guard state.isEditing == false else { return .none }
+                if state.isFullOverview {
+                    state.selectedDayIndex = state.visibleDayIndex
+                } else {
+                    state.visibleDayIndex = state.selectedDayIndex
+                }
+                state.isFullOverview.toggle()
+                return .none
+
+            case .visibleDayIndexChanged(let index):
+                guard state.visibleDayIndex != index else { return .none }
+                state.visibleDayIndex = index
+                if self.hasValidCoordinateSpots(dayIndex: index, in: state) {
+                    state.dayMapFitToken += 1
+                }
+                return .none
 
             case .editSaveButtonTapped:
                 guard state.isSaving == false else { return .none }
@@ -144,6 +178,7 @@ public struct PlanDetailFeature: Sendable {
                 if self.hasValidCoordinateSpots(dayIndex: state.selectedDayIndex, in: state) {
                     state.dayMapFitToken += 1
                 }
+                self.updateShareFileURL(state: &state)
                 return .none
 
             case .spotDeleted(let id):
@@ -152,6 +187,7 @@ public struct PlanDetailFeature: Sendable {
                     planId: detail.planId,
                     spots: detail.spots.filter { $0.id != id }
                 )
+                self.updateShareFileURL(state: &state)
                 return .none
 
             case .spotDeleteFailed:
@@ -172,6 +208,7 @@ public struct PlanDetailFeature: Sendable {
                     state.isEditing = false
                     state.editingSpots = []
                     state.travelPlanDetail = detail
+                    self.updateShareFileURL(state: &state)
                 } else {
                     state.alert = AlertState {
                         TextState(Strings.Plan.saveFailedAlertTitle)
@@ -195,6 +232,7 @@ public struct PlanDetailFeature: Sendable {
             case .editPlan(.presented(.planUpdated(let plan))):
                 state.plan = plan
                 state.selectedDayIndex = min(state.selectedDayIndex, plan.dayCount - 1)
+                state.visibleDayIndex = min(state.visibleDayIndex, plan.dayCount - 1)
                 state.isEditing = false
                 state.editingSpots = []
                 state.isSaving = false
@@ -269,6 +307,25 @@ private extension PlanDetailFeature {
                 AppLogger.view.log(.error, "일정 상세 스팟 편집 저장 실패 (planId: \(planId), dayIndex: \(dayIndex)): \(error.localizedDescription)")
                 await send(.editSaveResult(nil))
             }
+        }
+    }
+
+    /// 현재 상태의 plan/detail을 JSON으로 인코딩해 임시 디렉토리에 파일로 쓰고, 그 URL을 shareFileURL에 저장한다.
+    /// 인코딩/파일쓰기 실패 시 로그만 남기고 shareFileURL은 nil로 유지한다
+    func updateShareFileURL(state: inout State) {
+        guard let detail = state.travelPlanDetail else {
+            state.shareFileURL = nil
+            return
+        }
+        do {
+            let data = try self.travelPlanShareUseCase.exportData(plan: state.plan, detail: detail)
+            let sanitizedTitle = state.plan.title.replacingOccurrences(of: "/", with: "-")
+            let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(sanitizedTitle).json")
+            try data.write(to: fileURL, options: .atomic)
+            state.shareFileURL = fileURL
+        } catch {
+            AppLogger.view.log(.error, "일정 공유 파일 생성 실패 (planId: \(state.plan.id)): \(error.localizedDescription)")
+            state.shareFileURL = nil
         }
     }
 }

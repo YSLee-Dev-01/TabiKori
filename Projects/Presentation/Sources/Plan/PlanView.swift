@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 import ComposableArchitecture
 import DesignSystem
@@ -25,12 +26,27 @@ public struct PlanView: View {
         self.planList()
             .safeAreaBar(edge: .top) {
                 TabiNavigationBar(title: Strings.Plan.title) {
-                    self.newPlanButton()
+                    self.planMenuButton()
                 }
             }
             .sheet(item: self.$store.scope(state: \.addPlanState, action: \.addPlan)) { store in
                 AddTravelPlanView(store: store)
             }
+            .fileImporter(
+                isPresented: Binding(
+                    get: { self.store.isImporterPresented },
+                    set: { self.store.send(.importerPresentationChanged($0)) }
+                ),
+                allowedContentTypes: [.json]
+            ) { result in
+                switch result {
+                case .success(let url):
+                    self.store.send(.importFileSelected(url))
+                case .failure:
+                    self.store.send(.importFileSelected(nil))
+                }
+            }
+            .alert($store.scope(state: \.alert, action: \.alert))
             .onAppear {
                 self.store.send(.onAppear)
             }
@@ -40,9 +56,16 @@ public struct PlanView: View {
 // MARK: - View
 
 private extension PlanView {
-    func newPlanButton() -> some View {
-        TabiGlassIconButton(systemName: "plus", size: .lg, foregroundColor: .tabiPrimary) {
-            self.store.send(.addButtonTapped)
+    func planMenuButton() -> some View {
+        Menu {
+            Button(Strings.Plan.addMenuTitle) {
+                self.store.send(.addButtonTapped)
+            }
+            Button(Strings.Plan.importMenuTitle) {
+                self.store.send(.importButtonTapped)
+            }
+        } label: {
+            TabiGlassIconLabel(systemName: "ellipsis", size: .lg, foregroundColor: .tabiPrimary)
         }
     }
 
