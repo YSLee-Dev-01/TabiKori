@@ -29,7 +29,9 @@ public struct PlanDetailView: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            self.dayTabScroll(plan: self.store.plan)
+            if self.store.isFullOverview == false {
+                self.dayTabScroll(plan: self.store.plan)
+            }
 
             if self.store.isFullOverview {
                 if self.selectedDayMarkers.isEmpty == false {
@@ -134,7 +136,7 @@ private extension PlanDetailView {
                 ForEach(Array(plan.dayDates.enumerated()), id: \.offset) { offset, _ in
                     TabiChip(
                         Strings.Plan.dayChipTitle(offset + 1),
-                        isSelected: self.currentDayIndex == offset
+                        isSelected: self.store.selectedDayIndex == offset
                     ) {
                         self.handleDayChipTapped(offset)
                     }
@@ -147,20 +149,7 @@ private extension PlanDetailView {
         .disabled(self.store.isEditing)
     }
 
-    /// 전체보기 모드에서는 selectedDayIndex 대신 스크롤로 갱신되는 visibleDayIndex를 칩 하이라이트 기준으로 사용한다
-    var currentDayIndex: Int {
-        self.store.isFullOverview ? self.store.visibleDayIndex : self.store.selectedDayIndex
-    }
-
     func handleDayChipTapped(_ offset: Int) {
-        if self.store.isFullOverview {
-            guard offset != self.scrolledDayIndex else { return }
-            withAnimation(.tabiStandard) {
-                self.scrolledDayIndex = offset
-            }
-            return
-        }
-
         guard offset != self.store.selectedDayIndex else { return }
         self.isMovingForward = offset >= self.store.selectedDayIndex
         // 방향 플래그 변경과 selectedDayIndex 변경이 같은 렌더 프레임에서 처리되면
