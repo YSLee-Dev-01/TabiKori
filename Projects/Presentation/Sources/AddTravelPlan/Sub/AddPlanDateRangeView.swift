@@ -14,6 +14,7 @@ import Resource
 struct AddPlanDateRangeView: View {
     @Binding var startDate: Date?
     @Binding var endDate: Date?
+    var initialMonth: Date = Date()
 
     var body: some View {
         VStack(spacing: 24) {
@@ -22,7 +23,7 @@ struct AddPlanDateRangeView: View {
                 self.dateBox(label: Strings.Plan.returnLabel, date: self.endDate)
             }
 
-            TabiRangeCalendar(startDate: self.$startDate, endDate: self.$endDate)
+            TabiRangeCalendar(startDate: self.$startDate, endDate: self.$endDate, initialMonth: self.initialMonth)
         }
     }
 }

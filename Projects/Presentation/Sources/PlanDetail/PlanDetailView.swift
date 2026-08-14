@@ -30,24 +30,17 @@ public struct PlanDetailView: View {
         VStack(alignment: .leading, spacing: 10) {
             self.dayTabScroll(plan: self.store.plan)
 
-            VStack(alignment: .leading, spacing: 10) {
-                if let dateTitle = self.selectedDayDateTitle(plan: self.store.plan) {
-                    PlanDetailDayHeader(
-                        dateTitle: dateTitle,
-                        spotCountTitle: self.spotCountTitle
-                    )
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-                }
-                // TODO: 지도 영역 추가
-                EmptyView()
-                self.spotList()
+            self.dayHeader(plan: self.store.plan)
+                .id(self.store.selectedDayIndex)
+                .transition(self.dayTransition)
+
+            if self.selectedDayMarkers.isEmpty == false {
+                PlanDetailMapSection(markers: self.selectedDayMarkers, fitToken: self.store.dayMapFitToken)
             }
-            .id(self.store.selectedDayIndex)
-            .transition(.asymmetric(
-                insertion: .move(edge: self.isMovingForward ? .trailing : .leading),
-                removal: .move(edge: self.isMovingForward ? .leading : .trailing)
-            ))
+
+            self.spotList()
+                .id(self.store.selectedDayIndex)
+                .transition(self.dayTransition)
 
             if self.store.isEditing {
                 self.editActionButtons()
@@ -73,6 +66,9 @@ public struct PlanDetailView: View {
                         Button(Strings.Plan.editMenuTitle) {
                             self.store.send(.editButtonTapped)
                         }
+                        Button(Strings.Plan.planEditMenuTitle) {
+                            self.store.send(.planEditMenuButtonTapped)
+                        }
                     } label: {
                         Image(systemName: "ellipsis")
                     }
@@ -84,6 +80,9 @@ public struct PlanDetailView: View {
         .interactivePopGestureEnabled(true)
         .sheet(item: self.$store.scope(state: \.addSpotState, action: \.addSpot)) { store in
             PlanDetailAddSpotView(store: store)
+        }
+        .sheet(item: self.$store.scope(state: \.editPlanState, action: \.editPlan)) { store in
+            PlanDetailEditView(store: store)
         }
         .alert($store.scope(state: \.alert, action: \.alert))
         .onAppear {
@@ -118,6 +117,32 @@ private extension PlanDetailView {
         .disabled(self.store.isEditing)
     }
 
+    func dayHeader(plan: TravelPlan) -> some View {
+        Group {
+            if let dateTitle = self.selectedDayDateTitle(plan: plan) {
+                PlanDetailDayHeader(
+                    dateTitle: dateTitle,
+                    spotCountTitle: self.spotCountTitle
+                )
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+            }
+        }
+    }
+
+    var dayTransition: AnyTransition {
+        .asymmetric(
+            insertion: .move(edge: self.isMovingForward ? .trailing : .leading),
+            removal: .move(edge: self.isMovingForward ? .leading : .trailing)
+        )
+    }
+
+    var selectedDayMarkers: [TabiMapMarker] {
+        self.store.displayedSpots.enumerated().compactMap { offset, spot in
+            spot.toMapMarker(index: offset + 1)
+        }
+    }
+
     func selectedDayDateTitle(plan: TravelPlan) -> String? {
         guard plan.dayDates.indices.contains(self.store.selectedDayIndex) else { return nil }
         return plan.dayDates[self.store.selectedDayIndex].planDayHeaderTitle
@@ -140,6 +165,7 @@ private extension PlanDetailView {
                 ForEach(Array(spots.enumerated()), id: \.element.id) { index, spot in
                     PlanDetailSpotRow(
                         spot: spot,
+                        index: index + 1,
                         isFirst: index == 0,
                         isLast: index == spots.count - 1,
                         isEditing: self.store.isEditing
@@ -186,7 +212,7 @@ private extension PlanDetailView {
 
     func editActionButtons() -> some View {
         HStack(spacing: 12) {
-            TabiButton(Strings.Plan.editCancelButton, style: .secondary, isExpanded: true) {
+            TabiButton(Strings.Plan.editCancelButton, style: .ghost, isExpanded: true) {
                 self.store.send(.editCancelButtonTapped)
             }
             TabiButton(Strings.Plan.editSaveButton, style: .primary, isExpanded: true, isLoading: self.store.isSaving) {

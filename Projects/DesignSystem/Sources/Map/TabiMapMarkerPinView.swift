@@ -13,6 +13,7 @@ import Resource
 struct TabiMapMarkerPinView: View {
     let icon: TabiIcon
     let color: TabiColor
+    let index: Int?
 
     var body: some View {
         Circle()
@@ -22,9 +23,15 @@ struct TabiMapMarkerPinView: View {
                     .stroke(TabiColor.tabiOnColor, lineWidth: 2)
             }
             .overlay {
-                Image(self.icon)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(TabiColor.tabiOnColor)
+                if let index {
+                    Text("\(index)")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(TabiColor.tabiOnColor)
+                } else {
+                    Image(self.icon)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(TabiColor.tabiOnColor)
+                }
             }
             .frame(width: 30, height: 30)
     }

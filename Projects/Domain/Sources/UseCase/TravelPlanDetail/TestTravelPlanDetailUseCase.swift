@@ -37,6 +37,15 @@ public final class TestTravelPlanDetailUseCase: TravelPlanDetailUseCaseProtocol,
         )
     }
 
+    public func removeSpots(planId: UUID, fromDayIndex: Int) async throws {
+        guard let index = self.details.firstIndex(where: { $0.planId == planId }) else { return }
+        let detail = self.details[index]
+        self.details[index] = TravelPlanDetail(
+            planId: detail.planId,
+            spots: detail.spots.filter { $0.dayIndex < fromDayIndex }
+        )
+    }
+
     public func saveEditedSpots(planId: UUID, dayIndex: Int, orderedSpotIds: [UUID]) async throws {
         guard let index = self.details.firstIndex(where: { $0.planId == planId }) else { return }
         let detail = self.details[index]

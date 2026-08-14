@@ -28,6 +28,11 @@ public final class TestTravelPlanUseCase: TravelPlanUseCaseProtocol, @unchecked 
         self.plans.append(plan)
     }
 
+    public func update(_ plan: TravelPlan) async throws {
+        guard let index = self.plans.firstIndex(where: { $0.id == plan.id }) else { return }
+        self.plans[index] = plan
+    }
+
     public func remove(planId: UUID) async throws {
         self.plans.removeAll { $0.id == planId }
     }

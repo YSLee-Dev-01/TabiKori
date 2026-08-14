@@ -78,6 +78,22 @@ extension TravelPlanDetailRepository: TravelPlanDetailRepositoryProtocol {
         }
     }
 
+    public func removeSpots(planId: UUID, fromDayIndex: Int) async throws {
+        do {
+            let context = ModelContext(self.modelContainer)
+            let descriptor = FetchDescriptor<TravelPlanDetailSpotModel>(
+                predicate: #Predicate { $0.planId == planId && $0.dayIndex >= fromDayIndex }
+            )
+            for model in try context.fetch(descriptor) {
+                context.delete(model)
+            }
+            try context.save()
+        } catch {
+            AppLogger.core.log(.error, "일정 상세 스팟 일괄 삭제 실패: \(error.localizedDescription)")
+            throw TabiError.persistenceFailed(message: error.localizedDescription)
+        }
+    }
+
     public func saveEditedSpots(planId: UUID, dayIndex: Int, orderedSpotIds: [UUID]) async throws {
         do {
             let context = ModelContext(self.modelContainer)

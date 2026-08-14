@@ -27,8 +27,10 @@ public struct PlanDetailFeature: Sendable {
         var isEditing: Bool = false
         var editingSpots: [TravelPlanDetailSpot] = []
         var isSaving: Bool = false
+        var dayMapFitToken: Int = 0
         fileprivate var hasStartedLoading: Bool = false
         @Presents var addSpotState: PlanDetailAddSpotFeature.State?
+        @Presents var editPlanState: PlanDetailEditFeature.State?
         @Presents var alert: AlertState<Action.Alert>?
 
         public init(plan: TravelPlan, initialDayIndex: Int = 0) {
@@ -54,6 +56,7 @@ public struct PlanDetailFeature: Sendable {
         case spotDeleteButtonTapped(id: UUID)
         case addSpotButtonTapped
         case spotRowTapped(TravelPlanDetailSpot)
+        case planEditMenuButtonTapped
         case editButtonTapped
         case editCancelButtonTapped
         case editSaveButtonTapped
@@ -64,6 +67,7 @@ public struct PlanDetailFeature: Sendable {
         case spotDeleteFailed
         case editSaveResult(TravelPlanDetail?)
         case addSpot(PresentationAction<PlanDetailAddSpotFeature.Action>)
+        case editPlan(PresentationAction<PlanDetailEditFeature.Action>)
         case alert(PresentationAction<Alert>)
 
         public enum Alert: Equatable {}
@@ -81,6 +85,9 @@ public struct PlanDetailFeature: Sendable {
 
             case .dayButtonTapped(let index):
                 state.selectedDayIndex = index
+                if self.hasValidCoordinateSpots(dayIndex: index, in: state) {
+                    state.dayMapFitToken += 1
+                }
                 return .none
 
             case .spotDeleteButtonTapped(let id):
@@ -128,8 +135,15 @@ public struct PlanDetailFeature: Sendable {
             case .spotRowTapped:
                 return .none
 
+            case .planEditMenuButtonTapped:
+                state.editPlanState = PlanDetailEditFeature.State(plan: state.plan)
+                return .none
+
             case .travelPlanDetailResult(let detail):
                 state.travelPlanDetail = detail
+                if self.hasValidCoordinateSpots(dayIndex: state.selectedDayIndex, in: state) {
+                    state.dayMapFitToken += 1
+                }
                 return .none
 
             case .spotDeleted(let id):
@@ -178,12 +192,30 @@ public struct PlanDetailFeature: Sendable {
             case .addSpot:
                 return .none
 
+            case .editPlan(.presented(.planUpdated(let plan))):
+                state.plan = plan
+                state.selectedDayIndex = min(state.selectedDayIndex, plan.dayCount - 1)
+                state.isEditing = false
+                state.editingSpots = []
+                state.isSaving = false
+                state.editPlanState = nil
+                return .merge(
+                    .cancel(id: CancelID.saveEditedSpots),
+                    self.fetchTravelPlanDetailEffect(id: plan.id)
+                )
+
+            case .editPlan:
+                return .none
+
             case .alert:
                 return .none
             }
         }
         .ifLet(\.$addSpotState, action: \.addSpot) {
             PlanDetailAddSpotFeature()
+        }
+        .ifLet(\.$editPlanState, action: \.editPlan) {
+            PlanDetailEditFeature()
         }
         .ifLet(\.$alert, action: \.alert)
     }
@@ -198,6 +230,11 @@ private enum CancelID {
 // MARK: - Method
 
 private extension PlanDetailFeature {
+    func hasValidCoordinateSpots(dayIndex: Int, in state: State) -> Bool {
+        guard let spots = state.travelPlanDetail?.spots else { return false }
+        return spots.contains { $0.dayIndex == dayIndex && $0.coordinate.isValid }
+    }
+
     func fetchTravelPlanDetailEffect(id: UUID) -> Effect<Action> {
         .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase] send in
             do {

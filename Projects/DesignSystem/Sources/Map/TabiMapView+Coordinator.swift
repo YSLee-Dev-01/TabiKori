@@ -20,7 +20,7 @@ extension TabiMapView {
         private var clusterer: NMCClusterer<TabiClusteringKey>?
         private var clusteredKeys: [String: TabiClusteringKey] = [:]
         private var markerTitles: [String: String] = [:]
-        private var markerAppearances: [String: (icon: TabiIcon, color: TabiColor)] = [:]
+        private var markerAppearances: [String: (icon: TabiIcon, color: TabiColor, index: Int?)] = [:]
         private var lastAppliedFitToken: Int?
         private let singleMarkerFitZoomLevel: Double = 15
         private let boundsFitPadding: CGFloat = 60
@@ -94,16 +94,32 @@ private extension TabiMapView.Coordinator {
         for id in staleIDs {
             self.markerCache[id]?.mapView = nil
             self.markerCache.removeValue(forKey: id)
+            self.markerAppearances.removeValue(forKey: id)
         }
 
-        for marker in markers where self.markerCache[marker.id] == nil {
+        for marker in markers {
+            if let existingMarker = self.markerCache[marker.id] {
+                let previousAppearance = self.markerAppearances[marker.id]
+                guard previousAppearance?.icon != marker.icon
+                    || previousAppearance?.color != marker.color
+                    || previousAppearance?.index != marker.index
+                else { continue }
+
+                self.markerAppearances[marker.id] = (marker.icon, marker.color, marker.index)
+                // NMFMarker는 UI 오버레이라 sync(...)가 호출되는 makeUIView/updateUIView(메인 액터)에서만 안전함
+                MainActor.assumeIsolated {
+                    existingMarker.iconImage = TabiMapMarkerImageFactory.image(icon: marker.icon, color: marker.color, index: marker.index)
+                }
+                continue
+            }
+
             let nmfMarker = NMFMarker()
             nmfMarker.position = NMGLatLng(lat: marker.latitude, lng: marker.longitude)
             nmfMarker.width = Self.markerSize
             nmfMarker.height = Self.markerSize
-            // NMFMarker는 UI 오버레이라 sync(...)가 호출되는 makeUIView/updateUIView(메인 액터)에서만 안전함
+            self.markerAppearances[marker.id] = (marker.icon, marker.color, marker.index)
             MainActor.assumeIsolated {
-                nmfMarker.iconImage = TabiMapMarkerImageFactory.image(icon: marker.icon, color: marker.color)
+                nmfMarker.iconImage = TabiMapMarkerImageFactory.image(icon: marker.icon, color: marker.color, index: marker.index)
             }
             nmfMarker.captionText = marker.title
             nmfMarker.captionTextSize = Self.captionTextSize
@@ -121,6 +137,7 @@ private extension TabiMapView.Coordinator {
             marker.mapView = nil
         }
         self.markerCache.removeAll()
+        self.markerAppearances.removeAll()
     }
 
     func applyBoundsFitIfNeeded(token: Int, markers: [TabiMapMarker], on mapView: NMFMapView) {
@@ -181,7 +198,7 @@ private extension TabiMapView.Coordinator {
             )
             self.clusteredKeys[marker.id] = key
             self.markerTitles[marker.id] = marker.title
-            self.markerAppearances[marker.id] = (marker.icon, marker.color)
+            self.markerAppearances[marker.id] = (marker.icon, marker.color, marker.index)
             keyTagMap[key] = marker.id as NSString
         }
         clusterer.addAll(keyTagMap)
@@ -212,12 +229,12 @@ private final class TabiLeafMarkerUpdater: NSObject {
     private let defaultUpdater = NMCDefaultLeafMarkerUpdater()
     private let onMarkerTapped: (String) -> Void
     private let titleProvider: (String) -> String?
-    private let appearanceProvider: (String) -> (icon: TabiIcon, color: TabiColor)?
+    private let appearanceProvider: (String) -> (icon: TabiIcon, color: TabiColor, index: Int?)?
 
     init(
         onMarkerTapped: @escaping (String) -> Void,
         titleProvider: @escaping (String) -> String?,
-        appearanceProvider: @escaping (String) -> (icon: TabiIcon, color: TabiColor)?
+        appearanceProvider: @escaping (String) -> (icon: TabiIcon, color: TabiColor, index: Int?)?
     ) {
         self.onMarkerTapped = onMarkerTapped
         self.titleProvider = titleProvider
@@ -237,7 +254,7 @@ extension TabiLeafMarkerUpdater: NMCLeafMarkerUpdater {
         if let appearance = self.appearanceProvider(markerID) {
             // NMFMarker는 UI 오버레이라 NMCClusterer가 이 콜백을 메인 스레드에서만 호출함
             MainActor.assumeIsolated {
-                marker.iconImage = TabiMapMarkerImageFactory.image(icon: appearance.icon, color: appearance.color)
+                marker.iconImage = TabiMapMarkerImageFactory.image(icon: appearance.icon, color: appearance.color, index: appearance.index)
             }
         }
 

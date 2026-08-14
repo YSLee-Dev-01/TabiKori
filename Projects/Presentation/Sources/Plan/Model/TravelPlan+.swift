@@ -12,12 +12,16 @@ import Domain
 import Resource
 
 extension TravelPlan {
-    var dayCount: Int {
+    static func dayCount(startDate: Date, endDate: Date) -> Int {
         let calendar = Calendar.current
-        let start = calendar.startOfDay(for: self.startDate)
-        let end = calendar.startOfDay(for: self.endDate)
+        let start = calendar.startOfDay(for: startDate)
+        let end = calendar.startOfDay(for: endDate)
         let days = calendar.dateComponents([.day], from: start, to: end).day ?? 0
         return max(days + 1, 1)
+    }
+
+    var dayCount: Int {
+        Self.dayCount(startDate: self.startDate, endDate: self.endDate)
     }
 
     var dayDates: [Date] {

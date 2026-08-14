@@ -279,6 +279,18 @@ public extension Strings.Plan {
     static let spotDeleteFailedAlertTitle = "削除に失敗しました"
     /// 스팟 삭제 실패 알림 메시지
     static let spotDeleteFailedAlertMessage = "もう一度お試しください"
+    /// 플랜 자체 편집 메뉴 타이틀
+    static let planEditMenuTitle = "予定を編集"
+    /// 플랜 편집 화면 타이틀
+    static let editPlanScreenTitle = "日程を編集"
+    /// 날짜 축소 확인 알림 타이틀
+    static let dayShrinkAlertTitle = "日程が短くなります"
+    /// 날짜 축소 확인 알림 메시지 (%d: 삭제 시작 일차)
+    nonisolated(unsafe) static let dayShrinkAlertMessage: ((Int) -> String) = {
+        "\($0)日目以降のスポットは削除されます。よろしいですか？"
+    }
+    /// 알림 취소 버튼
+    static let alertCancel = "キャンセル"
 }
 
 public extension Strings.Detail {

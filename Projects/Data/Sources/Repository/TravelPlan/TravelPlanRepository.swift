@@ -53,6 +53,34 @@ extension TravelPlanRepository: TravelPlanRepositoryProtocol {
         }
     }
 
+    public func update(_ plan: TravelPlan) async throws {
+        do {
+            let context = ModelContext(self.modelContainer)
+            let planId = plan.id
+            let descriptor = FetchDescriptor<TravelPlanModel>(
+                predicate: #Predicate { $0.id == planId }
+            )
+            guard let model = try context.fetch(descriptor).first else {
+                AppLogger.core.log(.error, "일정 수정 실패: 대상 플랜을 찾을 수 없음 (planId: \(planId))")
+                throw TabiError.persistenceFailed(message: "대상 플랜을 찾을 수 없습니다")
+            }
+
+            model.title = plan.title
+            model.regionRaw = plan.region.rawValue
+            model.customRegionText = plan.customRegionText
+            model.customEmoji = plan.customEmoji
+            model.startDate = plan.startDate
+            model.endDate = plan.endDate
+
+            try context.save()
+        } catch let error as TabiError {
+            throw error
+        } catch {
+            AppLogger.core.log(.error, "일정 수정 실패: \(error.localizedDescription)")
+            throw TabiError.persistenceFailed(message: error.localizedDescription)
+        }
+    }
+
     public func remove(planId: UUID) async throws {
         do {
             let context = ModelContext(self.modelContainer)

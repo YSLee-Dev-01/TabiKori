@@ -14,6 +14,7 @@ import Resource
 
 struct PlanDetailSpotRow: View {
     let spot: TravelPlanDetailSpot
+    let index: Int
     let isFirst: Bool
     let isLast: Bool
     let isEditing: Bool
@@ -63,13 +64,16 @@ private extension PlanDetailSpotRow {
 
             Circle()
                 .fill(self.spot.category.color)
-                .frame(width: 10, height: 10)
+                .overlay {
+                    TabiLabel(title: "\(self.index)", style: .captionXSBold, color: .tabiOnColor)
+                }
+                .frame(width: 22, height: 22)
 
             Rectangle()
                 .fill(TabiColor.tabiBorder)
                 .opacity(self.isLast ? 0 : 1)
                 .frame(width: 2)
         }
-        .frame(width: 10)
+        .frame(width: 22)
     }
 }
