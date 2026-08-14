@@ -65,7 +65,7 @@ private extension PlanView {
                 self.store.send(.importButtonTapped)
             }
         } label: {
-            TabiGlassIconLabel(systemName: "ellipsis", size: .lg, foregroundColor: .tabiPrimary)
+            TabiGlassIconLabel(systemName: "ellipsis", size: .ml, foregroundColor: .tabiPrimary)
         }
     }
 

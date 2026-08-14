@@ -14,12 +14,14 @@ public struct TabiGlassIconButton: View {
     public enum Size {
         case sm
         case md
+        case ml
         case lg
 
         var iconSize: CGFloat {
             switch self {
             case .sm: return 14
             case .md: return 18
+            case .ml: return 20
             case .lg: return 22
             }
         }
@@ -28,6 +30,7 @@ public struct TabiGlassIconButton: View {
             switch self {
             case .sm: return 8
             case .md: return 10
+            case .ml: return 11
             case .lg: return 12
             }
         }
@@ -81,6 +84,7 @@ public struct TabiGlassIconLabel: View {
     public var body: some View {
         Image(systemName: self.systemName)
             .resizable()
+            .aspectRatio(contentMode: .fit)
             .frame(width: self.size.iconSize, height: self.size.iconSize)
             .padding(self.size.padding)
             .foregroundStyle(Color.getTabiColor(self.foregroundColor))
