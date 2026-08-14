@@ -130,6 +130,7 @@ private extension AddCustomPlaceView {
             centerLatitude: coordinate.latitude,
             centerLongitude: coordinate.longitude,
             markers: markers,
+            boundsFitToken: self.store.previewFitToken,
             onMapTapped: { _, _ in },
             onMarkerTapped: { _ in }
         )

@@ -29,6 +29,7 @@ public struct AddCustomPlaceFeature: Sendable {
         var selectedCategory: CategoryType?
         var isSaving: Bool = false
         var previewCoordinate: Coordinate?
+        var previewFitToken: Int = 0
         @Presents var alert: AlertState<Action.Alert>?
 
         public init() {}
@@ -132,6 +133,7 @@ public struct AddCustomPlaceFeature: Sendable {
 
             case .addressPreviewResult(let coordinate):
                 state.previewCoordinate = coordinate
+                state.previewFitToken += 1
                 return .none
 
             case .alert:
