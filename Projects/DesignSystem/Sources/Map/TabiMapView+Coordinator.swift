@@ -6,8 +6,11 @@
 //  Copyright © 2026 yslee. All rights reserved.
 //
 
+import SwiftUI
+
 @preconcurrency import NMapsMap
 
+import Core
 import Resource
 
 extension TabiMapView {
@@ -21,9 +24,14 @@ extension TabiMapView {
         private var clusteredKeys: [String: TabiClusteringKey] = [:]
         private var markerTitles: [String: String] = [:]
         private var markerAppearances: [String: (icon: TabiIcon, color: TabiColor, index: Int?)] = [:]
+        private var polylineOverlay: NMFPolylineOverlay?
+        private var polylineMarkers: [TabiMapMarker] = []
         private var lastAppliedFitToken: Int?
         private let singleMarkerFitZoomLevel: Double = 15
         private let boundsFitPadding: CGFloat = 60
+        // makeUIView 시점에는 NMFNaverMapView가 아직 SwiftUI 레이아웃을 거치지 않아 frame이 .zero일 수 있음.
+        // fit 계산이 유효한 프레임을 전제로 하므로, 프레임이 잡힐 때까지 런루프 단위로 재시도할 최대 횟수
+        private let boundsFitMaxRetryCount: Int = 10
         // MapView 검색 패널 등장 애니메이션(.tabiStandard = Animation.smooth, 기본 duration 0.5초)과
         // 카메라 이동 애니메이션 길이를 맞춰, 시트가 다 올라오기 전에 지도가 먼저 이동해버리는 것을 방지
         private let boundsFitAnimationDuration: TimeInterval = 0.5
@@ -41,6 +49,13 @@ extension TabiMapView {
         }
     }
 }
+
+// MARK: - Sendable
+
+// Coordinator는 UIViewRepresentable의 makeUIView/updateUIView(메인 액터)와 NMapsMap 델리게이트 콜백
+// (메인 스레드에서만 호출됨)에서만 사용되므로 메인 스레드 단일 접근이 보장됨.
+// applyBoundsFitIfNeeded(...)의 프레임 재시도가 DispatchQueue.main.async로 self를 넘겨야 해서 채택
+extension TabiMapView.Coordinator: @unchecked Sendable {}
 
 // MARK: - NMFMapViewTouchDelegate
 
@@ -72,9 +87,12 @@ extension TabiMapView.Coordinator {
         if isClusteringEnabled {
             self.clearPlainMarkers()
             self.syncClusteredMarkers(markers, on: mapView)
+            // 클러스터링 모드에서는 마커 좌표가 확정되지 않은 상태로 뭉쳐 보이므로 연결선을 그리지 않음
+            self.clearPolyline()
         } else {
             self.clearClusterer()
             self.syncPlainMarkers(markers, on: mapView)
+            self.syncPolyline(markers, on: mapView)
         }
 
         self.applyBoundsFitIfNeeded(token: boundsFitToken, markers: markers, on: mapView)
@@ -86,6 +104,7 @@ extension TabiMapView.Coordinator {
 private extension TabiMapView.Coordinator {
     static let markerSize: CGFloat = 30
     static let captionTextSize: CGFloat = 10
+    static let polylineWidth: CGFloat = 3
 
     func syncPlainMarkers(_ markers: [TabiMapMarker], on mapView: NMFMapView) {
         let newIDs = Set(markers.map(\.id))
@@ -140,10 +159,62 @@ private extension TabiMapView.Coordinator {
         self.markerAppearances.removeAll()
     }
 
-    func applyBoundsFitIfNeeded(token: Int, markers: [TabiMapMarker], on mapView: NMFMapView) {
+    func syncPolyline(_ markers: [TabiMapMarker], on mapView: NMFMapView) {
+        let orderedMarkers = markers.sorted { ($0.index ?? .max) < ($1.index ?? .max) }
+
+        guard orderedMarkers.count >= 2 else {
+            self.clearPolyline()
+            return
+        }
+        guard orderedMarkers != self.polylineMarkers else { return }
+        self.polylineMarkers = orderedMarkers
+
+        let coords = orderedMarkers.map { NMGLatLng(lat: $0.latitude, lng: $0.longitude) }
+        guard let overlay = NMFPolylineOverlay(coords) else {
+            self.clearPolyline()
+            return
+        }
+        overlay.width = Self.polylineWidth
+        overlay.color = UIColor(Color.getTabiColor(.tabiPrimary))
+        overlay.mapView = mapView
+
+        self.polylineOverlay?.mapView = nil
+        self.polylineOverlay = overlay
+    }
+
+    func clearPolyline() {
+        self.polylineOverlay?.mapView = nil
+        self.polylineOverlay = nil
+        self.polylineMarkers.removeAll()
+    }
+
+    func applyBoundsFitIfNeeded(token: Int, markers: [TabiMapMarker], on mapView: NMFMapView, retryCount: Int = 0) {
         guard token != self.lastAppliedFitToken else { return }
+        guard markers.isEmpty == false else {
+            self.lastAppliedFitToken = token
+            return
+        }
+
+        // makeUIView 시점의 NMFNaverMapView는 아직 SwiftUI 레이아웃을 거치지 않아 bounds가 .zero일 수 있음.
+        // 이 상태로 fit(bounds:)를 계산하면 잘못된 카메라 줌/위치가 적용되므로,
+        // 유효한 프레임을 가질 때까지 토큰을 소비하지 않고 다음 런루프에서 재시도함
+        // NMFMapView는 UIView(→ UIResponder)를 상속해 bounds 접근이 @MainActor로 격리됨. sync(...)는
+        // UIViewRepresentable의 makeUIView/updateUIView(둘 다 메인 액터)에서만 호출되므로 안전함
+        let hasValidBounds = MainActor.assumeIsolated { mapView.bounds.width > 0 && mapView.bounds.height > 0 }
+        guard hasValidBounds else {
+            guard retryCount < self.boundsFitMaxRetryCount else {
+                AppLogger.view.log(.error, "지도 bounds fit 재시도 초과: mapView 프레임이 계속 0으로 유지됨")
+                self.lastAppliedFitToken = token
+                return
+            }
+            DispatchQueue.main.async { [weak self, weak mapView] in
+                guard let self, let mapView else { return }
+                self.applyBoundsFitIfNeeded(token: token, markers: markers, on: mapView, retryCount: retryCount + 1)
+            }
+            return
+        }
+
         self.lastAppliedFitToken = token
-        guard markers.isEmpty == false else { return }
 
         let singleMarkerFitZoomLevel = self.singleMarkerFitZoomLevel
         let boundsFitPadding = self.boundsFitPadding
