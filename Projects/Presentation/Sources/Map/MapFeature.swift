@@ -77,6 +77,7 @@ public struct MapFeature: Sendable {
         case searchResultsResult([TouristSpot])
         case researchResultsResult([TouristSpot])
         case searchNextPageResultsResult([TouristSpot])
+        case recentSearchesLoaded([SearchHistory])
     }
 
     public init() {}
@@ -91,12 +92,11 @@ public struct MapFeature: Sendable {
             case .searchFieldTapped:
                 state.mode = .typing
                 state.panelStage = .full
-                state.recentSearches = self.searchHistoryUseCase.fetch()
-                return .none
+                return self.fetchRecentSearchesEffect()
 
             case .searchCancelTapped:
                 self.resetSearchState(&state)
-                return .none
+                return .cancel(id: CancelID.search)
 
             case .mapDragged:
                 state.panelStage = .collapsed
@@ -115,7 +115,7 @@ public struct MapFeature: Sendable {
 
             case .searchSubmitted:
                 guard state.searchQuery.isEmpty == false else { return .none }
-                self.searchHistoryUseCase.add(keyword: state.searchQuery)
+                let keyword = state.searchQuery
                 state.activeCategory = nil
                 state.activeCategoryCoordinate = nil
                 state.mode = .result
@@ -125,7 +125,10 @@ public struct MapFeature: Sendable {
                 state.searchPage = 1
                 state.hasMoreSearchResults = true
                 state.hasMapMovedSinceSearch = false
-                return self.searchEffect(keyword: state.searchQuery)
+                return .merge(
+                    self.addSearchHistoryEffect(keyword: keyword),
+                    self.searchEffect(keyword: keyword)
+                )
 
             case .categorySelected(let category, let coordinate):
                 let resolvedCoordinate = coordinate ?? Coordinate(latitude: state.centerLatitude, longitude: state.centerLongitude)
@@ -166,9 +169,7 @@ public struct MapFeature: Sendable {
                 return .send(.searchSubmitted)
 
             case .recentSearchDeleteTapped(let history):
-                self.searchHistoryUseCase.remove(keyword: history.keyword)
-                state.recentSearches = self.searchHistoryUseCase.fetch()
-                return .none
+                return self.deleteSearchHistoryEffect(keyword: history.keyword)
 
             case .searchNextPageTriggered:
                 guard state.isSearchNextPageLoading == false,
@@ -252,9 +253,19 @@ public struct MapFeature: Sendable {
                 state.isSearchNextPageLoading = false
                 state.hasMoreSearchResults = spots.count >= self.searchPageSize
                 return .none
+
+            case .recentSearchesLoaded(let histories):
+                state.recentSearches = histories
+                return .none
             }
         }
     }
+}
+
+// MARK: - CancelID
+
+private enum CancelID {
+    case search
 }
 
 // MARK: - Method
@@ -276,6 +287,25 @@ private extension MapFeature {
         }
     }
 
+    func fetchRecentSearchesEffect() -> Effect<Action> {
+        .run { [searchHistoryUseCase = self.searchHistoryUseCase] send in
+            await send(.recentSearchesLoaded(searchHistoryUseCase.fetch()))
+        }
+    }
+
+    func addSearchHistoryEffect(keyword: String) -> Effect<Action> {
+        .run { [searchHistoryUseCase = self.searchHistoryUseCase] _ in
+            searchHistoryUseCase.add(keyword: keyword)
+        }
+    }
+
+    func deleteSearchHistoryEffect(keyword: String) -> Effect<Action> {
+        .run { [searchHistoryUseCase = self.searchHistoryUseCase] send in
+            searchHistoryUseCase.remove(keyword: keyword)
+            await send(.recentSearchesLoaded(searchHistoryUseCase.fetch()))
+        }
+    }
+
     func searchEffect(keyword: String) -> Effect<Action> {
         .run { [touristSpotUseCase = self.touristSpotUseCase, minimumLoadingDuration = self.minimumLoadingDuration] send in
             do {
@@ -292,6 +322,7 @@ private extension MapFeature {
                 AppLogger.view.log(.error, "키워드 검색 실패: \(error.localizedDescription)")
             }
         }
+        .cancellable(id: CancelID.search, cancelInFlight: true)
     }
 
     func searchNextPageEffect(keyword: String, pageNo: Int) -> Effect<Action> {
@@ -310,6 +341,7 @@ private extension MapFeature {
                 AppLogger.view.log(.error, "키워드 검색 다음 페이지 조회 실패: \(error.localizedDescription)")
             }
         }
+        .cancellable(id: CancelID.search, cancelInFlight: true)
     }
 
     func categorySearchEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int) -> Effect<Action> {
@@ -333,6 +365,7 @@ private extension MapFeature {
                 AppLogger.view.log(.error, "카테고리 검색 실패: \(error.localizedDescription)")
             }
         }
+        .cancellable(id: CancelID.search, cancelInFlight: true)
     }
 
     func categoryResearchEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int) -> Effect<Action> {
@@ -356,6 +389,7 @@ private extension MapFeature {
                 AppLogger.view.log(.error, "위치 재검색 실패: \(error.localizedDescription)")
             }
         }
+        .cancellable(id: CancelID.search, cancelInFlight: true)
     }
 
     func categoryNextPageEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int, pageNo: Int) -> Effect<Action> {
@@ -379,6 +413,7 @@ private extension MapFeature {
                 AppLogger.view.log(.error, "카테고리 검색 다음 페이지 조회 실패: \(error.localizedDescription)")
             }
         }
+        .cancellable(id: CancelID.search, cancelInFlight: true)
     }
 
     func clampedRadiusMeters(_ radiusMeters: Double) -> Int {

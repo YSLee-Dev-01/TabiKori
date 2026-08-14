@@ -59,7 +59,10 @@ public struct MapView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { notification in
             guard self.isPanelDragging == false else { return }
             guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-            self.keyboardHeight = max(0, UIScreen.main.bounds.height - frame.origin.y)
+            let screenHeight = UIApplication.shared.connectedScenes
+                .compactMap { ($0 as? UIWindowScene)?.screen.bounds.height }
+                .first ?? self.mapContainerHeight
+            self.keyboardHeight = max(0, screenHeight - frame.origin.y)
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             guard self.isPanelDragging == false else { return }
