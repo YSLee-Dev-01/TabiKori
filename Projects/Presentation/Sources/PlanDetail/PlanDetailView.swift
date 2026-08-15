@@ -22,7 +22,6 @@ public struct PlanDetailView: View {
 
     @State private var isMovingForward: Bool = true
     @State private var scrolledDayIndex: Int?
-    @State private var isModeSwitchTransition: Bool = false
 
     public init(store: StoreOf<PlanDetailFeature>) {
         self.store = store
@@ -35,20 +34,30 @@ public struct PlanDetailView: View {
             }
 
             if self.store.isFullOverview {
-                self.mapSection()
-                    .id(self.mapSectionIdentity(dayIndex: self.store.visibleDayIndex))
-                    .transition(self.fullOverviewMapTransition)
-                self.fullOverviewList(plan: self.store.plan)
-            } else {
+                // 안쪽 VStack이 전체보기 진입/이탈(모드 전환)의 제거·삽입 단위를 담당해 페이드만 적용하고,
+                // 지도의 자체 transition(상단 슬라이드)은 같은 모드 안에서 visibleDayIndex만 바뀔 때 별도로 적용된다
                 VStack(alignment: .leading, spacing: 10) {
-                    self.dayHeader(plan: self.store.plan)
-
                     self.mapSection()
-
-                    self.spotList()
+                        .id(self.mapSectionIdentity(dayIndex: self.store.visibleDayIndex))
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                    self.fullOverviewList(plan: self.store.plan)
                 }
-                .id(self.store.selectedDayIndex)
-                .transition(self.dayTransition)
+                .transition(.opacity)
+            } else {
+                // 안쪽 VStack이 일자 탐색(selectedDayIndex)만의 제거·삽입 단위를 담당해 좌우 슬라이드를 적용하고,
+                // 모드 전환으로 이 가지 전체가 사라질 때는 바깥 VStack의 페이드만 적용된다
+                VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        self.dayHeader(plan: self.store.plan)
+
+                        self.mapSection()
+
+                        self.spotList()
+                    }
+                    .id(self.store.selectedDayIndex)
+                    .transition(self.dayTransition)
+                }
+                .transition(.opacity)
             }
 
             if self.store.isEditing {
@@ -74,7 +83,7 @@ public struct PlanDetailView: View {
             if self.store.isEditing == false {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        self.handleFullOverviewToggleTapped()
+                        self.store.send(.fullOverviewToggleTapped)
                     } label: {
                         Image(systemName: self.store.isFullOverview ? "rectangle.grid.1x2.fill" : "rectangle.grid.1x2")
                     }
@@ -183,29 +192,11 @@ private extension PlanDetailView {
         }
     }
 
-    /// 전체보기 진입/이탈(모드 전환) 중에는 좌우 슬라이드 대신 페이드를 사용하고,
-    /// 같은 모드 안에서 일자를 탐색할 때만 좌우 슬라이드를 사용한다
     var dayTransition: AnyTransition {
-        guard self.isModeSwitchTransition == false else { return .opacity }
-        return .asymmetric(
+        .asymmetric(
             insertion: .move(edge: self.isMovingForward ? .trailing : .leading),
             removal: .move(edge: self.isMovingForward ? .leading : .trailing)
         )
-    }
-
-    var fullOverviewMapTransition: AnyTransition {
-        self.isModeSwitchTransition ? .opacity : .move(edge: .top).combined(with: .opacity)
-    }
-
-    func handleFullOverviewToggleTapped() {
-        self.isModeSwitchTransition = true
-        self.store.send(.fullOverviewToggleTapped)
-        // isModeSwitchTransition을 곧바로 되돌리면 모드 전환 렌더와 같은 프레임에 묶여
-        // dayTransition/fullOverviewMapTransition이 이미 원래 방향 애니메이션으로 평가될 수 있으므로,
-        // 전환이 실제로 캡처된 다음 프레임에 되돌린다
-        _ = PlanDetailNextFrameTrigger { [isModeSwitchTransition = self.$isModeSwitchTransition] in
-            isModeSwitchTransition.wrappedValue = false
-        }
     }
 
     var selectedDayMarkers: [TabiMapMarker] {
@@ -369,6 +360,7 @@ private extension PlanDetailView {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .contentMargins(.bottom, 32, for: .scrollContent)
         .coordinateSpace(name: Self.fullOverviewScrollSpace)
         .scrollPosition(id: self.$scrolledDayIndex, anchor: .top)
         .onPreferenceChange(DayHeaderOffsetPreferenceKey.self) { offsets in
