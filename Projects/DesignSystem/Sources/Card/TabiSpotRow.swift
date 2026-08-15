@@ -63,25 +63,23 @@ public struct TabiSpotRow: View {
                     .frame(width: 64, height: 64)
                     .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
 
-                VStack(alignment: .leading, spacing: 4) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        TabiLabel(title: self.japaneseTitle, style: .bodyMBold, color: .tabiTextPrimary, lineLimit: 1)
-
-                        if let koreanTitle = self.koreanTitle {
-                            TabiLabel(title: koreanTitle, style: .captionM, color: .tabiTextSecondary, lineLimit: 1)
-                        }
-
-                        if let address = self.address {
-                            TabiLabel(title: address, style: .captionM, color: .tabiTextTertiary, lineLimit: 1)
-                        }
-                    }
-
+                VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         TabiTag(self.tagTitle, color: self.tagColor)
 
                         if self.isCustom {
                             TabiTag(Strings.AddCustomPlace.customBadgeTitle, color: .tabiTextTertiary)
                         }
+
+                        TabiLabel(title: self.japaneseTitle, style: .bodyMBold, color: .tabiTextPrimary, lineLimit: 1)
+                    }
+
+                    if let koreanTitle = self.koreanTitle {
+                        TabiLabel(title: koreanTitle, style: .captionM, color: .tabiTextSecondary, lineLimit: 1)
+                    }
+
+                    if let address = self.address {
+                        TabiLabel(title: address, style: .captionM, color: .tabiTextTertiary, lineLimit: 1)
                     }
                 }
 
