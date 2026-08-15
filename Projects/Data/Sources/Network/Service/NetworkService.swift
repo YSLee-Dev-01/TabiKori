@@ -35,6 +35,7 @@ public final class NetworkService: NetworkServiceProtocol {
         var request = URLRequest(url: url)
         request.httpMethod = endPoint.method.rawValue
         request.timeoutInterval = endPoint.timeout
+        request.allHTTPHeaderFields = endPoint.headers
         
         let data = try await self.performRequest(urlRequest: request, enableLog: endPoint.enableLog)
         

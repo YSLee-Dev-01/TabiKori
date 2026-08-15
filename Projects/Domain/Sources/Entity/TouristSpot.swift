@@ -14,22 +14,50 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
     public let thumbnailURLString: String?
     public let distanceMeters: Double?
     public let contentType: CategoryType
+    public let coordinate: Coordinate
+    public let isCustom: Bool
+    public let address: String?
 
     public init(
         id: String,
         title: String,
         thumbnailURLString: String?,
         distanceMeters: Double?,
-        contentType: CategoryType
+        contentType: CategoryType,
+        coordinate: Coordinate,
+        isCustom: Bool = false,
+        address: String? = nil
     ) {
         self.id = id
         self.title = title
         self.thumbnailURLString = thumbnailURLString
         self.distanceMeters = distanceMeters
         self.contentType = contentType
+        self.coordinate = coordinate
+        self.isCustom = isCustom
+        self.address = address
     }
     
     public var thumbnailURL: URL? {
         return URL(string: self.thumbnailURLString ?? "")
     }
+
+    public var japaneseTitle: String {
+        guard let openRange = self.title.rangeOfCharacter(from: Self.openParenthesisCharacters) else { return self.title }
+        return String(self.title[self.title.startIndex ..< openRange.lowerBound]).trimmingCharacters(in: .whitespaces)
+    }
+
+    public var koreanTitle: String? {
+        guard let openRange = self.title.rangeOfCharacter(from: Self.openParenthesisCharacters),
+              let closeRange = self.title.rangeOfCharacter(from: Self.closeParenthesisCharacters, range: openRange.upperBound ..< self.title.endIndex) else { return nil }
+        let korean = String(self.title[openRange.upperBound ..< closeRange.lowerBound]).trimmingCharacters(in: .whitespaces)
+        return korean.isEmpty ? nil : korean
+    }
+}
+
+// MARK: - Constants
+
+private extension TouristSpot {
+    static let openParenthesisCharacters = CharacterSet(charactersIn: "（(")
+    static let closeParenthesisCharacters = CharacterSet(charactersIn: "）)")
 }

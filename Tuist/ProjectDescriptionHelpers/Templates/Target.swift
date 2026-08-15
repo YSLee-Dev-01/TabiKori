@@ -21,7 +21,9 @@ public extension Target {
             name: name,
             destinations: Environment.destinations,
             product: product,
-            bundleId: "\(Environment.organizationName).\(Environment.appName).\(name)",
+            bundleId: product == .app
+                ? Environment.bundleIdentifier
+                : "\(Environment.bundleIdentifier).\(name)",
             deploymentTargets: Environment.deploymentTarget,
             infoPlist: infoPlist,
             sources: ["Sources/**"],

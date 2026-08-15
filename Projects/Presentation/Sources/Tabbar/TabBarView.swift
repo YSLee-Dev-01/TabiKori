@@ -9,46 +9,65 @@
 import SwiftUI
 
 import ComposableArchitecture
+import Resource
 
 public struct TabBarView: View {
 
     @State private var store: StoreOf<TabBarFeature>
+    @Namespace private var heroNamespace
 
     public init(store: StoreOf<TabBarFeature>) {
         self.store = store
     }
 
     public var body: some View {
-        TabView(selection: self.$store.selectedTab.sending(\.tabSelected)) {
-            HomeView(store: self.store.scope(state: \.homeState, action: \.home))
-                .tabItem {
-                    Image(systemName: AppTab.home.systemImage)
-                }
-                .tag(AppTab.home)
+        NavigationStack(
+            path: self.$store.scope(state: \.path, action: \.path)
+        ) {
+            TabView(selection: self.$store.selectedTab.sending(\.tabSelected)) {
+                HomeView(
+                    store: self.store.scope(state: \.homeState, action: \.home),
+                    namespace: self.heroNamespace
+                )
+                    .tabItem {
+                        Image(systemName: AppTab.home.systemImage)
+                    }
+                    .tag(AppTab.home)
 
-            Text(AppTab.map.title)
-                .tabItem {
-                    Image(systemName: AppTab.map.systemImage)
-                }
-                .tag(AppTab.map)
+                MapView(store: self.store.scope(state: \.mapState, action: \.map))
+                    .tabItem {
+                        Image(systemName: AppTab.map.systemImage)
+                    }
+                    .tag(AppTab.map)
 
-            Text(AppTab.plan.title)
-                .tabItem {
-                    Image(systemName: AppTab.plan.systemImage)
-                }
-                .tag(AppTab.plan)
+                PlanView(store: self.store.scope(state: \.planState, action: \.plan))
+                    .tabItem {
+                        Image(systemName: AppTab.plan.systemImage)
+                    }
+                    .tag(AppTab.plan)
 
-            Text(AppTab.save.title)
-                .tabItem {
-                    Image(systemName: AppTab.save.systemImage)
-                }
-                .tag(AppTab.save)
-
-            Text(AppTab.search.title)
-                .tabItem {
-                    Image(systemName: AppTab.search.systemImage)
-                }
-                .tag(AppTab.search)
+                BookmarkView(store: self.store.scope(state: \.bookmarkState, action: \.bookmark))
+                    .tabItem {
+                        Image(systemName: AppTab.bookmark.systemImage)
+                    }
+                    .tag(AppTab.bookmark)
+            }
+            .tint(Color.getTabiColor(.tabiPrimary))
+        } destination: { store in
+            switch store.case {
+            case .detail(let store):
+                DetailView(store: store, namespace: self.heroNamespace)
+            case .photoViewer(let store):
+                PhotoViewerView(store: store)
+            case .planDetail(let store):
+                PlanDetailView(store: store)
+            case .festival(let store):
+                FestivalView(store: store)
+            case .region(let store):
+                RegionSpotView(store: store)
+            case .setting(let store):
+                SettingView(store: store)
+            }
         }
     }
 }

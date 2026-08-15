@@ -49,10 +49,4 @@ extension AppLogger {
         categoryName: "💬 View",
         totalLogEnabled: AppConfig.shared.enableViewLog
     )
-    
-    public static let coordinator = AppLogger(
-        logger: Logger(subsystem: subsystem, category: "Coordinator"),
-        categoryName: "🧑‍🧑‍🧒‍🧒 Coordinator",
-        totalLogEnabled: AppConfig.shared.enableCoordinatorLog
-    )
 }

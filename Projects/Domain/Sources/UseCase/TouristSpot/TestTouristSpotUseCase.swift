@@ -13,14 +13,48 @@ public final class TestTouristSpotUseCase: TouristSpotUseCaseProtocol, @unchecke
     // MARK: - Properties
 
     public var nearbySpots: [TouristSpot] = []
+    public var regionSpots: [TouristSpot] = []
+    public var detail: TouristSpotDetail!
+    public var intro: TouristSpotIntro!
+    public var images: [TouristSpotImage] = []
+    public var searchResults: [TouristSpot] = []
+
+    // MARK: - Init
+
+    public init() {}
 
     // MARK: - Method
 
     public func fetchNearbySpots(
         contentType: CategoryType,
         coordinate: Coordinate,
-        radiusMeters: Int
+        radiusMeters: Int,
+        pageNo: Int
     ) async throws -> [TouristSpot] {
         return self.nearbySpots
+    }
+
+    public func fetchRegionSpots(
+        region: KoreanRegion,
+        contentType: CategoryType,
+        pageNo: Int
+    ) async throws -> [TouristSpot] {
+        return self.regionSpots
+    }
+
+    public func fetchDetail(contentId: String) async throws -> TouristSpotDetail {
+        return self.detail
+    }
+
+    public func fetchIntro(contentId: String, contentType: CategoryType) async throws -> TouristSpotIntro {
+        return self.intro
+    }
+
+    public func fetchImages(contentId: String) async throws -> [TouristSpotImage] {
+        return self.images
+    }
+
+    public func searchByKeyword(keyword: String, pageNo: Int) async throws -> [TouristSpot] {
+        return self.searchResults
     }
 }

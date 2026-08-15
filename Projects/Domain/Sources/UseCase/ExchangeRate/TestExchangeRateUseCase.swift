@@ -13,10 +13,11 @@ public final class TestExchangeRateUseCase: ExchangeRateUseCaseProtocol, @unchec
     // MARK: - Properties
 
     public var krwToJPYRate: Double = 0.1073
+    public var updatedAt: Date = Date()
 
     // MARK: - Method
 
-    public func fetchKRWToJPYRate() async throws -> Double {
-        return self.krwToJPYRate
+    public func fetchKRWToJPYRate() async throws -> KRWToJPYRate {
+        return KRWToJPYRate(rate: self.krwToJPYRate, updatedAt: self.updatedAt)
     }
 }

@@ -11,14 +11,14 @@ import Resource
 
 public struct TabiNavigationBar<Trailing: View>: View {
 
-    private let subtitle: String
+    private let subtitle: String?
     private let title: String
     private let trailing: Trailing
 
     public init(
-        subtitle: String,
+        subtitle: String? = nil,
         title: String,
-        @ViewBuilder trailing: () -> Trailing
+        @ViewBuilder trailing: () -> Trailing = { EmptyView() }
     ) {
         self.subtitle = subtitle
         self.title = title
@@ -26,9 +26,12 @@ public struct TabiNavigationBar<Trailing: View>: View {
     }
 
     public var body: some View {
-        HStack {
+        HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 5) {
-                TabiLabel(title: self.subtitle, style: .bodyMBold, color: .tabiTextPrimary)
+                if let subtitle = self.subtitle {
+                    TabiLabel(title: subtitle, style: .bodyMBold, color: .tabiTextPrimary)
+                }
+
                 TabiLabel(title: self.title, style: .titleL, color: .tabiTextPrimary)
             }
 

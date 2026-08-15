@@ -9,5 +9,5 @@
 import Foundation
 
 public protocol ExchangeRateUseCaseProtocol: Sendable {
-    func fetchKRWToJPYRate() async throws -> Double
+    func fetchKRWToJPYRate() async throws -> KRWToJPYRate
 }

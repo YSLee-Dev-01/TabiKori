@@ -11,6 +11,7 @@ import ProjectDescription
 public struct Environment {
     public static let appName: String = "TabiKori"
     public static let organizationName = "yslee"
+    public static let bundleIdentifier: String = "com.yslee.tabikori"
     public static let destinations: Destinations = [.iPhone]
     public static let deploymentTargetVersion: String = "26.0"
     public static let deploymentTarget: DeploymentTargets = .iOS(Environment.deploymentTargetVersion)
