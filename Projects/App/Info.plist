@@ -28,8 +28,6 @@
 	</array>
 	<key>NAVER_GEOCODING_CLIENT_SECRET</key>
 	<string>$(NAVER_GEOCODING_CLIENT_SECRET)</string>
-	<key>SEOUL_SUBWAY_API_KEY</key>
-	<string>$(SEOUL_SUBWAY_API_KEY)</string>
 	<key>NMFNcpKeyId</key>
 	<string>$(NAVERMAP_CLIENT_ID)</string>
 	<key>NSAppTransportSecurity</key>

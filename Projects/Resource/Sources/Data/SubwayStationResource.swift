@@ -15,4 +15,11 @@ public enum SubwayStationResource {
         }
         return try? Data(contentsOf: url)
     }
+
+    public static func loadGeomData() -> Data? {
+        guard let url = Bundle.module.url(forResource: "seoul_subway_station_geom", withExtension: "json") else {
+            return nil
+        }
+        return try? Data(contentsOf: url)
+    }
 }

@@ -16,15 +16,12 @@ public final class SubwayStationRepository: SubwayStationRepositoryProtocol {
 
     // MARK: - Properties
 
-    private let networkService: NetworkServiceProtocol
     private let localCache = SubwayStationLocalCache()
-    private let confirmCache = SubwayStationConfirmCache()
+    private let geomCache = SubwayStationGeomCache()
 
     // MARK: - Init
 
-    public init(networkService: NetworkServiceProtocol = NetworkService()) {
-        self.networkService = networkService
-    }
+    public init() {}
 
     // MARK: - Method
 
@@ -44,18 +41,13 @@ public final class SubwayStationRepository: SubwayStationRepositoryProtocol {
         return (prefixMatches + containsOnlyMatches).map { $0.station }
     }
 
-    public func confirmExists(stationName: String) async throws -> Bool {
-        if let cached = await self.confirmCache.value(for: stationName) {
-            return cached
+    public func fetchCoordinate(stationName: String) async throws -> Coordinate {
+        let coordinateMap = await self.geomCache.stationCoordinateMap()
+        guard let coordinate = coordinateMap[stationName] else {
+            AppLogger.network.log(.error, "❌ 지하철역 좌표 조회 실패: \(stationName)")
+            throw TabiError.dataNotFound
         }
-
-        let dto = try await self.networkService.request(
-            endPoint: SubwayStationEndpoint.search(stationName: stationName),
-            responseType: SubwayStationSearchResponseDTO.self
-        )
-        let exists = try dto.toExistsResult()
-        await self.confirmCache.set(exists, for: stationName)
-        return exists
+        return coordinate
     }
 }
 
@@ -98,16 +90,29 @@ private actor SubwayStationLocalCache {
     }
 }
 
-// MARK: - Remote Confirm Cache
+// MARK: - Geom Local JSON Cache
 
-private actor SubwayStationConfirmCache {
-    private var cached: [String: Bool] = [:]
+private actor SubwayStationGeomCache {
+    private var cached: [String: Coordinate]?
 
-    func value(for stationName: String) -> Bool? {
-        return self.cached[stationName]
-    }
+    func stationCoordinateMap() async -> [String: Coordinate] {
+        if let cached { return cached }
 
-    func set(_ exists: Bool, for stationName: String) {
-        self.cached[stationName] = exists
+        guard let data = SubwayStationResource.loadGeomData() else {
+            AppLogger.core.log(.error, "❌ 지하철역 좌표 로컬 JSON 로드 실패")
+            self.cached = [:]
+            return [:]
+        }
+
+        do {
+            let rows = try JSONDecoder().decode([SubwayStationGeomLocalRowDTO].self, from: data)
+            let coordinateMap = rows.toStationCoordinateMap()
+            self.cached = coordinateMap
+            return coordinateMap
+        } catch {
+            AppLogger.core.log(.error, "❌ 지하철역 좌표 로컬 JSON 파싱 실패: \(error.localizedDescription)")
+            self.cached = [:]
+            return [:]
+        }
     }
 }

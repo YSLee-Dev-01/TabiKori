@@ -14,9 +14,6 @@ import Data
 
 extension SubwayStationUseCaseDependencyKey: @retroactive DependencyKey {
     public static var liveValue: SubwayStationUseCaseProtocol {
-        SubwayStationUseCase(
-            subwayStationRepository: SubwayStationRepository(),
-            naverGeocodingRepository: NaverGeocodingRepository()
-        )
+        SubwayStationUseCase(subwayStationRepository: SubwayStationRepository())
     }
 }

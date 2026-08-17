@@ -10,5 +10,5 @@ import Foundation
 
 public protocol SubwayStationRepositoryProtocol: Sendable {
     func searchLocal(keyword: String) async -> [SubwayStation]
-    func confirmExists(stationName: String) async throws -> Bool
+    func fetchCoordinate(stationName: String) async throws -> Coordinate
 }
