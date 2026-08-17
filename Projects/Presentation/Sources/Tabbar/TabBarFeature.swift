@@ -21,6 +21,7 @@ public struct TabBarFeature {
         var mapState: MapFeature.State = .init()
         var planState: PlanFeature.State = .init()
         var bookmarkState: BookmarkFeature.State = .init()
+        var toolboxState: TravelItemsFeature.State = .init()
 
         var path = StackState<StackPath.State>()
 
@@ -33,6 +34,7 @@ public struct TabBarFeature {
         case map(MapFeature.Action)
         case plan(PlanFeature.Action)
         case bookmark(BookmarkFeature.Action)
+        case toolbox(TravelItemsFeature.Action)
         case path(StackActionOf<StackPath>)
     }
 
@@ -50,6 +52,9 @@ public struct TabBarFeature {
         }
         Scope(state: \.planState, action: \.plan) {
             PlanFeature()
+        }
+        Scope(state: \.toolboxState, action: \.toolbox) {
+            TravelItemsFeature()
         }
 
         Reduce { state, action in
@@ -117,6 +122,9 @@ public struct TabBarFeature {
             case .bookmark:
                 return .none
 
+            case .toolbox:
+                return .none
+
             case .plan(.planTapped(let plan)):
                 state.path.append(.planDetail(PlanDetailFeature.State(plan: plan)))
                 return .none
@@ -152,6 +160,11 @@ public struct TabBarFeature {
                     startIndex: index,
                     title: detailState.detail.japaneseTitle
                 )))
+                return .none
+
+            case .path(.element(id: let id, action: .planDetail(.travelItemsButtonTapped))):
+                guard case .planDetail(let planDetailState) = state.path[id: id] else { return .none }
+                state.path.append(.planTravelItems(PlanTravelItemsFeature.State(plan: planDetailState.plan)))
                 return .none
 
             case .path(.element(id: _, action: .festival(.festivalTapped(let festival)))):

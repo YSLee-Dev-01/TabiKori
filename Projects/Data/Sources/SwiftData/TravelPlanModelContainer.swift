@@ -22,7 +22,7 @@ public final class TravelPlanModelContainer: Sendable {
     // MARK: - Init
 
     private init() {
-        let schema = Schema([TravelPlanModel.self, TravelPlanDetailModel.self, TravelPlanDetailSpotModel.self])
+        let schema = Schema([TravelPlanModel.self, TravelPlanDetailModel.self, TravelPlanDetailSpotModel.self, TravelPlanItemModel.self])
         do {
             let configuration = ModelConfiguration("TravelPlan", schema: schema)
             self.modelContainer = try ModelContainer(for: schema, configurations: configuration)
