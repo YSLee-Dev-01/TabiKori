@@ -17,6 +17,8 @@ public enum StackPath {
     case region(RegionSpotFeature)
     case setting(SettingFeature)
     case planToolBar(PlanToolBarFeature)
+    case packingList(PackingListFeature)
+    case koreanPhraseList(KoreanPhraseListFeature)
 }
 
 extension StackPath.State: Equatable {}

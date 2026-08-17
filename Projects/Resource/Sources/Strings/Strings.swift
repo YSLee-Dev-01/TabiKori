@@ -23,6 +23,7 @@ public enum Strings {
     public enum RegionSpot {}
     public enum Setting {}
     public enum ToolBar {}
+    public enum KoreanPhrase {}
 }
 
 public extension Strings.Common {
@@ -104,6 +105,8 @@ public extension Strings.Home {
     }
     /// 플랜으로 이동 버튼
     static let moveToPlanButton = "プランへ移動"
+    /// 환율 위젯 - 툴박스 탭으로 이동 버튼
+    static let moveToToolBoxButton = "ツールボックスへ移動"
     /// 환율 기준 시각 (%@: 날짜/시간)
     nonisolated(unsafe) static let exchangeRateUpdatedAtTitle: ((String) -> String) = {
         "為替レート基準時刻: \($0)"
@@ -495,6 +498,8 @@ public extension Strings.Setting {
 }
 
 public extension Strings.ToolBar {
+    /// 허브 화면(툴박스 탭) 타이틀
+    static let hubTitle = "ツールボックス"
     /// 화면 타이틀 (마스터/저장된 체크리스트 공용)
     static let title = "持ち物リスト"
     /// 플랜에 저장 버튼
@@ -537,4 +542,24 @@ public extension Strings.ToolBar {
     nonisolated(unsafe) static let checkedCountTitle: ((Int, Int) -> String) = { checked, total in
         "\(checked)/\(total) 完了"
     }
+
+    /// 허브 화면 - 준비물 섹션 타이틀
+    static let packingSectionTitle = "持ち物リスト"
+    /// 허브 화면 - 섹션 공용 더보기 버튼 (준비물/한국어 섹션)
+    static let seeAllButton = "もっと見る"
+    /// 허브 화면 - 환율 섹션 타이틀
+    static let exchangeRateSectionTitle = "為替レート"
+}
+
+public extension Strings.KoreanPhrase {
+    /// 허브 화면 - 한국어 섹션 타이틀
+    static let sectionTitle = "簡単な韓国語"
+    /// 전체 문구 목록 화면 타이틀
+    static let listTitle = "簡単な韓国語"
+    /// 문구 리스트 로드 실패 설명
+    static let loadFailedDescription = "リストを読み込めませんでした"
+    /// 빈 상태 제목 (문구 0건)
+    static let emptyTitle = "登録されたフレーズがありません"
+    /// 빈 상태 설명 (문구 0건)
+    static let emptyDescription = "しばらくしてから再度お試しください"
 }

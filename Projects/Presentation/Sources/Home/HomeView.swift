@@ -16,14 +16,8 @@ import Kingfisher
 
 public struct HomeView: View {
 
-    fileprivate enum ExchangeField: Hashable {
-        case krw
-        case jpy
-    }
-
     @Bindable private var store: StoreOf<HomeFeature>
     @Environment(\.openURL) var openURL
-    @FocusState private var focusedExchangeField: ExchangeField?
     let namespace: Namespace.ID
 
     public init(store: StoreOf<HomeFeature>, namespace: Namespace.ID) {
@@ -94,9 +88,6 @@ public struct HomeView: View {
         }
         .onAppear {
             self.store.send(.onAppear)
-        }
-        .onTapGesture {
-            self.focusedExchangeField = nil
         }
     }
 }
@@ -630,37 +621,28 @@ fileprivate extension HomeView {
     func exchangeRateCard() -> some View {
         TabiCard {
             VStack(spacing: 15) {
-                HStack(spacing: 0) {
-                    self.currencyAmountField(
+                HStack(spacing: 12) {
+                    self.currencySummary(
                         flag: "🇰🇷",
                         code: "KRW",
                         symbol: "₩",
-                        field: .krw,
-                        text: self.$store.krwAmountText,
+                        amountText: self.store.krwAmountText,
                         fractionDigits: 0,
                         valueColor: .tabiTextPrimary
                     )
-                    .frame(maxWidth: .infinity)
 
-                    VStack(spacing: 6) {
-                        Image(systemName: "arrow.left.arrow.right")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(TabiColor.tabiTextTertiary)
-                        Text("=")
-                            .font(.system(size: 12))
-                            .foregroundStyle(TabiColor.tabiTextTertiary)
-                    }
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(TabiColor.tabiTextTertiary)
 
-                    self.currencyAmountField(
+                    self.currencySummary(
                         flag: "🇯🇵",
                         code: "JPY",
                         symbol: "¥",
-                        field: .jpy,
-                        text: self.$store.jpyAmountText,
+                        amountText: self.store.jpyAmountText,
                         fractionDigits: 1,
                         valueColor: .tabiPrimary
                     )
-                    .frame(maxWidth: .infinity)
                 }
 
                 if self.store.exchangeRateUpdatedAtTitle.isEmpty == false {
@@ -671,24 +653,25 @@ fileprivate extension HomeView {
                     )
                     .frame(maxWidth: .infinity, alignment: .center)
                 }
+
+                TabiButton(Strings.Home.moveToToolBoxButton, style: .secondary, isExpanded: true) {
+                    self.store.send(.moveToToolBoxButtonTapped)
+                }
             }
             .padding(.vertical, 20)
             .padding(.horizontal, 16)
         }
     }
 
-    func currencyAmountField(
+    func currencySummary(
         flag: String,
         code: String,
         symbol: String,
-        field: ExchangeField,
-        text: Binding<String>,
+        amountText: String,
         fractionDigits: Int,
         valueColor: TabiColor
     ) -> some View {
-        let isFocused = self.focusedExchangeField == field
-
-        return VStack(spacing: 6) {
+        VStack(spacing: 6) {
             Text(flag)
                 .font(.system(size: 32))
 
@@ -697,37 +680,17 @@ fileprivate extension HomeView {
                     .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(valueColor)
 
-                ZStack {
-                    TextField("0", text: text)
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.center)
-                        .opacity(isFocused ? 1 : 0.02)
-                        .focused(self.$focusedExchangeField, equals: field)
-
-                    if !isFocused {
-                        Group {
-                            if let value = Double(text.wrappedValue) {
-                                Text(value, format: .number.precision(.fractionLength(fractionDigits)))
-                            } else {
-                                Text(text.wrappedValue)
-                            }
-                        }
-                        .allowsHitTesting(false)
+                Group {
+                    if let value = Double(amountText) {
+                        Text(value, format: .number.precision(.fractionLength(fractionDigits)))
+                    } else {
+                        Text(amountText)
                     }
                 }
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
-                .frame(maxWidth: 70)
                 .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(valueColor)
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(TabiColor.tabiBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay {
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isFocused ? valueColor : TabiColor.tabiBorder, lineWidth: isFocused ? 1.5 : 1)
             }
 
             Text(code)
@@ -735,6 +698,7 @@ fileprivate extension HomeView {
                 .foregroundStyle(TabiColor.tabiTextTertiary)
                 .tracking(0.8)
         }
+        .frame(maxWidth: .infinity)
     }
 
     func inKoreaBanner() -> some View {

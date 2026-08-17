@@ -1,5 +1,5 @@
 //
-//  ToolBarEmptyState.swift
+//  PackingListEmptyState.swift
 //  Presentation
 //
 //  Created by 이윤수 on 8/17/26.
@@ -11,7 +11,7 @@ import SwiftUI
 import DesignSystem
 import Resource
 
-struct ToolBarEmptyState: View {
+struct PackingListEmptyState: View {
 
     var body: some View {
         TabiEmptyState(

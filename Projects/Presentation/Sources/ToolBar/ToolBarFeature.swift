@@ -12,98 +12,148 @@ import ComposableArchitecture
 import Core
 import Domain
 
-/// 툴박스 탭 루트 화면. Firebase에서 받아온 준비물 마스터 리스트를 보여주고, 플랜에 저장하는 시트를 연다
+/// 툴박스 탭 루트 화면(허브). 준비물/환율/한국어 3개 섹션을 보여준다.
+/// 환율 섹션은 ExchangeRateCalculatorFeature를 Scope로 내장해 그 자리에서 바로 계산할 수 있다
 @Reducer
 public struct ToolBarFeature: Sendable {
 
     @Dependency(\.toolBarItemUseCase) var toolBarItemUseCase
+    @Dependency(\.koreanPhraseUseCase) var koreanPhraseUseCase
 
     @ObservableState
     public struct State: Equatable {
-        var items: [ToolBarItem] = []
-        var isLoading: Bool = false
-        var hasLoadFailed: Bool = false
-        fileprivate var hasStartedLoading: Bool = false
-        @Presents var planPickerState: ToolBarPlanPickerFeature.State?
+        var packingItems: [ToolBarItem] = []
+        var isLoadingPacking: Bool = false
+        var hasPackingLoadFailed: Bool = false
+        fileprivate var hasStartedLoadingPacking: Bool = false
+
+        var exchangeRateCalculatorState: ExchangeRateCalculatorFeature.State = .init()
+
+        var phrases: [KoreanPhrase] = []
+        var isLoadingPhrases: Bool = false
+        var hasPhraseLoadFailed: Bool = false
+        fileprivate var hasStartedLoadingPhrases: Bool = false
 
         public init() {}
     }
 
     public enum Action: Equatable {
         case onAppear
-        case retryButtonTapped
-        case saveToPlanButtonTapped
-        case masterItemsResult([ToolBarItem])
-        case masterItemsFailed
-        case planPicker(PresentationAction<ToolBarPlanPickerFeature.Action>)
+        case packingRetryButtonTapped
+        case phraseRetryButtonTapped
+        case packingListButtonTapped
+        case koreanPhraseListButtonTapped
+        case packingItemsResult([ToolBarItem])
+        case packingItemsFailed
+        case phrasesResult([KoreanPhrase])
+        case phrasesFailed
+        case exchangeRateCalculator(ExchangeRateCalculatorFeature.Action)
     }
 
     public init() {}
 
     public var body: some Reducer<State, Action> {
+        Scope(state: \.exchangeRateCalculatorState, action: \.exchangeRateCalculator) {
+            ExchangeRateCalculatorFeature()
+        }
         Reduce { state, action in
             switch action {
             case .onAppear:
-                guard state.hasStartedLoading == false else { return .none }
-                state.hasStartedLoading = true
-                state.isLoading = true
-                state.hasLoadFailed = false
-                return self.fetchMasterItemsEffect()
-                    .cancellable(id: CancelID.fetchMasterItems, cancelInFlight: true)
+                var effects: [Effect<Action>] = [.send(.exchangeRateCalculator(.onAppear))]
 
-            case .retryButtonTapped:
-                state.isLoading = true
-                state.hasLoadFailed = false
-                return self.fetchMasterItemsEffect()
-                    .cancellable(id: CancelID.fetchMasterItems, cancelInFlight: true)
+                if state.hasStartedLoadingPacking == false {
+                    state.hasStartedLoadingPacking = true
+                    state.isLoadingPacking = true
+                    state.hasPackingLoadFailed = false
+                    effects.append(self.fetchPackingItemsEffect())
+                }
 
-            case .saveToPlanButtonTapped:
-                guard state.items.isEmpty == false else { return .none }
-                state.planPickerState = ToolBarPlanPickerFeature.State(items: state.items)
+                if state.hasStartedLoadingPhrases == false {
+                    state.hasStartedLoadingPhrases = true
+                    state.isLoadingPhrases = true
+                    state.hasPhraseLoadFailed = false
+                    effects.append(self.fetchPhrasesEffect())
+                }
+
+                return .merge(effects)
+
+            case .packingRetryButtonTapped:
+                state.isLoadingPacking = true
+                state.hasPackingLoadFailed = false
+                return self.fetchPackingItemsEffect()
+
+            case .phraseRetryButtonTapped:
+                state.isLoadingPhrases = true
+                state.hasPhraseLoadFailed = false
+                return self.fetchPhrasesEffect()
+
+            case .packingListButtonTapped, .koreanPhraseListButtonTapped:
                 return .none
 
-            case .masterItemsResult(let items):
-                state.items = items
-                state.isLoading = false
-                state.hasLoadFailed = false
+            case .packingItemsResult(let items):
+                state.packingItems = items
+                state.isLoadingPacking = false
+                state.hasPackingLoadFailed = false
                 return .none
 
-            case .masterItemsFailed:
-                state.isLoading = false
-                state.hasLoadFailed = true
+            case .packingItemsFailed:
+                state.isLoadingPacking = false
+                state.hasPackingLoadFailed = true
                 return .none
 
-            case .planPicker(.presented(.savedToPlan)):
-                state.planPickerState = nil
+            case .phrasesResult(let phrases):
+                state.phrases = phrases
+                state.isLoadingPhrases = false
+                state.hasPhraseLoadFailed = false
                 return .none
 
-            case .planPicker:
+            case .phrasesFailed:
+                state.isLoadingPhrases = false
+                state.hasPhraseLoadFailed = true
+                return .none
+
+            case .exchangeRateCalculator:
                 return .none
             }
-        }
-        .ifLet(\.$planPickerState, action: \.planPicker) {
-            ToolBarPlanPickerFeature()
         }
     }
 }
 
-// MARK: - CancelID
+// MARK: - State
 
-private enum CancelID {
-    case fetchMasterItems
+public extension ToolBarFeature.State {
+    var packingPreviewItems: [ToolBarItem] {
+        Array(self.packingItems.prefix(3))
+    }
+
+    var phrasePreviewItems: [KoreanPhrase] {
+        Array(self.phrases.prefix(3))
+    }
 }
 
 // MARK: - Method
 
 private extension ToolBarFeature {
-    func fetchMasterItemsEffect() -> Effect<Action> {
+    func fetchPackingItemsEffect() -> Effect<Action> {
         .run { [toolBarItemUseCase = self.toolBarItemUseCase] send in
             do {
                 let items = try await toolBarItemUseCase.fetchMasterItems()
-                await send(.masterItemsResult(items))
+                await send(.packingItemsResult(items))
             } catch {
                 AppLogger.view.log(.error, "준비물 마스터 리스트 조회 실패: \(error.localizedDescription)")
-                await send(.masterItemsFailed)
+                await send(.packingItemsFailed)
+            }
+        }
+    }
+
+    func fetchPhrasesEffect() -> Effect<Action> {
+        .run { [koreanPhraseUseCase = self.koreanPhraseUseCase] send in
+            do {
+                let phrases = try await koreanPhraseUseCase.fetchPhrases()
+                await send(.phrasesResult(phrases))
+            } catch {
+                AppLogger.view.log(.error, "한국어 문구 리스트 조회 실패: \(error.localizedDescription)")
+                await send(.phrasesFailed)
             }
         }
     }

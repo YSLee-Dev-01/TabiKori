@@ -85,4 +85,9 @@ extension DependencyValues {
         get {self[ToolBarItemUseCaseDependencyKey.self]}
         set {self[ToolBarItemUseCaseDependencyKey.self] = newValue}
     }
+
+    public var koreanPhraseUseCase: KoreanPhraseUseCaseProtocol {
+        get {self[KoreanPhraseUseCaseDependencyKey.self]}
+        set {self[KoreanPhraseUseCaseDependencyKey.self] = newValue}
+    }
 }

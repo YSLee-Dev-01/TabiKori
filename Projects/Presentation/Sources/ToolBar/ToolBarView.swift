@@ -13,7 +13,7 @@ import DesignSystem
 import Domain
 import Resource
 
-/// 툴박스 탭 루트 화면. 준비물 마스터 리스트를 보여주고 하단 버튼으로 플랜에 저장한다
+/// 툴박스 탭 루트 화면(허브). 준비물/환율/한국어 3개 섹션을 스크롤로 순서대로 보여준다
 public struct ToolBarView: View {
 
     @Bindable private var store: StoreOf<ToolBarFeature>
@@ -23,71 +23,182 @@ public struct ToolBarView: View {
     }
 
     public var body: some View {
-        self.content()
-            .safeAreaBar(edge: .top) {
-                TabiNavigationBar(title: Strings.ToolBar.title)
+        ScrollView {
+            VStack(spacing: 24) {
+                self.packingSection()
+                self.exchangeRateSection()
+                self.koreanPhraseSection()
             }
-            .safeAreaBar(edge: .bottom) {
-                TabiButton(
-                    Strings.ToolBar.saveToPlanButton,
-                    style: .primary,
-                    isExpanded: true
-                ) {
-                    self.store.send(.saveToPlanButtonTapped)
-                }
-                .disabled(self.store.isLoading || self.store.hasLoadFailed || self.store.items.isEmpty)
-                .padding(.horizontal, 20)
-            }
-            .sheet(item: self.$store.scope(state: \.planPickerState, action: \.planPicker)) { store in
-                ToolBarPlanPickerView(store: store)
-            }
-            .onAppear {
-                self.store.send(.onAppear)
-            }
-    }
-}
-
-// MARK: - View
-
-private extension ToolBarView {
-    @ViewBuilder
-    func content() -> some View {
-        if self.store.isLoading {
-            ProgressView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if self.store.hasLoadFailed {
-            TabiRetryableEmptyState(description: Strings.ToolBar.loadFailedDescription) {
-                self.store.send(.retryButtonTapped)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else {
-            List {
-                if self.store.items.isEmpty {
-                    ToolBarEmptyState()
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                        .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
-                } else {
-                    ForEach(self.store.items) { item in
-                        ToolBarItemRow(item: item)
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
-                    }
-                }
-            }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 15)
+        }
+        .safeAreaBar(edge: .top) {
+            TabiNavigationBar(title: Strings.ToolBar.hubTitle)
+        }
+        .onAppear {
+            self.store.send(.onAppear)
         }
     }
 }
 
+// MARK: - Common
+
+private extension ToolBarView {
+    func chevronIcon() -> some View {
+        Image(systemName: "chevron.right")
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(TabiColor.tabiTextTertiary)
+    }
+
+    func sectionMoreButton(action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                TabiLabel(title: Strings.ToolBar.seeAllButton, style: .bodySBold, color: .tabiTextSecondary)
+                self.chevronIcon()
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+        }
+        .buttonStyle(TabiPressStyle())
+    }
+}
+
+// MARK: - Packing Section
+
+private extension ToolBarView {
+    @ViewBuilder
+    func packingSection() -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            TabiLabel(title: Strings.ToolBar.packingSectionTitle, style: .titleM, color: .tabiTextPrimary)
+
+            if self.store.isLoadingPacking {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 24)
+            } else if self.store.hasPackingLoadFailed {
+                TabiRetryableEmptyState(description: Strings.ToolBar.loadFailedDescription) {
+                    self.store.send(.packingRetryButtonTapped)
+                }
+            } else if self.store.packingItems.isEmpty {
+                TabiEmptyState(
+                    systemImageName: "shippingbox",
+                    title: Strings.ToolBar.itemEmptyTitle,
+                    description: Strings.ToolBar.itemEmptyDescription,
+                    style: .card
+                )
+            } else {
+                TabiCard {
+                    LazyVStack(spacing: 0) {
+                        ForEach(Array(self.store.packingPreviewItems.enumerated()), id: \.element.id) { index, item in
+                            if index > 0 {
+                                Divider()
+                                    .padding(.horizontal, 16)
+                            }
+                            self.packingPreviewRow(item)
+                        }
+                    }
+                }
+            }
+
+            self.sectionMoreButton {
+                self.store.send(.packingListButtonTapped)
+            }
+        }
+    }
+
+    func packingPreviewRow(_ item: ToolBarItem) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            TabiLabel(title: item.title, style: .bodyMBold, color: .tabiTextPrimary)
+            if let note = item.note, note.isEmpty == false {
+                TabiLabel(title: note, style: .captionM, color: .tabiTextSecondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+    }
+}
+
+// MARK: - Exchange Rate Section
+
+private extension ToolBarView {
+    func exchangeRateSection() -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            TabiLabel(title: Strings.ToolBar.exchangeRateSectionTitle, style: .titleM, color: .tabiTextPrimary)
+
+            ExchangeRateCalculatorView(
+                store: self.store.scope(state: \.exchangeRateCalculatorState, action: \.exchangeRateCalculator)
+            )
+        }
+    }
+}
+
+// MARK: - Korean Phrase Section
+
+private extension ToolBarView {
+    @ViewBuilder
+    func koreanPhraseSection() -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            TabiLabel(title: Strings.KoreanPhrase.sectionTitle, style: .titleM, color: .tabiTextPrimary)
+
+            if self.store.isLoadingPhrases {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 24)
+            } else if self.store.hasPhraseLoadFailed {
+                TabiRetryableEmptyState(description: Strings.KoreanPhrase.loadFailedDescription) {
+                    self.store.send(.phraseRetryButtonTapped)
+                }
+            } else if self.store.phrases.isEmpty {
+                TabiEmptyState(
+                    systemImageName: "text.bubble",
+                    title: Strings.KoreanPhrase.emptyTitle,
+                    description: Strings.KoreanPhrase.emptyDescription,
+                    style: .card
+                )
+            } else {
+                TabiCard {
+                    LazyVStack(spacing: 0) {
+                        ForEach(Array(self.store.phrasePreviewItems.enumerated()), id: \.element.id) { index, phrase in
+                            if index > 0 {
+                                Divider()
+                                    .padding(.horizontal, 16)
+                            }
+                            self.phrasePreviewRow(phrase)
+                        }
+                    }
+                }
+            }
+
+            self.sectionMoreButton {
+                self.store.send(.koreanPhraseListButtonTapped)
+            }
+        }
+    }
+
+    func phrasePreviewRow(_ phrase: KoreanPhrase) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            TabiLabel(title: phrase.korean, style: .bodyMBold, color: .tabiTextPrimary)
+            TabiLabel(title: phrase.japanese, style: .bodyS, color: .tabiTextSecondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+    }
+}
+
 #Preview {
-    let mockUseCase: TestToolBarItemUseCase = {
+    let mockToolBarItemUseCase: TestToolBarItemUseCase = {
         let useCase = TestToolBarItemUseCase()
         useCase.masterItems = [
             ToolBarItem(id: "passport", order: 0, title: "パスポート", note: "有効期限を確認"),
             ToolBarItem(id: "charger", order: 1, title: "充電器", note: nil)
+        ]
+        return useCase
+    }()
+
+    let mockKoreanPhraseUseCase: TestKoreanPhraseUseCase = {
+        let useCase = TestKoreanPhraseUseCase()
+        useCase.phrases = [
+            KoreanPhrase(id: "hello", order: 0, korean: "안녕하세요", japanese: "こんにちは", pronunciation: "アンニョンハセヨ")
         ]
         return useCase
     }()
@@ -97,7 +208,8 @@ private extension ToolBarView {
             initialState: ToolBarFeature.State(),
             reducer: { ToolBarFeature() },
             withDependencies: { dependency in
-                dependency.toolBarItemUseCase = mockUseCase
+                dependency.toolBarItemUseCase = mockToolBarItemUseCase
+                dependency.koreanPhraseUseCase = mockKoreanPhraseUseCase
             }
         )
     )

@@ -50,8 +50,7 @@ public struct HomeFeature: Sendable {
         public init() {}
     }
 
-    public enum Action: BindableAction, Equatable {
-        case binding(BindingAction<State>)
+    public enum Action: Equatable {
         case onAppear
         case refreshTriggered
         case requestLocationPermission
@@ -75,29 +74,14 @@ public struct HomeFeature: Sendable {
         case settingButtonTapped
         case regionCardTapped(KoreanRegion)
         case moveToPlanButtonTapped
+        case moveToToolBoxButtonTapped
     }
 
     public init() {}
 
     public var body: some Reducer<State, Action> {
-        BindingReducer()
         Reduce { state, action in
             switch action {
-            case .binding(\.krwAmountText):
-                if let krw = Double(state.krwAmountText) {
-                    state.jpyAmountText = String(format: "%.1f", krw * state.krwToJPYRate)
-                }
-                return .none
-
-            case .binding(\.jpyAmountText):
-                if let jpy = Double(state.jpyAmountText), state.krwToJPYRate != 0 {
-                    state.krwAmountText = String(format: "%.0f", jpy / state.krwToJPYRate)
-                }
-                return .none
-
-            case .binding:
-                return .none
-
             case .onAppear:
                 state.locationStatus = self.locationUseCase.checkAuthorization()
 
@@ -282,6 +266,9 @@ public struct HomeFeature: Sendable {
                 return .none
 
             case .moveToPlanButtonTapped:
+                return .none
+
+            case .moveToToolBoxButtonTapped:
                 return .none
             }
         }

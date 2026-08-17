@@ -95,6 +95,10 @@ public struct TabBarFeature {
                 state.path.append(.setting(SettingFeature.State()))
                 return .none
 
+            case .home(.moveToToolBoxButtonTapped):
+                state.selectedTab = .toolbox
+                return .none
+
             case .home(.moveToPlanButtonTapped):
                 state.selectedTab = .plan
                 if let matchedPlan = state.homeState.ongoingMatchedPlan {
@@ -120,6 +124,14 @@ public struct TabBarFeature {
                 return .none
 
             case .bookmark:
+                return .none
+
+            case .toolbox(.packingListButtonTapped):
+                state.path.append(.packingList(PackingListFeature.State()))
+                return .none
+
+            case .toolbox(.koreanPhraseListButtonTapped):
+                state.path.append(.koreanPhraseList(KoreanPhraseListFeature.State()))
                 return .none
 
             case .toolbox:

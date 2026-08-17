@@ -1,5 +1,5 @@
 //
-//  ToolBarItemRow.swift
+//  PackingListItemRow.swift
 //  Presentation
 //
 //  Created by 이윤수 on 8/17/26.
@@ -11,7 +11,7 @@ import SwiftUI
 import DesignSystem
 import Domain
 
-struct ToolBarItemRow: View {
+struct PackingListItemRow: View {
     let item: ToolBarItem
 
     var body: some View {
