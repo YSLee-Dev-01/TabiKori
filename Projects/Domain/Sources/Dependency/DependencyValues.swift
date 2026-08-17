@@ -75,4 +75,9 @@ extension DependencyValues {
         get {self[DataResetUseCaseDependencyKey.self]}
         set {self[DataResetUseCaseDependencyKey.self] = newValue}
     }
+
+    public var travelItemUseCase: TravelItemUseCaseProtocol {
+        get {self[TravelItemUseCaseDependencyKey.self]}
+        set {self[TravelItemUseCaseDependencyKey.self] = newValue}
+    }
 }
