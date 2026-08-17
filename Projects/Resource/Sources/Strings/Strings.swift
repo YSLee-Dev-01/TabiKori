@@ -22,6 +22,7 @@ public enum Strings {
     public enum AddCustomPlace {}
     public enum RegionSpot {}
     public enum Setting {}
+    public enum TravelItems {}
 }
 
 public extension Strings.Common {
@@ -154,6 +155,8 @@ public extension Strings.Tabbar {
     static let plan = "旅程"
     /// 저장
     static let bookmark = "保存"
+    /// 툴박스
+    static let toolbox = "ツール"
 }
 
 public extension Strings.Map {
@@ -482,5 +485,45 @@ public extension Strings.Setting {
     /// 버전 정보 표시 (%@: 버전, %@: 빌드번호)
     nonisolated(unsafe) static let versionTitle: ((String, String) -> String) = { version, build in
         "バージョン \(version) (\(build))"
+    }
+}
+
+public extension Strings.TravelItems {
+    /// 화면 타이틀 (마스터/저장된 체크리스트 공용)
+    static let title = "持ち物リスト"
+    /// 플랜에 저장 버튼
+    static let saveToPlanButton = "旅程に保存"
+    /// 마스터 리스트 로드 실패 설명
+    static let loadFailedDescription = "リストを読み込めませんでした"
+
+    /// 플랜 선택 시트 타이틀
+    static let planPickerTitle = "保存する旅程を選択"
+    /// 플랜 선택 시트 빈 상태 제목 (플랜 0건)
+    static let planPickerEmptyTitle = "登録された日程がありません"
+    /// 플랜 선택 시트 빈 상태 설명 (플랜 0건)
+    static let planPickerEmptyDescription = "先に旅程を作成してください"
+
+    /// 덮어쓰기 확인 알림 타이틀
+    static let overwriteAlertTitle = "持ち物リストを上書きしますか？"
+    /// 덮어쓰기 확인 알림 메시지
+    static let overwriteAlertMessage = "この旅程には既に持ち物リストが保存されています。上書きすると、チェック状態を含む既存のリストは削除されます。"
+    /// 덮어쓰기 확인 버튼
+    static let overwriteAlertConfirm = "上書きする"
+    /// 덮어쓰기 알림 취소 버튼
+    static let overwriteAlertCancel = "キャンセル"
+
+    /// 저장 실패 설명
+    static let saveFailedDescription = "保存に失敗しました。もう一度お試しください"
+
+    /// PlanDetail 진입 버튼 (접근성 라벨)
+    static let planDetailEntryTitle = "持ち物リスト"
+
+    /// 저장된 체크리스트 빈 상태 제목 (아직 저장 안 됨)
+    static let savedEmptyTitle = "持ち物リストがまだありません"
+    /// 저장된 체크리스트 빈 상태 설명 (아직 저장 안 됨)
+    static let savedEmptyDescription = "ツールタブの持ち物リストから、この旅程に保存できます"
+    /// 완료 개수 표시 (%d: 완료 개수, %d: 전체 개수)
+    nonisolated(unsafe) static let checkedCountTitle: ((Int, Int) -> String) = { checked, total in
+        "\(checked)/\(total) 完了"
     }
 }
