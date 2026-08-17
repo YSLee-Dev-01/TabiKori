@@ -69,6 +69,7 @@ public struct PlanDetailFeature: Sendable {
         case spotDeleteButtonTapped(id: UUID)
         case addSpotButtonTapped
         case spotRowTapped(TravelPlanDetailSpot)
+        case travelItemsButtonTapped
         case planEditMenuButtonTapped
         case editButtonTapped
         case editCancelButtonTapped
@@ -167,6 +168,9 @@ public struct PlanDetailFeature: Sendable {
                 return .none
 
             case .spotRowTapped:
+                return .none
+
+            case .travelItemsButtonTapped:
                 return .none
 
             case .planEditMenuButtonTapped:

@@ -16,6 +16,7 @@ public enum StackPath {
     case festival(FestivalFeature)
     case region(RegionSpotFeature)
     case setting(SettingFeature)
+    case planTravelItems(PlanTravelItemsFeature)
 }
 
 extension StackPath.State: Equatable {}

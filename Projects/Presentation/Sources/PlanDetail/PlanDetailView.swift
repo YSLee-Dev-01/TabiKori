@@ -184,7 +184,8 @@ private extension PlanDetailView {
             if let dateTitle = self.selectedDayDateTitle(plan: plan) {
                 PlanDetailDayHeader(
                     dateTitle: dateTitle,
-                    spotCountTitle: self.spotCountTitle
+                    spotCountTitle: self.spotCountTitle,
+                    onTravelItemsTapped: { self.store.send(.travelItemsButtonTapped) }
                 )
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
