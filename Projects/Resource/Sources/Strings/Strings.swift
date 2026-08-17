@@ -42,6 +42,8 @@ public extension Strings.Common {
     static let categoryShopping = "ショッピング"
     /// 자연
     static let categoryNature = "自然"
+    /// 지하철
+    static let categorySubway = "地下鉄"
     /// 문화시설
     static let contentTypeCulturalFacility = "文化施設"
     /// 레포츠
@@ -386,6 +388,10 @@ public extension Strings.AddCustomPlace {
     static let addressNotFoundAlertMessage = "住所を確認してもう一度お試しください"
     /// 커스텀 스팟 배지 타이틀
     static let customBadgeTitle = "カスタム"
+    /// 등록 타입(지하철역 모드 토글) 섹션 타이틀
+    static let subwayModeSectionTitle = "登録タイプ"
+    /// 지하철역 모드 타이틀 입력 placeholder
+    static let stationTitlePlaceholder = "駅名を入力"
 }
 
 public extension Strings.RegionSpot {

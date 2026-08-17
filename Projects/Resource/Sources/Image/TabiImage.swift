@@ -37,6 +37,7 @@ public enum TabiIcon: String, Sendable {
     case festival = "calendar"
     case shopping = "bag"
     case nature = "leaf"
+    case subway = "tram.fill"
 }
 
 // MARK: - Extension
