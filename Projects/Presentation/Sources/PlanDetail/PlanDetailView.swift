@@ -30,6 +30,7 @@ public struct PlanDetailView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if self.store.isFullOverview == false {
+                self.toolBarButtonRow()
                 self.dayTabScroll(plan: self.store.plan)
             }
 
@@ -163,8 +164,34 @@ private extension PlanDetailView {
             .padding(.horizontal, 20)
         }
         .scrollIndicators(.hidden)
-        .padding(.top, 20)
         .disabled(self.store.isEditing)
+    }
+
+    func toolBarButtonRow() -> some View {
+        HStack {
+            Spacer()
+
+            Button {
+                self.store.send(.toolBarButtonTapped)
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "shippingbox")
+                    TabiLabel(title: Strings.ToolBar.planDetailEntryTitle, style: .captionM, color: .tabiTextSecondary)
+                }
+                .foregroundStyle(TabiColor.tabiTextSecondary)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                .background(TabiColor.tabiSurface)
+                .clipShape(Capsule())
+                .overlay {
+                    Capsule()
+                        .stroke(TabiColor.tabiBorder, lineWidth: 1)
+                }
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
     }
 
     func handleDayChipTapped(_ offset: Int) {
@@ -184,8 +211,7 @@ private extension PlanDetailView {
             if let dateTitle = self.selectedDayDateTitle(plan: plan) {
                 PlanDetailDayHeader(
                     dateTitle: dateTitle,
-                    spotCountTitle: self.spotCountTitle,
-                    onTravelItemsTapped: { self.store.send(.travelItemsButtonTapped) }
+                    spotCountTitle: self.spotCountTitle
                 )
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
