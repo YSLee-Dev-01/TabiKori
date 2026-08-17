@@ -256,6 +256,9 @@ private extension TouristSpotIntroItemDTO {
                 scale: self.scaleshopping?.nilIfEmpty,
                 shopGuide: self.shopguide?.nilIfEmpty
             ))
+        case .subway:
+            AppLogger.network.log(.error, "❌ 지하철은 관광공사 소개 API 대상이 아님")
+            throw TabiError.apiFailed(code: "UNKNOWN_TYPE", message: "Subway is not a tourist API type")
         }
     }
 }

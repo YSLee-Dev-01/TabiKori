@@ -30,6 +30,7 @@ extension TravelPlanDetailSpotModel {
             coordinate: Coordinate(latitude: self.latitude, longitude: self.longitude),
             thumbnailURLString: self.thumbnailURLString,
             isCustom: self.isCustom,
+            isStation: self.isStation,
             address: self.address
         )
     }
@@ -50,6 +51,7 @@ extension TravelPlanDetailSpotModel {
             longitude: spot.coordinate.longitude,
             thumbnailURLString: spot.thumbnailURLString,
             isCustom: spot.isCustom,
+            isStation: spot.isStation,
             address: spot.address
         )
     }

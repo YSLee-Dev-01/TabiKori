@@ -25,6 +25,7 @@ final class TravelPlanDetailSpotModel {
     var longitude: Double = 0.0
     var thumbnailURLString: String?
     var isCustom: Bool = true
+    var isStation: Bool = false
     var address: String?
 
     init(
@@ -42,6 +43,7 @@ final class TravelPlanDetailSpotModel {
         longitude: Double,
         thumbnailURLString: String?,
         isCustom: Bool,
+        isStation: Bool = false,
         address: String?
     ) {
         self.id = id
@@ -58,6 +60,7 @@ final class TravelPlanDetailSpotModel {
         self.longitude = longitude
         self.thumbnailURLString = thumbnailURLString
         self.isCustom = isCustom
+        self.isStation = isStation
         self.address = address
     }
 }

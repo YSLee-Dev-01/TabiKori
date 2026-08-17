@@ -19,6 +19,7 @@ final class BookmarkModel {
     var longitude: Double
     var savedAt: Date
     var isCustom: Bool = false
+    var isStation: Bool = false
     var address: String?
 
     init(
@@ -30,6 +31,7 @@ final class BookmarkModel {
         longitude: Double,
         savedAt: Date,
         isCustom: Bool = false,
+        isStation: Bool = false,
         address: String? = nil
     ) {
         self.contentId = contentId
@@ -40,6 +42,7 @@ final class BookmarkModel {
         self.longitude = longitude
         self.savedAt = savedAt
         self.isCustom = isCustom
+        self.isStation = isStation
         self.address = address
     }
 }

@@ -13,6 +13,7 @@ enum Secret {
     static let tourAPIKey: String = Self.value(for: "TOUR_API_KEY")
     static let naverMapClientID: String = Self.value(for: "NMFNcpKeyId")
     static let naverGeocodingClientSecret: String = Self.value(for: "NAVER_GEOCODING_CLIENT_SECRET")
+    static let seoulSubwayAPIKey: String = Self.value(for: "SEOUL_SUBWAY_API_KEY")
 }
 
 private extension Secret {

@@ -8,6 +8,7 @@
 
 import Foundation
 
+import Core
 import Domain
 
 extension CategoryType {
@@ -19,6 +20,9 @@ extension CategoryType {
         case .festival: return "85"
         case .shopping: return "79"
         case .nature: return "75"
+        case .subway:
+            AppLogger.network.log(.error, "지하철 카테고리는 관광공사 API 대상이 아닙니다")
+            return ""
         }
     }
 

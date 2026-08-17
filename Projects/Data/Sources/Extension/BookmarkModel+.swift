@@ -26,6 +26,7 @@ extension BookmarkModel {
             contentType: contentType,
             coordinate: Coordinate(latitude: self.latitude, longitude: self.longitude),
             isCustom: self.isCustom,
+            isStation: self.isStation,
             address: self.address
         )
         return Bookmark(touristSpot: touristSpot, savedAt: self.savedAt)
@@ -41,6 +42,7 @@ extension BookmarkModel {
             longitude: spot.coordinate.longitude,
             savedAt: savedAt,
             isCustom: spot.isCustom,
+            isStation: spot.isStation,
             address: spot.address
         )
     }
