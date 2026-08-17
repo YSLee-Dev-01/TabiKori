@@ -306,7 +306,10 @@ private extension PlanDetailView {
     /// 모든 일자를 세션(Section)으로 구분해 하나의 스크롤 뷰에 표시한다.
     /// `scrollPosition(id:)`은 전체보기 진입 시 이전에 보던 일자로 프로그래매틱 스크롤하는 데만 쓰고,
     /// 실제 스크롤 중 최상단에 보이는 세션 추적은 `List` Section 단위로는 read-back이 보장되지 않아
-    /// 각 헤더의 위치를 GeometryReader로 직접 측정해 판단한다
+    /// 각 헤더의 위치를 GeometryReader로 직접 측정해 판단한다.
+    /// 마지막 일자의 스팟이 적으면 그 아래로 스크롤할 콘텐츠가 부족해 헤더가 상단 임계선까지 올라오지 못해
+    /// 마지막 일자가 세션 추적에 걸리지 않는 문제가 있어, `onScrollGeometryChange`로 스크롤이 바닥에
+    /// 닿았는지를 직접 감지해 그 경우 헤더 임계값 판정과 무관하게 마지막 일자를 강제로 선택한다
     func fullOverviewList(plan: TravelPlan) -> some View {
         List {
             ForEach(Array(plan.dayDates.indices), id: \.self) { dayIndex in
@@ -366,6 +369,12 @@ private extension PlanDetailView {
         .onPreferenceChange(DayHeaderOffsetPreferenceKey.self) { offsets in
             self.handleDayHeaderOffsetsChanged(offsets)
         }
+        .onScrollGeometryChange(for: Bool.self) { geometry in
+            self.isScrollAtBottom(geometry)
+        } action: { _, isAtBottom in
+            guard isAtBottom, let lastDayIndex = plan.dayDates.indices.last else { return }
+            self.store.send(.visibleDayIndexChanged(lastDayIndex))
+        }
     }
 
     /// 상단 임계값을 통과한(스크롤된) 헤더 중 가장 아래쪽(가장 최근에 통과한) 일자를 현재 보이는 세션으로 판단한다.
@@ -376,6 +385,15 @@ private extension PlanDetailView {
             ?? offsets.min { $0.value < $1.value }?.key
         guard let visibleDay else { return }
         self.store.send(.visibleDayIndexChanged(visibleDay))
+    }
+
+    /// 실제로 스크롤 가능한 콘텐츠가 있는 상태에서, 스크롤이 최대치(바닥)에 도달했는지 판단한다.
+    /// 콘텐츠가 뷰포트보다 짧아 애초에 스크롤이 불가능한 경우(초기 offset이 곧 최대 offset)는
+    /// 제외해, 첫 일자가 기본으로 보이는 초기 상태를 마지막 일자로 잘못 덮어쓰지 않게 한다
+    func isScrollAtBottom(_ geometry: ScrollGeometry) -> Bool {
+        let maxOffsetY = geometry.contentSize.height + geometry.contentInsets.bottom - geometry.containerSize.height
+        guard maxOffsetY > Self.dayHeaderVisibilityThreshold else { return false }
+        return geometry.contentOffset.y >= maxOffsetY - Self.dayHeaderVisibilityThreshold
     }
 
     func editActionButtons() -> some View {
