@@ -29,7 +29,7 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
     static let internalDependencyInfo: [DependencyInformation: [DependencyInformation]] = [
         .app: [.domain, .data, .presentation, .core],
         .domain: [.core],
-        .data: [.domain, .core],
+        .data: [.domain, .core, .resource],
         .core: [],
         .designSystem: [.core, .resource],
         .presentation: [.designSystem, .core, .domain, .resource],
