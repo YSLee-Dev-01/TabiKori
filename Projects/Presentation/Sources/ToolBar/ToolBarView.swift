@@ -32,6 +32,7 @@ public struct ToolBarView: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 15)
         }
+        .scrollDismissesKeyboard(.immediately)
         .safeAreaBar(edge: .top) {
             TabiNavigationBar(title: Strings.ToolBar.hubTitle)
         }
