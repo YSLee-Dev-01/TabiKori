@@ -65,6 +65,7 @@ public final class TravelPlanShareUseCase: TravelPlanShareUseCaseProtocol {
                 coordinate: Coordinate(latitude: spotPayload.latitude, longitude: spotPayload.longitude),
                 thumbnailURLString: spotPayload.thumbnailURLString,
                 isCustom: spotPayload.isCustom,
+                isStation: spotPayload.isStation,
                 address: spotPayload.address
             )
         }
@@ -99,7 +100,59 @@ private struct SharePayload: Codable {
         let longitude: Double
         let thumbnailURLString: String?
         let isCustom: Bool
+        let isStation: Bool
         let address: String?
+
+        init(
+            dayIndex: Int,
+            order: Int,
+            category: String,
+            title: String,
+            subtitle: String?,
+            startTime: Date,
+            durationMinutes: Int,
+            contentId: String,
+            latitude: Double,
+            longitude: Double,
+            thumbnailURLString: String?,
+            isCustom: Bool,
+            isStation: Bool,
+            address: String?
+        ) {
+            self.dayIndex = dayIndex
+            self.order = order
+            self.category = category
+            self.title = title
+            self.subtitle = subtitle
+            self.startTime = startTime
+            self.durationMinutes = durationMinutes
+            self.contentId = contentId
+            self.latitude = latitude
+            self.longitude = longitude
+            self.thumbnailURLString = thumbnailURLString
+            self.isCustom = isCustom
+            self.isStation = isStation
+            self.address = address
+        }
+
+        /// isStation 필드 도입 이전에 내보낸(export) 파일과의 하위 호환 — 키가 없으면 false로 취급
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.dayIndex = try container.decode(Int.self, forKey: .dayIndex)
+            self.order = try container.decode(Int.self, forKey: .order)
+            self.category = try container.decode(String.self, forKey: .category)
+            self.title = try container.decode(String.self, forKey: .title)
+            self.subtitle = try container.decodeIfPresent(String.self, forKey: .subtitle)
+            self.startTime = try container.decode(Date.self, forKey: .startTime)
+            self.durationMinutes = try container.decode(Int.self, forKey: .durationMinutes)
+            self.contentId = try container.decode(String.self, forKey: .contentId)
+            self.latitude = try container.decode(Double.self, forKey: .latitude)
+            self.longitude = try container.decode(Double.self, forKey: .longitude)
+            self.thumbnailURLString = try container.decodeIfPresent(String.self, forKey: .thumbnailURLString)
+            self.isCustom = try container.decode(Bool.self, forKey: .isCustom)
+            self.isStation = try container.decodeIfPresent(Bool.self, forKey: .isStation) ?? false
+            self.address = try container.decodeIfPresent(String.self, forKey: .address)
+        }
     }
 
     let plan: PlanPayload
@@ -128,6 +181,7 @@ private struct SharePayload: Codable {
                 longitude: spot.coordinate.longitude,
                 thumbnailURLString: spot.thumbnailURLString,
                 isCustom: spot.isCustom,
+                isStation: spot.isStation,
                 address: spot.address
             )
         }

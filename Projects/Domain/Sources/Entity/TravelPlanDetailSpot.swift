@@ -21,6 +21,7 @@ public struct TravelPlanDetailSpot: Equatable, Sendable, Identifiable {
     public let coordinate: Coordinate
     public let thumbnailURLString: String?
     public let isCustom: Bool
+    public let isStation: Bool
     public let address: String?
 
     public init(
@@ -36,6 +37,7 @@ public struct TravelPlanDetailSpot: Equatable, Sendable, Identifiable {
         coordinate: Coordinate,
         thumbnailURLString: String?,
         isCustom: Bool,
+        isStation: Bool = false,
         address: String?
     ) {
         self.id = id
@@ -50,6 +52,7 @@ public struct TravelPlanDetailSpot: Equatable, Sendable, Identifiable {
         self.coordinate = coordinate
         self.thumbnailURLString = thumbnailURLString
         self.isCustom = isCustom
+        self.isStation = isStation
         self.address = address
     }
 }

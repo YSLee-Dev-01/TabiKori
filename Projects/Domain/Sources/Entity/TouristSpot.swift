@@ -16,6 +16,7 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
     public let contentType: CategoryType
     public let coordinate: Coordinate
     public let isCustom: Bool
+    public let isStation: Bool
     public let address: String?
 
     public init(
@@ -26,6 +27,7 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
         contentType: CategoryType,
         coordinate: Coordinate,
         isCustom: Bool = false,
+        isStation: Bool = false,
         address: String? = nil
     ) {
         self.id = id
@@ -35,11 +37,17 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
         self.contentType = contentType
         self.coordinate = coordinate
         self.isCustom = isCustom
+        self.isStation = isStation
         self.address = address
     }
-    
+
     public var thumbnailURL: URL? {
         return URL(string: self.thumbnailURLString ?? "")
+    }
+
+    /// isCustom과 isStation은 동시에 true가 될 수 없음 — 원격 상세 API 호출을 스킵해야 하는지 여부
+    public var shouldSkipRemoteDetail: Bool {
+        return self.isCustom || self.isStation
     }
 
     public var japaneseTitle: String {
