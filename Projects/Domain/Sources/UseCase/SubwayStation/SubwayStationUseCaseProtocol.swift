@@ -9,5 +9,6 @@
 import Foundation
 
 public protocol SubwayStationUseCaseProtocol: Sendable {
-    func search(keyword: String) async -> [TouristSpot]
+    func search(keyword: String) async -> [SubwayStation]
+    func selectStation(_ station: SubwayStation) async throws -> TouristSpot
 }

@@ -14,12 +14,14 @@ import Resource
 
 struct PlanDetailAddSpotSearchListView: View {
     @Binding var keyword: String
+    let subwayResults: [SubwayStation]
     let results: [TouristSpot]
     let isLoading: Bool
     let hasSearched: Bool
     let focus: FocusState<Bool>.Binding
     let onSubmit: () -> Void
     let onSpotTapped: (TouristSpot) -> Void
+    let onSubwayStationTapped: (SubwayStation) -> Void
 
     var body: some View {
         VStack(spacing: 8) {
@@ -40,6 +42,7 @@ struct PlanDetailAddSpotSearchListView: View {
         .animation(.tabiStandard, value: self.isLoading)
         .animation(.tabiStandard, value: self.hasSearched)
         .animation(.tabiStandard, value: self.results)
+        .animation(.tabiStandard, value: self.subwayResults)
     }
 }
 
@@ -63,7 +66,7 @@ private extension PlanDetailAddSpotSearchListView {
             )
             .padding(.horizontal, 20)
             .transition(.opacity)
-        } else if self.results.isEmpty {
+        } else if self.subwayResults.isEmpty && self.results.isEmpty {
             TabiEmptyState(
                 systemImageName: "mappin.slash",
                 title: Strings.Map.searchResultEmptyTitle,
@@ -72,6 +75,23 @@ private extension PlanDetailAddSpotSearchListView {
             .padding(.horizontal, 20)
             .transition(.opacity)
         } else {
+            ForEach(Array(self.subwayResults.enumerated()), id: \.element.stationCode) { index, station in
+                if index > 0 {
+                    Divider()
+                        .padding(.horizontal, 20)
+                }
+                PlanDetailAddSpotSubwayStationRow(station: station) {
+                    self.onSubwayStationTapped(station)
+                }
+                .padding(.horizontal, Self.rowHorizontalPadding)
+            }
+            .transition(.opacity)
+
+            if self.subwayResults.isEmpty == false, self.results.isEmpty == false {
+                Divider()
+                    .padding(.horizontal, 20)
+            }
+
             ForEach(Array(self.results.enumerated()), id: \.element.id) { index, spot in
                 if index > 0 {
                     Divider()

@@ -37,8 +37,7 @@ public struct MapFeature: Sendable {
         var searchQuery: String = ""
         var panelStage: MapPanelStage = .half
         var searchResults: [TouristSpot] = []
-        var subwayResults: [TouristSpot] = []
-        var mergedSearchResults: [TouristSpot] { self.subwayResults + self.searchResults }
+        var subwayResults: [SubwayStation] = []
         var searchResultFitToken: Int = 0
         var isSearchLoading: Bool = false
         var isSearchNextPageLoading: Bool = false
@@ -69,6 +68,7 @@ public struct MapFeature: Sendable {
         case categorySelected(CategoryType, coordinate: Coordinate?)
         case researchAtCurrentLocationTapped
         case searchResultTapped(TouristSpot)
+        case subwayStationTapped(SubwayStation)
         case recentSearchTapped(SearchHistory)
         case recentSearchDeleteTapped(SearchHistory)
         case searchNextPageTriggered
@@ -78,7 +78,7 @@ public struct MapFeature: Sendable {
         case coordinateResult(Coordinate)
         case fallbackToSeoul
         case searchResultsResult([TouristSpot])
-        case subwayResultsResult([TouristSpot])
+        case subwayResultsResult([SubwayStation])
         case researchResultsResult([TouristSpot])
         case searchNextPageResultsResult([TouristSpot])
         case recentSearchesLoaded([SearchHistory])
@@ -176,6 +176,9 @@ public struct MapFeature: Sendable {
 
             case .searchResultTapped:
                 return .none
+
+            case .subwayStationTapped(let station):
+                return self.selectSubwayStationEffect(station: station)
 
             case .recentSearchTapped(let history):
                 state.searchQuery = history.keyword
@@ -284,6 +287,7 @@ public struct MapFeature: Sendable {
 private enum CancelID {
     case search
     case subwaySearch
+    case resolveStation
 }
 
 // MARK: - Method
@@ -372,6 +376,22 @@ private extension MapFeature {
             await send(.subwayResultsResult(results))
         }
         .cancellable(id: CancelID.subwaySearch, cancelInFlight: true)
+    }
+
+    func selectSubwayStationEffect(station: SubwayStation) -> Effect<Action> {
+        .run { [subwayStationUseCase = self.subwayStationUseCase] send in
+            do {
+                let spot = try await subwayStationUseCase.selectStation(station)
+                await send(.searchResultTapped(spot))
+            } catch {
+                guard !Task.isCancelled else {
+                    AppLogger.view.log(.debug, "지하철역 선택 취소됨")
+                    return
+                }
+                AppLogger.network.log(.error, "지하철역 좌표 조회 실패: \(station.koreanName) - \(error.localizedDescription)")
+            }
+        }
+        .cancellable(id: CancelID.resolveStation, cancelInFlight: true)
     }
 
     func categorySearchEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int) -> Effect<Action> {

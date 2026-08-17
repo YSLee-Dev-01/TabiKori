@@ -12,7 +12,19 @@ public final class TestSubwayStationUseCase: SubwayStationUseCaseProtocol, @unch
 
     // MARK: - Properties
 
-    public var searchResults: [TouristSpot] = []
+    public var searchResults: [SubwayStation] = []
+    public var selectedTouristSpot: TouristSpot = TouristSpot(
+        id: "subway_test",
+        title: "",
+        thumbnailURLString: nil,
+        distanceMeters: nil,
+        contentType: .subway,
+        coordinate: .seoulCityHall,
+        isCustom: false,
+        isStation: true,
+        address: nil
+    )
+    public var selectStationError: Error?
 
     // MARK: - Init
 
@@ -20,7 +32,14 @@ public final class TestSubwayStationUseCase: SubwayStationUseCaseProtocol, @unch
 
     // MARK: - Method
 
-    public func search(keyword: String) async -> [TouristSpot] {
+    public func search(keyword: String) async -> [SubwayStation] {
         return self.searchResults
+    }
+
+    public func selectStation(_ station: SubwayStation) async throws -> TouristSpot {
+        if let selectStationError {
+            throw selectStationError
+        }
+        return self.selectedTouristSpot
     }
 }

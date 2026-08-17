@@ -33,6 +33,7 @@ public struct AddCustomPlaceFeature: Sendable {
         var previewFitToken: Int = 0
         var isSubwayMode: Bool = false
         var isSubwaySearching: Bool = false
+        var subwayResults: [SubwayStation] = []
         var matchedStation: TouristSpot?
         @Presents var alert: AlertState<Action.Alert>?
 
@@ -67,7 +68,9 @@ public struct AddCustomPlaceFeature: Sendable {
         case saveResult(Bool)
         case addressNotFound
         case addressPreviewResult(Coordinate)
-        case stationSearchResult([TouristSpot])
+        case stationSearchResult([SubwayStation])
+        case subwayStationTapped(SubwayStation)
+        case stationResolveResult(TouristSpot?)
         case alert(PresentationAction<Alert>)
 
         public enum Alert: Equatable {}
@@ -87,12 +90,14 @@ public struct AddCustomPlaceFeature: Sendable {
                 guard state.isSubwayMode else { return .none }
                 state.matchedStation = nil
                 state.previewCoordinate = nil
+                state.subwayResults = []
                 state.isSubwaySearching = false
                 return .cancel(id: CancelID.stationSearch)
 
             case .binding(\.isSubwayMode):
                 state.matchedStation = nil
                 state.previewCoordinate = nil
+                state.subwayResults = []
                 return .none
 
             case .binding:
@@ -129,6 +134,7 @@ public struct AddCustomPlaceFeature: Sendable {
             case .stationNameSubmitted:
                 guard state.trimmedTitle.isEmpty == false else { return .none }
                 state.isSubwaySearching = true
+                state.subwayResults = []
                 return self.subwaySearchEffect(keyword: state.trimmedTitle)
 
             case .saveResult(true):
@@ -167,14 +173,18 @@ public struct AddCustomPlaceFeature: Sendable {
 
             case .stationSearchResult(let stations):
                 state.isSubwaySearching = false
-                guard let station = stations.first else {
-                    state.matchedStation = nil
-                    state.previewCoordinate = nil
-                    return .none
-                }
-                state.matchedStation = station
-                state.previewCoordinate = station.coordinate
+                state.subwayResults = stations
+                return .none
+
+            case .subwayStationTapped(let station):
+                return self.selectSubwayStationEffect(station: station)
+
+            case .stationResolveResult(let spot):
+                guard let spot else { return .none }
+                state.matchedStation = spot
+                state.previewCoordinate = spot.coordinate
                 state.previewFitToken += 1
+                state.subwayResults = []
                 return .none
 
             case .alert:
@@ -191,6 +201,7 @@ private enum CancelID {
     case save
     case preview
     case stationSearch
+    case resolveStation
 }
 
 // MARK: - Method
@@ -244,6 +255,19 @@ private extension AddCustomPlaceFeature {
             await send(.stationSearchResult(results))
         }
         .cancellable(id: CancelID.stationSearch, cancelInFlight: true)
+    }
+
+    func selectSubwayStationEffect(station: SubwayStation) -> Effect<Action> {
+        .run { [subwayStationUseCase = self.subwayStationUseCase] send in
+            do {
+                let spot = try await subwayStationUseCase.selectStation(station)
+                await send(.stationResolveResult(spot))
+            } catch {
+                guard !Task.isCancelled else { return }
+                AppLogger.network.log(.error, "지하철역 좌표 조회 실패: \(station.koreanName) - \(error.localizedDescription)")
+            }
+        }
+        .cancellable(id: CancelID.resolveStation, cancelInFlight: true)
     }
 
     func addressPreviewEffect(address: String) -> Effect<Action> {

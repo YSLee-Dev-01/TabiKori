@@ -29,32 +29,49 @@ public final class SubwayStationUseCase: SubwayStationUseCaseProtocol {
 
     // MARK: - Method
 
-    public func search(keyword: String) async -> [TouristSpot] {
+    public func search(keyword: String) async -> [SubwayStation] {
         let matchedStations = await self.subwayStationRepository.searchLocal(keyword: keyword)
         let topStations = Array(matchedStations.prefix(Self.maxResultCount))
         guard topStations.isEmpty == false else { return [] }
 
-        return await withTaskGroup(of: (Int, TouristSpot?).self) { group in
+        return await withTaskGroup(of: (Int, SubwayStation?).self) { group in
             for (index, station) in topStations.enumerated() {
-                group.addTask { [subwayStationRepository, naverGeocodingRepository] in
-                    let resolved = await Self.resolve(
+                group.addTask { [subwayStationRepository] in
+                    let confirmed = await Self.confirmExists(
                         station: station,
-                        subwayStationRepository: subwayStationRepository,
-                        naverGeocodingRepository: naverGeocodingRepository
+                        subwayStationRepository: subwayStationRepository
                     )
-                    return (index, resolved)
+                    return (index, confirmed)
                 }
             }
 
-            var indexedResults: [(index: Int, spot: TouristSpot)] = []
+            var indexedResults: [(index: Int, station: SubwayStation)] = []
             for await (index, result) in group {
                 if let result {
                     indexedResults.append((index, result))
                 }
             }
             // 병렬 완료 순서가 아니라 로컬 매칭 우선순위(prefix 매치 우선) 순서를 그대로 보존
-            return indexedResults.sorted { $0.index < $1.index }.map { $0.spot }
+            return indexedResults.sorted { $0.index < $1.index }.map { $0.station }
         }
+    }
+
+    public func selectStation(_ station: SubwayStation) async throws -> TouristSpot {
+        let representativeLine = station.lineNumbers.first ?? ""
+        let geocodeQuery = "\(representativeLine) \(station.koreanName)역"
+        let geocoded = try await self.naverGeocodingRepository.geocode(address: geocodeQuery)
+        let lineText = station.lineNumbers.joined(separator: "・")
+        return TouristSpot(
+            id: "subway_\(station.stationCode)",
+            title: "\(station.japaneseName.strippingParentheticalSuffix)（\(station.koreanName)）",
+            thumbnailURLString: nil,
+            distanceMeters: nil,
+            contentType: .subway,
+            coordinate: geocoded.coordinate,
+            isCustom: false,
+            isStation: true,
+            address: "\(lineText) · \(geocoded.formattedAddress)"
+        )
     }
 }
 
@@ -63,44 +80,18 @@ public final class SubwayStationUseCase: SubwayStationUseCaseProtocol {
 private extension SubwayStationUseCase {
     static let maxResultCount = 5
 
-    static func resolve(
+    static func confirmExists(
         station: SubwayStation,
-        subwayStationRepository: SubwayStationRepositoryProtocol,
-        naverGeocodingRepository: NaverGeocodingRepositoryProtocol
-    ) async -> TouristSpot? {
+        subwayStationRepository: SubwayStationRepositoryProtocol
+    ) async -> SubwayStation? {
         do {
             let exists = try await subwayStationRepository.confirmExists(stationName: station.koreanName)
-            guard exists else { return nil }
+            return exists ? station : nil
         } catch is CancellationError {
             return nil
         } catch {
             guard !Task.isCancelled else { return nil }
             AppLogger.network.log(.error, "지하철역 실재 확인 실패: \(station.koreanName) - \(error.localizedDescription)")
-            return nil
-        }
-
-        let representativeLine = station.lineNumbers.first ?? ""
-        let geocodeQuery = "\(representativeLine) \(station.koreanName)역"
-
-        do {
-            let geocoded = try await naverGeocodingRepository.geocode(address: geocodeQuery)
-            let lineText = station.lineNumbers.joined(separator: "・")
-            return TouristSpot(
-                id: "subway_\(station.stationCode)",
-                title: "\(station.japaneseName.strippingParentheticalSuffix)（\(station.koreanName)）",
-                thumbnailURLString: nil,
-                distanceMeters: nil,
-                contentType: .subway,
-                coordinate: geocoded.coordinate,
-                isCustom: false,
-                isStation: true,
-                address: "\(lineText) · \(geocoded.formattedAddress)"
-            )
-        } catch is CancellationError {
-            return nil
-        } catch {
-            guard !Task.isCancelled else { return nil }
-            AppLogger.network.log(.error, "지하철역 지오코딩 실패: \(station.koreanName) - \(error.localizedDescription)")
             return nil
         }
     }

@@ -104,12 +104,14 @@ private extension PlanDetailAddSpotView {
             case .search:
                 PlanDetailAddSpotSearchListView(
                     keyword: self.$store.searchKeyword,
-                    results: self.store.mergedSearchResults,
+                    subwayResults: self.store.subwayResults,
+                    results: self.store.searchResults,
                     isLoading: self.store.isSearchLoading,
                     hasSearched: self.store.hasSearched,
                     focus: self.$isSearchFocused,
                     onSubmit: { self.store.send(.searchSubmitted) },
-                    onSpotTapped: { self.store.send(.spotRowTapped($0)) }
+                    onSpotTapped: { self.store.send(.spotRowTapped($0)) },
+                    onSubwayStationTapped: { self.store.send(.subwayStationTapped($0)) }
                 )
 
             case .bookmark:

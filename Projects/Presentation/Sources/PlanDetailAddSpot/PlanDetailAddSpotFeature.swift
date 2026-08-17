@@ -32,8 +32,7 @@ public struct PlanDetailAddSpotFeature: Sendable {
         var tab: Tab = .search
         var searchKeyword: String = ""
         var searchResults: [TouristSpot] = []
-        var subwayResults: [TouristSpot] = []
-        var mergedSearchResults: [TouristSpot] { self.subwayResults + self.searchResults }
+        var subwayResults: [SubwayStation] = []
         var isSearchLoading: Bool = false
         var hasSearched: Bool = false
         var bookmarks: [Bookmark] = []
@@ -76,11 +75,12 @@ public struct PlanDetailAddSpotFeature: Sendable {
         case tabSelected(State.Tab)
         case searchSubmitted
         case spotRowTapped(TouristSpot)
+        case subwayStationTapped(SubwayStation)
         case backButtonTapped
         case closeButtonTapped
         case saveButtonTapped
         case searchResultsResult([TouristSpot])
-        case subwayResultsResult([TouristSpot])
+        case subwayResultsResult([SubwayStation])
         case bookmarksResult([Bookmark])
         case saveFailed
         case spotAdded
@@ -136,6 +136,9 @@ public struct PlanDetailAddSpotFeature: Sendable {
                 state.endTime = range.end
                 state.step = .configuringTime
                 return .none
+
+            case .subwayStationTapped(let station):
+                return self.selectSubwayStationEffect(station: station)
 
             case .backButtonTapped:
                 state.selectedSpot = nil
@@ -201,6 +204,7 @@ public struct PlanDetailAddSpotFeature: Sendable {
 private enum CancelID {
     case search
     case subwaySearch
+    case resolveStation
     case fetchBookmarks
 }
 
@@ -226,6 +230,19 @@ private extension PlanDetailAddSpotFeature {
             guard !Task.isCancelled else { return }
             await send(.subwayResultsResult(results))
         }
+    }
+
+    func selectSubwayStationEffect(station: SubwayStation) -> Effect<Action> {
+        .run { [subwayStationUseCase = self.subwayStationUseCase] send in
+            do {
+                let spot = try await subwayStationUseCase.selectStation(station)
+                await send(.spotRowTapped(spot))
+            } catch {
+                guard !Task.isCancelled else { return }
+                AppLogger.network.log(.error, "지하철역 좌표 조회 실패: \(station.koreanName) - \(error.localizedDescription)")
+            }
+        }
+        .cancellable(id: CancelID.resolveStation, cancelInFlight: true)
     }
 
     func fetchBookmarksEffect() -> Effect<Action> {

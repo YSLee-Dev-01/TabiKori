@@ -90,6 +90,14 @@ private extension TouristSpot {
     }
 }
 
+// MARK: - SubwayStation View Extension
+
+private extension SubwayStation {
+    /// selectStation()으로 geocode된 이후 만들어지는 TouristSpot.id("subway_\(stationCode)")와 동일한 형식을 미리 사용해
+    /// 탭 직후 스크롤 위치(lastTappedSpotID)를 일관되게 유지한다
+    var mapListID: String { "subway_\(self.stationCode)" }
+}
+
 // MARK: - MapSearchLoadingDots
 
 private struct MapSearchLoadingDots: View {
@@ -130,14 +138,14 @@ private extension MapView {
                     TabiMapView(
                         centerLatitude: self.store.centerLatitude,
                         centerLongitude: self.store.centerLongitude,
-                        markers: self.store.mergedSearchResults.compactMap(\.toMapMarker),
+                        markers: self.store.searchResults.compactMap(\.toMapMarker),
                         isClusteringEnabled: false,
                         showsLocationButton: self.store.showsUserLocation,
                         followsUserLocation: false,
                         boundsFitToken: self.store.searchResultFitToken,
                         onMapTapped: { _, _ in },
                         onMarkerTapped: { id in
-                            guard let spot = self.store.mergedSearchResults.first(where: { $0.id == id }) else { return }
+                            guard let spot = self.store.searchResults.first(where: { $0.id == id }) else { return }
                             self.selectSearchResult(spot)
                         },
                         onMapDragged: { self.store.send(.mapDragged) },
@@ -208,7 +216,7 @@ private extension MapView {
             self.searchGuideState()
         } else if self.store.isSearchLoading {
             self.searchResultSkeletonList()
-        } else if self.store.mergedSearchResults.isEmpty {
+        } else if self.store.subwayResults.isEmpty && self.store.searchResults.isEmpty {
             self.searchResultEmptyState()
         } else {
             self.searchResultList()
@@ -274,7 +282,23 @@ private extension MapView {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    ForEach(Array(self.store.mergedSearchResults.enumerated()), id: \.element.id) { index, spot in
+                    ForEach(Array(self.store.subwayResults.enumerated()), id: \.element.stationCode) { index, station in
+                        if index > 0 {
+                            Divider()
+                                .padding(.horizontal, 16)
+                        }
+                        MapSubwayStationRowView(station: station) {
+                            self.selectSubwayStation(station)
+                        }
+                        .id(station.mapListID)
+                    }
+
+                    if self.store.subwayResults.isEmpty == false, self.store.searchResults.isEmpty == false {
+                        Divider()
+                            .padding(.horizontal, 16)
+                    }
+
+                    ForEach(Array(self.store.searchResults.enumerated()), id: \.element.id) { index, spot in
                         if index > 0 {
                             Divider()
                                 .padding(.horizontal, 16)
@@ -463,6 +487,11 @@ private extension MapView {
     func selectSearchResult(_ spot: TouristSpot) {
         self.lastTappedSpotID = spot.id
         self.store.send(.searchResultTapped(spot))
+    }
+
+    func selectSubwayStation(_ station: SubwayStation) {
+        self.lastTappedSpotID = station.mapListID
+        self.store.send(.subwayStationTapped(station))
     }
 }
 

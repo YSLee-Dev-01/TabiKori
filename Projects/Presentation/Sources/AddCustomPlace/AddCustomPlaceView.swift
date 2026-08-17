@@ -35,7 +35,11 @@ public struct AddCustomPlaceView: View {
                 }
                 self.titleField()
                 if self.store.isSubwayMode {
-                    self.mapPreviewSection()
+                    if self.store.matchedStation != nil {
+                        self.mapPreviewSection()
+                    } else {
+                        self.subwayResultsSection()
+                    }
                 } else {
                     self.addressField()
                 }
@@ -127,6 +131,35 @@ private extension AddCustomPlaceView {
                 self.store.send(.addressSubmitted)
             }
             self.mapPreviewSection()
+        }
+    }
+
+    @ViewBuilder
+    func subwayResultsSection() -> some View {
+        if self.store.subwayResults.isEmpty == false {
+            VStack(spacing: 0) {
+                ForEach(Array(self.store.subwayResults.enumerated()), id: \.element.stationCode) { index, station in
+                    if index > 0 {
+                        Divider()
+                            .padding(.horizontal, 16)
+                    }
+                    TabiSpotRow(
+                        thumbnailURL: nil,
+                        japaneseTitle: station.japaneseName,
+                        koreanTitle: station.koreanName,
+                        address: station.lineNumbers.joined(separator: "・"),
+                        tagTitle: CategoryType.subway.label,
+                        tagColor: CategoryType.subway.color,
+                        isCustom: false,
+                        distance: nil,
+                        onTap: { self.store.send(.subwayStationTapped(station)) }
+                    )
+                }
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: .tabiRadiusLg)
+                    .stroke(TabiColor.tabiBorder.opacity(0.4), lineWidth: 1)
+            }
         }
     }
 
