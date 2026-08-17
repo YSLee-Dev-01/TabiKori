@@ -22,6 +22,7 @@ struct PlanDetailMapSection: View {
             centerLongitude: self.markers.first?.longitude ?? Coordinate.seoulCityHall.longitude,
             markers: self.markers,
             isClusteringEnabled: false,
+            showsPolyline: true,
             showsLocationButton: false,
             followsUserLocation: false,
             boundsFitToken: self.fitToken,

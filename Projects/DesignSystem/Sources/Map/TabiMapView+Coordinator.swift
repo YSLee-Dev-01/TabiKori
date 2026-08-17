@@ -83,7 +83,7 @@ extension TabiMapView.Coordinator: NMFMapViewCameraDelegate {
 // MARK: - Marker Sync
 
 extension TabiMapView.Coordinator {
-    func sync(markers: [TabiMapMarker], isClusteringEnabled: Bool, boundsFitToken: Int, on mapView: NMFMapView) {
+    func sync(markers: [TabiMapMarker], isClusteringEnabled: Bool, showsPolyline: Bool, boundsFitToken: Int, on mapView: NMFMapView) {
         if isClusteringEnabled {
             self.clearPlainMarkers()
             self.syncClusteredMarkers(markers, on: mapView)
@@ -92,7 +92,11 @@ extension TabiMapView.Coordinator {
         } else {
             self.clearClusterer()
             self.syncPlainMarkers(markers, on: mapView)
-            self.syncPolyline(markers, on: mapView)
+            if showsPolyline {
+                self.syncPolyline(markers, on: mapView)
+            } else {
+                self.clearPolyline()
+            }
         }
 
         self.applyBoundsFitIfNeeded(token: boundsFitToken, markers: markers, on: mapView)

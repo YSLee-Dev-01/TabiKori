@@ -16,6 +16,7 @@ public struct TabiMapView {
     private let zoomLevel: Double
     private let markers: [TabiMapMarker]
     private let isClusteringEnabled: Bool
+    private let showsPolyline: Bool
     private let showsLocationButton: Bool
     private let followsUserLocation: Bool
     private let onMapTapped: (Double, Double) -> Void
@@ -30,6 +31,7 @@ public struct TabiMapView {
         zoomLevel: Double = 15,
         markers: [TabiMapMarker] = [],
         isClusteringEnabled: Bool = false,
+        showsPolyline: Bool = false,
         showsLocationButton: Bool = false,
         followsUserLocation: Bool = true,
         boundsFitToken: Int = 0,
@@ -43,6 +45,7 @@ public struct TabiMapView {
         self.zoomLevel = zoomLevel
         self.markers = markers
         self.isClusteringEnabled = isClusteringEnabled
+        self.showsPolyline = showsPolyline
         self.showsLocationButton = showsLocationButton
         self.followsUserLocation = followsUserLocation
         self.boundsFitToken = boundsFitToken
@@ -79,6 +82,7 @@ extension TabiMapView: UIViewRepresentable {
         context.coordinator.sync(
             markers: self.markers,
             isClusteringEnabled: self.isClusteringEnabled,
+            showsPolyline: self.showsPolyline,
             boundsFitToken: self.boundsFitToken,
             on: naverMapView.mapView
         )
@@ -93,6 +97,7 @@ extension TabiMapView: UIViewRepresentable {
         context.coordinator.sync(
             markers: self.markers,
             isClusteringEnabled: self.isClusteringEnabled,
+            showsPolyline: self.showsPolyline,
             boundsFitToken: self.boundsFitToken,
             on: uiView.mapView
         )
