@@ -19,6 +19,7 @@ import Resource
 public struct AddCustomPlaceFeature: Sendable {
 
     @Dependency(\.naverGeocodingUseCase) var naverGeocodingUseCase
+    @Dependency(\.subwayStationUseCase) var subwayStationUseCase
     @Dependency(\.bookmarkUseCase) var bookmarkUseCase
     @Dependency(\.dismiss) var dismiss
 
@@ -30,6 +31,9 @@ public struct AddCustomPlaceFeature: Sendable {
         var isSaving: Bool = false
         var previewCoordinate: Coordinate?
         var previewFitToken: Int = 0
+        var isSubwayMode: Bool = false
+        var isSubwaySearching: Bool = false
+        var matchedStation: TouristSpot?
         @Presents var alert: AlertState<Action.Alert>?
 
         public init() {}
@@ -43,6 +47,9 @@ public struct AddCustomPlaceFeature: Sendable {
         }
 
         var isConfirmEnabled: Bool {
+            if self.isSubwayMode {
+                return self.isSaving == false && self.matchedStation != nil
+            }
             guard self.selectedCategory != nil else { return false }
             guard !self.trimmedTitle.isEmpty else { return false }
             guard !self.trimmedAddress.isEmpty else { return false }
@@ -56,9 +63,11 @@ public struct AddCustomPlaceFeature: Sendable {
         case categorySelected(CategoryType)
         case confirmTapped
         case addressSubmitted
+        case stationNameSubmitted
         case saveResult(Bool)
         case addressNotFound
         case addressPreviewResult(Coordinate)
+        case stationSearchResult([TouristSpot])
         case alert(PresentationAction<Alert>)
 
         public enum Alert: Equatable {}
@@ -74,6 +83,18 @@ public struct AddCustomPlaceFeature: Sendable {
                 state.previewCoordinate = nil
                 return .none
 
+            case .binding(\.title):
+                guard state.isSubwayMode else { return .none }
+                state.matchedStation = nil
+                state.previewCoordinate = nil
+                state.isSubwaySearching = false
+                return .cancel(id: CancelID.stationSearch)
+
+            case .binding(\.isSubwayMode):
+                state.matchedStation = nil
+                state.previewCoordinate = nil
+                return .none
+
             case .binding:
                 return .none
 
@@ -85,12 +106,15 @@ public struct AddCustomPlaceFeature: Sendable {
                 return .none
 
             case .confirmTapped:
-                guard
-                    state.isSaving == false,
-                    state.isConfirmEnabled,
-                    let category = state.selectedCategory
-                else { return .none }
+                guard state.isSaving == false, state.isConfirmEnabled else { return .none }
 
+                if state.isSubwayMode {
+                    guard let station = state.matchedStation else { return .none }
+                    state.isSaving = true
+                    return self.saveStationEffect(station: station)
+                }
+
+                guard let category = state.selectedCategory else { return .none }
                 state.isSaving = true
                 return self.saveEffect(
                     category: category,
@@ -101,6 +125,11 @@ public struct AddCustomPlaceFeature: Sendable {
             case .addressSubmitted:
                 guard state.trimmedAddress.isEmpty == false else { return .none }
                 return self.addressPreviewEffect(address: state.trimmedAddress)
+
+            case .stationNameSubmitted:
+                guard state.trimmedTitle.isEmpty == false else { return .none }
+                state.isSubwaySearching = true
+                return self.subwaySearchEffect(keyword: state.trimmedTitle)
 
             case .saveResult(true):
                 return .none
@@ -136,6 +165,18 @@ public struct AddCustomPlaceFeature: Sendable {
                 state.previewFitToken += 1
                 return .none
 
+            case .stationSearchResult(let stations):
+                state.isSubwaySearching = false
+                guard let station = stations.first else {
+                    state.matchedStation = nil
+                    state.previewCoordinate = nil
+                    return .none
+                }
+                state.matchedStation = station
+                state.previewCoordinate = station.coordinate
+                state.previewFitToken += 1
+                return .none
+
             case .alert:
                 return .none
             }
@@ -149,6 +190,7 @@ public struct AddCustomPlaceFeature: Sendable {
 private enum CancelID {
     case save
     case preview
+    case stationSearch
 }
 
 // MARK: - Method
@@ -180,6 +222,28 @@ private extension AddCustomPlaceFeature {
             }
         }
         .cancellable(id: CancelID.save, cancelInFlight: true)
+    }
+
+    func saveStationEffect(station: TouristSpot) -> Effect<Action> {
+        .run { [bookmarkUseCase = self.bookmarkUseCase] send in
+            do {
+                try await bookmarkUseCase.add(station)
+                await send(.saveResult(true))
+            } catch {
+                AppLogger.view.log(.error, "지하철역 북마크 저장 실패: \(error.localizedDescription)")
+                await send(.saveResult(false))
+            }
+        }
+        .cancellable(id: CancelID.save, cancelInFlight: true)
+    }
+
+    func subwaySearchEffect(keyword: String) -> Effect<Action> {
+        .run { [subwayStationUseCase = self.subwayStationUseCase] send in
+            let results = await subwayStationUseCase.search(keyword: keyword)
+            guard !Task.isCancelled else { return }
+            await send(.stationSearchResult(results))
+        }
+        .cancellable(id: CancelID.stationSearch, cancelInFlight: true)
     }
 
     func addressPreviewEffect(address: String) -> Effect<Action> {

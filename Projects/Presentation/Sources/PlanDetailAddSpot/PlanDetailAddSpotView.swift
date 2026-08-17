@@ -104,7 +104,7 @@ private extension PlanDetailAddSpotView {
             case .search:
                 PlanDetailAddSpotSearchListView(
                     keyword: self.$store.searchKeyword,
-                    results: self.store.searchResults,
+                    results: self.store.mergedSearchResults,
                     isLoading: self.store.isSearchLoading,
                     hasSearched: self.store.hasSearched,
                     focus: self.$isSearchFocused,

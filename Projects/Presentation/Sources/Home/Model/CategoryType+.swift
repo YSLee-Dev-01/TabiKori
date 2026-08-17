@@ -20,6 +20,7 @@ extension CategoryType {
         case .festival: .festival
         case .shopping: .shopping
         case .nature: .nature
+        case .subway: .subway
         }
     }
 
@@ -31,6 +32,7 @@ extension CategoryType {
         case .festival: .categoryFestival
         case .shopping: .categoryShopping
         case .nature: .categoryNature
+        case .subway: .tabiAccentCoral
         }
     }
 
@@ -42,6 +44,7 @@ extension CategoryType {
         case .festival: Strings.Common.categoryFestival
         case .shopping: Strings.Common.categoryShopping
         case .nature: Strings.Common.categoryNature
+        case .subway: Strings.Common.categorySubway
         }
     }
 

@@ -29,9 +29,16 @@ public struct AddCustomPlaceView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                self.categorySection()
+                self.subwayModeSection()
+                if self.store.isSubwayMode == false {
+                    self.categorySection()
+                }
                 self.titleField()
-                self.addressField()
+                if self.store.isSubwayMode {
+                    self.mapPreviewSection()
+                } else {
+                    self.addressField()
+                }
             }
             .padding(20)
         }
@@ -77,6 +84,15 @@ private extension AddCustomPlaceView {
         .buttonStyle(TabiPressStyle())
     }
 
+    func subwayModeSection() -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            TabiLabel(title: Strings.AddCustomPlace.subwayModeSectionTitle, style: .bodyMBold, color: .tabiTextPrimary)
+            TabiChip(Strings.Common.categorySubway, isSelected: self.store.isSubwayMode) {
+                self.store.isSubwayMode.toggle()
+            }
+        }
+    }
+
     func categorySection() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             TabiLabel(title: Strings.Common.categoryTitle, style: .bodyMBold, color: .tabiTextPrimary)
@@ -91,10 +107,18 @@ private extension AddCustomPlaceView {
         VStack(alignment: .leading, spacing: 8) {
             TabiLabel(title: Strings.AddCustomPlace.titleLabel, style: .bodyMBold, color: .tabiTextPrimary)
             TabiTextField(
-                placeholder: Strings.AddCustomPlace.titlePlaceholder,
+                placeholder: self.store.isSubwayMode ? Strings.AddCustomPlace.stationTitlePlaceholder : Strings.AddCustomPlace.titlePlaceholder,
                 text: self.$store.title,
                 focus: self.$isTitleFocused
             )
+            .onSubmit {
+                guard self.store.isSubwayMode else { return }
+                self.store.send(.stationNameSubmitted)
+            }
+            if self.store.isSubwayMode, self.store.isSubwaySearching {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+            }
         }
     }
 
@@ -115,14 +139,18 @@ private extension AddCustomPlaceView {
 
     func mapPreviewSection() -> some View {
         let coordinate = self.store.previewCoordinate ?? .seoulCityHall
+        let category = self.store.isSubwayMode ? CategoryType.subway : (self.store.selectedCategory ?? .sightseeing)
+        let markerTitle = self.store.isSubwayMode
+            ? (self.store.matchedStation?.japaneseTitle ?? self.store.trimmedTitle.removingHangul)
+            : self.store.trimmedTitle.removingHangul
         let markers: [TabiMapMarker] = self.store.previewCoordinate == nil ? [] : [
             TabiMapMarker(
                 id: "preview",
                 latitude: coordinate.latitude,
                 longitude: coordinate.longitude,
-                title: self.store.trimmedTitle.removingHangul,
-                icon: (self.store.selectedCategory ?? .sightseeing).icon,
-                color: (self.store.selectedCategory ?? .sightseeing).color
+                title: markerTitle,
+                icon: category.icon,
+                color: category.color
             )
         ]
 

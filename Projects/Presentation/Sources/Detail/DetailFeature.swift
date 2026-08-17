@@ -63,19 +63,19 @@ public struct DetailFeature {
                 tel: nil,
                 homepageURLString: nil,
                 imageURLString: touristSpot.thumbnailURLString,
-                address: touristSpot.isCustom ? (touristSpot.address ?? "") : "",
-                coordinate: touristSpot.isCustom ? touristSpot.coordinate : .zero,
+                address: touristSpot.shouldSkipRemoteDetail ? (touristSpot.address ?? "") : "",
+                coordinate: touristSpot.shouldSkipRemoteDetail ? touristSpot.coordinate : .zero,
                 overview: nil
             )
             self.intro = .empty(for: touristSpot.contentType)
         }
 
         fileprivate var hasReceivedAllResults: Bool {
-            self.touristSpot.isCustom || (self.hasReceivedDetail && self.hasReceivedIntro && self.hasReceivedImages)
+            self.touristSpot.shouldSkipRemoteDetail || (self.hasReceivedDetail && self.hasReceivedIntro && self.hasReceivedImages)
         }
 
         var loadFailed: Bool {
-            self.touristSpot.isCustom == false
+            self.touristSpot.shouldSkipRemoteDetail == false
                 && self.hasReceivedAllResults
                 && self.hasDetailFailed && self.hasIntroFailed && self.hasImagesFailed
         }
@@ -112,7 +112,7 @@ public struct DetailFeature {
                 guard state.hasStartedLoading == false else { return .none }
                 state.hasStartedLoading = true
 
-                if state.touristSpot.isCustom {
+                if state.touristSpot.shouldSkipRemoteDetail {
                     state.isLoading = false
                     let shareURL = self.naverMapUseCase.makeShareURL(query: state.touristSpot.japaneseTitle)
                     state.shareText = Self.makeShareText(spot: state.touristSpot, address: state.detail.address, shareURL: shareURL)
@@ -312,6 +312,7 @@ private extension DetailFeature {
                 contentType: spot.contentType,
                 coordinate: spot.coordinate,
                 isCustom: spot.isCustom,
+                isStation: spot.isStation,
                 address: address.isEmpty ? spot.address : address
             )
             do {
@@ -390,6 +391,11 @@ private extension TouristSpotIntro {
             return .shopping(ShoppingIntro(
                 contact: nil, openTime: nil, restDate: nil, parking: nil, saleItems: nil,
                 openDate: nil, fairDay: nil, restroom: nil, scale: nil, shopGuide: nil
+            ))
+        case .subway:
+            return .sightseeing(SightseeingIntro(
+                contact: nil, openTime: nil, restDate: nil, parking: nil, openDate: nil,
+                experienceGuide: nil, experienceAgeRange: nil, useSeason: nil, accommodationCount: nil
             ))
         }
     }

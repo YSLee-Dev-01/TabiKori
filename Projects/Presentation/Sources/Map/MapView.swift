@@ -130,14 +130,14 @@ private extension MapView {
                     TabiMapView(
                         centerLatitude: self.store.centerLatitude,
                         centerLongitude: self.store.centerLongitude,
-                        markers: self.store.searchResults.compactMap(\.toMapMarker),
+                        markers: self.store.mergedSearchResults.compactMap(\.toMapMarker),
                         isClusteringEnabled: false,
                         showsLocationButton: self.store.showsUserLocation,
                         followsUserLocation: false,
                         boundsFitToken: self.store.searchResultFitToken,
                         onMapTapped: { _, _ in },
                         onMarkerTapped: { id in
-                            guard let spot = self.store.searchResults.first(where: { $0.id == id }) else { return }
+                            guard let spot = self.store.mergedSearchResults.first(where: { $0.id == id }) else { return }
                             self.selectSearchResult(spot)
                         },
                         onMapDragged: { self.store.send(.mapDragged) },
@@ -208,7 +208,7 @@ private extension MapView {
             self.searchGuideState()
         } else if self.store.isSearchLoading {
             self.searchResultSkeletonList()
-        } else if self.store.searchResults.isEmpty {
+        } else if self.store.mergedSearchResults.isEmpty {
             self.searchResultEmptyState()
         } else {
             self.searchResultList()
@@ -274,7 +274,7 @@ private extension MapView {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    ForEach(Array(self.store.searchResults.enumerated()), id: \.element.id) { index, spot in
+                    ForEach(Array(self.store.mergedSearchResults.enumerated()), id: \.element.id) { index, spot in
                         if index > 0 {
                             Divider()
                                 .padding(.horizontal, 16)

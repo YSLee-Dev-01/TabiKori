@@ -139,6 +139,7 @@ public struct AddToItineraryFeature: Sendable {
                     coordinate: state.touristSpot.coordinate,
                     thumbnailURLString: state.touristSpot.thumbnailURLString,
                     isCustom: state.touristSpot.isCustom,
+                    isStation: state.touristSpot.isStation,
                     address: state.touristSpot.address
                 )
                 return self.saveEffect(planId: plan.id, spot: spot)

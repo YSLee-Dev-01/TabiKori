@@ -20,6 +20,7 @@ public struct MapFeature: Sendable {
     @Dependency(\.locationUseCase) var locationUseCase
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
     @Dependency(\.searchHistoryUseCase) var searchHistoryUseCase
+    @Dependency(\.subwayStationUseCase) var subwayStationUseCase
 
     private let searchPageSize = 50
     private let minimumLoadingDuration: TimeInterval = 0.2
@@ -36,6 +37,8 @@ public struct MapFeature: Sendable {
         var searchQuery: String = ""
         var panelStage: MapPanelStage = .half
         var searchResults: [TouristSpot] = []
+        var subwayResults: [TouristSpot] = []
+        var mergedSearchResults: [TouristSpot] { self.subwayResults + self.searchResults }
         var searchResultFitToken: Int = 0
         var isSearchLoading: Bool = false
         var isSearchNextPageLoading: Bool = false
@@ -75,6 +78,7 @@ public struct MapFeature: Sendable {
         case coordinateResult(Coordinate)
         case fallbackToSeoul
         case searchResultsResult([TouristSpot])
+        case subwayResultsResult([TouristSpot])
         case researchResultsResult([TouristSpot])
         case searchNextPageResultsResult([TouristSpot])
         case recentSearchesLoaded([SearchHistory])
@@ -96,7 +100,10 @@ public struct MapFeature: Sendable {
 
             case .searchCancelTapped:
                 self.resetSearchState(&state)
-                return .cancel(id: CancelID.search)
+                return .merge(
+                    .cancel(id: CancelID.search),
+                    .cancel(id: CancelID.subwaySearch)
+                )
 
             case .mapDragged:
                 state.panelStage = .collapsed
@@ -121,13 +128,15 @@ public struct MapFeature: Sendable {
                 state.mode = .result
                 state.panelStage = .half
                 state.searchResults = []
+                state.subwayResults = []
                 state.isSearchLoading = true
                 state.searchPage = 1
                 state.hasMoreSearchResults = true
                 state.hasMapMovedSinceSearch = false
                 return .merge(
                     self.addSearchHistoryEffect(keyword: keyword),
-                    self.searchEffect(keyword: keyword)
+                    self.searchEffect(keyword: keyword),
+                    self.subwaySearchEffect(keyword: keyword)
                 )
 
             case .categorySelected(let category, let coordinate):
@@ -142,11 +151,15 @@ public struct MapFeature: Sendable {
                 state.mode = .result
                 state.panelStage = .half
                 state.searchResults = []
+                state.subwayResults = []
                 state.isSearchLoading = true
                 state.searchPage = 1
                 state.hasMoreSearchResults = true
                 state.hasMapMovedSinceSearch = false
-                return self.categorySearchEffect(category: category, coordinate: resolvedCoordinate, radiusMeters: resolvedRadiusMeters)
+                return .merge(
+                    self.categorySearchEffect(category: category, coordinate: resolvedCoordinate, radiusMeters: resolvedRadiusMeters),
+                    .cancel(id: CancelID.subwaySearch)
+                )
 
             case .researchAtCurrentLocationTapped:
                 let resolvedCoordinate = Coordinate(latitude: state.centerLatitude, longitude: state.centerLongitude)
@@ -242,6 +255,10 @@ public struct MapFeature: Sendable {
                 }
                 return .none
 
+            case .subwayResultsResult(let stations):
+                state.subwayResults = stations
+                return .none
+
             case .researchResultsResult(let spots):
                 state.searchResults = spots
                 state.isSearchLoading = false
@@ -266,6 +283,7 @@ public struct MapFeature: Sendable {
 
 private enum CancelID {
     case search
+    case subwaySearch
 }
 
 // MARK: - Method
@@ -342,6 +360,18 @@ private extension MapFeature {
             }
         }
         .cancellable(id: CancelID.search, cancelInFlight: true)
+    }
+
+    func subwaySearchEffect(keyword: String) -> Effect<Action> {
+        .run { [subwayStationUseCase = self.subwayStationUseCase] send in
+            let results = await subwayStationUseCase.search(keyword: keyword)
+            guard !Task.isCancelled else {
+                AppLogger.view.log(.debug, "지하철역 검색 취소됨")
+                return
+            }
+            await send(.subwayResultsResult(results))
+        }
+        .cancellable(id: CancelID.subwaySearch, cancelInFlight: true)
     }
 
     func categorySearchEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int) -> Effect<Action> {
@@ -429,6 +459,7 @@ private extension MapFeature {
         state.searchQuery = ""
         state.panelStage = .half
         state.searchResults = []
+        state.subwayResults = []
         state.isSearchLoading = false
         state.isSearchNextPageLoading = false
         state.searchPage = 1

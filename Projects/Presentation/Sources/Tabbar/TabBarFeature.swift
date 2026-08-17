@@ -133,6 +133,7 @@ public struct TabBarFeature {
                     contentType: spot.category,
                     coordinate: spot.coordinate,
                     isCustom: spot.isCustom,
+                    isStation: spot.isStation,
                     address: spot.address
                 )
                 state.path.append(.detail(DetailFeature.State(touristSpot: touristSpot)))

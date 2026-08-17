@@ -22,6 +22,7 @@ struct MapSearchResultRowView: View {
             thumbnailURL: self.spot.thumbnailURL,
             japaneseTitle: self.spot.japaneseTitle.removingBracketedTags,
             koreanTitle: self.spot.koreanTitle?.removingBracketedTags,
+            address: self.spot.address,
             tagTitle: self.spot.contentType.label,
             tagColor: self.spot.contentType.color,
             isCustom: self.spot.isCustom,

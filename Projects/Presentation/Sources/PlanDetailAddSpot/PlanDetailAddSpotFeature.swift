@@ -20,6 +20,7 @@ public struct PlanDetailAddSpotFeature: Sendable {
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
     @Dependency(\.bookmarkUseCase) var bookmarkUseCase
     @Dependency(\.travelPlanDetailUseCase) var travelPlanDetailUseCase
+    @Dependency(\.subwayStationUseCase) var subwayStationUseCase
     @Dependency(\.dismiss) var dismiss
 
     @ObservableState
@@ -31,6 +32,8 @@ public struct PlanDetailAddSpotFeature: Sendable {
         var tab: Tab = .search
         var searchKeyword: String = ""
         var searchResults: [TouristSpot] = []
+        var subwayResults: [TouristSpot] = []
+        var mergedSearchResults: [TouristSpot] { self.subwayResults + self.searchResults }
         var isSearchLoading: Bool = false
         var hasSearched: Bool = false
         var bookmarks: [Bookmark] = []
@@ -77,6 +80,7 @@ public struct PlanDetailAddSpotFeature: Sendable {
         case closeButtonTapped
         case saveButtonTapped
         case searchResultsResult([TouristSpot])
+        case subwayResultsResult([TouristSpot])
         case bookmarksResult([Bookmark])
         case saveFailed
         case spotAdded
@@ -91,8 +95,12 @@ public struct PlanDetailAddSpotFeature: Sendable {
             case .binding(\.searchKeyword):
                 guard state.searchKeyword.isEmpty else { return .none }
                 state.searchResults = []
+                state.subwayResults = []
                 state.hasSearched = false
-                return .cancel(id: CancelID.search)
+                return .merge(
+                    .cancel(id: CancelID.search),
+                    .cancel(id: CancelID.subwaySearch)
+                )
 
             case .binding:
                 return .none
@@ -110,8 +118,12 @@ public struct PlanDetailAddSpotFeature: Sendable {
                 guard keyword.isEmpty == false else { return .none }
                 state.isSearchLoading = true
                 state.hasSearched = true
-                return self.searchEffect(keyword: keyword)
-                    .cancellable(id: CancelID.search, cancelInFlight: true)
+                return .merge(
+                    self.searchEffect(keyword: keyword)
+                        .cancellable(id: CancelID.search, cancelInFlight: true),
+                    self.subwaySearchEffect(keyword: keyword)
+                        .cancellable(id: CancelID.subwaySearch, cancelInFlight: true)
+                )
 
             case .spotRowTapped(let spot):
                 state.selectedSpot = spot
@@ -154,6 +166,7 @@ public struct PlanDetailAddSpotFeature: Sendable {
                     coordinate: spot.coordinate,
                     thumbnailURLString: spot.thumbnailURLString,
                     isCustom: spot.isCustom,
+                    isStation: spot.isStation,
                     address: spot.address
                 )
                 return self.saveEffect(planId: state.planId, spot: detailSpot)
@@ -161,6 +174,10 @@ public struct PlanDetailAddSpotFeature: Sendable {
             case .searchResultsResult(let results):
                 state.searchResults = results
                 state.isSearchLoading = false
+                return .none
+
+            case .subwayResultsResult(let stations):
+                state.subwayResults = stations
                 return .none
 
             case .bookmarksResult(let bookmarks):
@@ -183,6 +200,7 @@ public struct PlanDetailAddSpotFeature: Sendable {
 
 private enum CancelID {
     case search
+    case subwaySearch
     case fetchBookmarks
 }
 
@@ -199,6 +217,14 @@ private extension PlanDetailAddSpotFeature {
                 AppLogger.view.log(.error, "관광지 키워드 검색 실패: \(error.localizedDescription)")
                 await send(.searchResultsResult([]))
             }
+        }
+    }
+
+    func subwaySearchEffect(keyword: String) -> Effect<Action> {
+        .run { [subwayStationUseCase = self.subwayStationUseCase] send in
+            let results = await subwayStationUseCase.search(keyword: keyword)
+            guard !Task.isCancelled else { return }
+            await send(.subwayResultsResult(results))
         }
     }
 
