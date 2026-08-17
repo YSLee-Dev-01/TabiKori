@@ -14,27 +14,11 @@ import Resource
 struct FestivalEmptyState: View {
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 0)
-
-            VStack(spacing: 10) {
-                Image(systemName: "calendar.badge.exclamationmark")
-                    .font(.system(size: 34))
-                    .foregroundStyle(TabiColor.tabiTextTertiary)
-
-                VStack(spacing: 3) {
-                    TabiLabel(title: Strings.Festival.emptyTitle, style: .bodySBold, color: .tabiTextSecondary)
-                    TabiLabel(
-                        title: Strings.Festival.emptyDescription,
-                        style: .captionM,
-                        color: .tabiTextTertiary,
-                        alignment: .center
-                    )
-                }
-            }
-
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity)
+        TabiEmptyState(
+            systemImageName: "calendar.badge.exclamationmark",
+            title: Strings.Festival.emptyTitle,
+            description: Strings.Festival.emptyDescription,
+            style: .card
+        )
     }
 }

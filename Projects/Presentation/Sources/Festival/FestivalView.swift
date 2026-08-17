@@ -98,7 +98,9 @@ private extension FestivalView {
 
                 case .loaded where self.store.festivals.isEmpty:
                     FestivalEmptyState()
-                        .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                        .padding(.horizontal, 20)
+                        .padding(.top, 24)
+                        .frame(height: max(proxy.size.height - self.headerHeight, 0), alignment: .top)
 
                 case .loaded:
                     LazyVStack(spacing: 0) {
