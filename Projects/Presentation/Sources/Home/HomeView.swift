@@ -619,48 +619,45 @@ fileprivate extension HomeView {
     }
 
     func exchangeRateCard() -> some View {
-        TabiCard {
-            VStack(spacing: 15) {
-                HStack(spacing: 12) {
-                    self.currencySummary(
-                        flag: "🇰🇷",
-                        code: "KRW",
-                        symbol: "₩",
-                        amountText: self.store.krwAmountText,
-                        fractionDigits: 0,
-                        valueColor: .tabiTextPrimary
-                    )
-
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(TabiColor.tabiTextTertiary)
-
-                    self.currencySummary(
-                        flag: "🇯🇵",
-                        code: "JPY",
-                        symbol: "¥",
-                        amountText: self.store.jpyAmountText,
-                        fractionDigits: 1,
-                        valueColor: .tabiPrimary
-                    )
+        Button {
+            self.store.send(.moveToToolBoxButtonTapped)
+        } label: {
+            TabiCard {
+                HStack(spacing: 0) {
+                    HStack(spacing: 12) {
+                        self.currencySummary(
+                            flag: "🇰🇷",
+                            code: "KRW",
+                            symbol: "₩",
+                            amountText: self.store.krwAmountText,
+                            fractionDigits: 0,
+                            valueColor: .tabiTextPrimary
+                        )
+                        
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(TabiColor.tabiTextTertiary)
+                        
+                        self.currencySummary(
+                            flag: "🇯🇵",
+                            code: "JPY",
+                            symbol: "¥",
+                            amountText: self.store.jpyAmountText,
+                            fractionDigits: 1,
+                            valueColor: .tabiPrimary
+                        )
+                    }
+                    
+                    Spacer()
+                    
+                    self.chevronIcon()
                 }
-
-                if self.store.exchangeRateUpdatedAtTitle.isEmpty == false {
-                    TabiLabel(
-                        title: self.store.exchangeRateUpdatedAtTitle,
-                        style: .captionS,
-                        color: .tabiTextTertiary
-                    )
-                    .frame(maxWidth: .infinity, alignment: .center)
-                }
-
-                TabiButton(Strings.Home.moveToToolBoxButton, style: .secondary, isExpanded: true) {
-                    self.store.send(.moveToToolBoxButtonTapped)
-                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
             }
-            .padding(.vertical, 20)
-            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity)
         }
+        .buttonStyle(TabiPressStyle())
     }
 
     func currencySummary(
@@ -671,15 +668,15 @@ fileprivate extension HomeView {
         fractionDigits: Int,
         valueColor: TabiColor
     ) -> some View {
-        VStack(spacing: 6) {
+        HStack(spacing: 10) {
             Text(flag)
                 .font(.system(size: 32))
-
+            
             HStack(spacing: 2) {
                 Text(symbol)
                     .font(.system(size: 15, weight: .bold))
                     .foregroundStyle(valueColor)
-
+                
                 Group {
                     if let value = Double(amountText) {
                         Text(value, format: .number.precision(.fractionLength(fractionDigits)))
@@ -692,7 +689,6 @@ fileprivate extension HomeView {
                 .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(valueColor)
             }
-
             Text(code)
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(TabiColor.tabiTextTertiary)
