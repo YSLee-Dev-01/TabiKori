@@ -22,6 +22,7 @@ public struct BookmarkFeature: Sendable {
         var bookmarks: [Bookmark] = []
         var selectedCategory: CategoryType?
         var isLoading: Bool = false
+        @Presents var addCustomPlaceState: AddCustomPlaceFeature.State?
 
         public init() {}
 
@@ -37,6 +38,8 @@ public struct BookmarkFeature: Sendable {
         case spotTapped(TouristSpot)
         case deleteSwiped(contentId: String)
         case bookmarksResult([Bookmark])
+        case addCustomPlaceButtonTapped
+        case addCustomPlace(PresentationAction<AddCustomPlaceFeature.Action>)
     }
 
     public init() {}
@@ -63,7 +66,21 @@ public struct BookmarkFeature: Sendable {
                 state.bookmarks = bookmarks
                 state.isLoading = false
                 return .none
+
+            case .addCustomPlaceButtonTapped:
+                state.addCustomPlaceState = AddCustomPlaceFeature.State()
+                return .none
+
+            case .addCustomPlace(.presented(.saveResult(true))):
+                state.addCustomPlaceState = nil
+                return self.fetchBookmarksEffect()
+
+            case .addCustomPlace:
+                return .none
             }
+        }
+        .ifLet(\.$addCustomPlaceState, action: \.addCustomPlace) {
+            AddCustomPlaceFeature()
         }
     }
 }

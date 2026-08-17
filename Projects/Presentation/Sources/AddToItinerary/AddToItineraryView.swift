@@ -30,15 +30,17 @@ struct AddToItineraryView: View {
                     AddToItineraryPlanListView(
                         plans: self.store.plans,
                         isLoading: self.store.isLoading,
+                        isFetchingDetail: self.store.isFetchingDetail,
                         expandedPlanId: self.store.expandedPlanId,
                         onPlanTapped: { self.store.send(.planRowTapped($0)) },
                         onDayTapped: { plan, dayIndex, date in
                             self.store.send(.dayRowTapped(plan: plan, dayIndex: dayIndex, date: date))
                         }
                     )
+                    .transition(.move(edge: .leading))
 
                 case .configuringTime:
-                    AddToItineraryTimeConfigView(
+                    TabiItineraryTimeConfigView(
                         planTitle: self.store.selectedPlan?.title ?? "",
                         dayTitle: Strings.Plan.dayChipTitle(self.store.selectedDayIndex + 1),
                         dateTitle: self.store.selectedDate.planDayHeaderTitle,
@@ -49,8 +51,10 @@ struct AddToItineraryView: View {
                         isSaving: self.store.isSaving,
                         onSaveTapped: { self.store.send(.saveButtonTapped) }
                     )
+                    .transition(.move(edge: .trailing))
                 }
             }
+            .animation(.tabiStandard, value: self.store.step)
         }
         .onAppear {
             self.store.send(.onAppear)
@@ -81,7 +85,8 @@ private extension AddToItineraryView {
             }
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 16)
+        .padding(.top, 26)
+        .padding(.bottom, 16)
     }
 }
 

@@ -30,6 +30,10 @@ public final class TravelPlanUseCase: TravelPlanUseCaseProtocol {
         try await self.repository.add(plan)
     }
 
+    public func update(_ plan: TravelPlan) async throws {
+        try await self.repository.update(plan)
+    }
+
     public func remove(planId: UUID) async throws {
         try await self.repository.remove(planId: planId)
     }

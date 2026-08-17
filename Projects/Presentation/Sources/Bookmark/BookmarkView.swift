@@ -25,7 +25,12 @@ public struct BookmarkView: View {
     public var body: some View {
         self.bookmarkList()
             .safeAreaBar(edge: .top) {
-                TabiNavigationBar(title: Strings.Bookmark.title)
+                TabiNavigationBar(title: Strings.Bookmark.title) {
+                    self.addCustomPlaceButton()
+                }
+            }
+            .sheet(item: self.$store.scope(state: \.addCustomPlaceState, action: \.addCustomPlace)) { store in
+                AddCustomPlaceView(store: store)
             }
             .onAppear {
                 self.store.send(.onAppear)
@@ -36,6 +41,12 @@ public struct BookmarkView: View {
 // MARK: - View
 
 private extension BookmarkView {
+    func addCustomPlaceButton() -> some View {
+        TabiGlassIconButton(systemName: "plus", size: .ml, foregroundColor: .tabiPrimary) {
+            self.store.send(.addCustomPlaceButtonTapped)
+        }
+    }
+
     func bookmarkList() -> some View {
         GeometryReader { proxy in
             List {
@@ -57,8 +68,10 @@ private extension BookmarkView {
                                 thumbnailURL: bookmark.touristSpot.thumbnailURL,
                                 japaneseTitle: bookmark.touristSpot.japaneseTitle,
                                 koreanTitle: bookmark.touristSpot.koreanTitle,
+                                address: bookmark.touristSpot.address,
                                 tagTitle: bookmark.touristSpot.contentType.label,
                                 tagColor: bookmark.touristSpot.contentType.color,
+                                isCustom: bookmark.touristSpot.isCustom,
                                 distance: nil,
                                 onTap: { self.store.send(.spotTapped(bookmark.touristSpot)) }
                             )

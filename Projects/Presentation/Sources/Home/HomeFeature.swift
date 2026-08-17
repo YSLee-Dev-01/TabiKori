@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 
 import ComposableArchitecture
 import Core
@@ -20,8 +21,11 @@ public struct HomeFeature: Sendable {
     @Dependency(\.locationUseCase) var locationUseCase
     @Dependency(\.exchangeRateUseCase) var exchangeRateUseCase
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
+    @Dependency(\.festivalUseCase) var festivalUseCase
+    @Dependency(\.travelPlanUseCase) var travelPlanUseCase
 
     private let nearbySpotRadiusMeters = TouristSpotSearchRadius.nearbyMeters
+    private let festivalListLimit = 10
 
     @ObservableState
     public struct State: Equatable {
@@ -33,10 +37,15 @@ public struct HomeFeature: Sendable {
         var nearbyRestaurants: [TouristSpot] = []
         var isLoadingTouristSpots: Bool = false
         var isLoadingRestaurants: Bool = false
+        var festivals: [Festival] = []
+        var isLoadingFestivals: Bool = false
         var krwAmountText: String = "1000"
         var jpyAmountText: String = "0"
         var exchangeRateUpdatedAtTitle: String = ""
+        var ongoingMatchedPlan: TravelPlan?
+        var ongoingMatchedPlanDayIndex: Int = 0
         fileprivate var krwToJPYRate: Double = 0
+        fileprivate var hasLoadedInitialFestivals: Bool = false
 
         public init() {}
     }
@@ -51,12 +60,21 @@ public struct HomeFeature: Sendable {
         case exchangeRateResult(KRWToJPYRate)
         case nearbyTouristSpotsResult([TouristSpot])
         case nearbyRestaurantsResult([TouristSpot])
+        case festivalsResult([Festival])
+        case festivalsFailed
+        case travelPlansResult([TravelPlan])
         case planCreateButtonTapped
         case nearbySpotTapped(TouristSpot)
+        case festivalTapped(Festival)
         case searchBarTapped
         case categoryTapped(CategoryType)
         case categoryCoordinateResolved(CategoryType, Coordinate)
-        case recommendedEventBannerTapped
+        case festivalMoreButtonTapped
+        case openSettingsButtonTapped
+        /// 앱 내 설정 화면으로 진입 (iOS 설정 앱으로 이동하는 openSettingsButtonTapped와 다름)
+        case settingButtonTapped
+        case regionCardTapped(KoreanRegion)
+        case moveToPlanButtonTapped
     }
 
     public init() {}
@@ -112,11 +130,28 @@ public struct HomeFeature: Sendable {
                     }
                 }
 
-                return .merge(locationEffect, exchangeRateEffect)
+                let festivalEffect: Effect<Action>
+                if state.hasLoadedInitialFestivals {
+                    festivalEffect = .none
+                } else {
+                    state.hasLoadedInitialFestivals = true
+                    state.isLoadingFestivals = true
+                    festivalEffect = self.fetchFestivalsEffect()
+                }
+
+                return .merge(locationEffect, exchangeRateEffect, festivalEffect)
 
             case .refreshTriggered:
-                guard state.currentRegion.isKorea else { return .none }
-                return self.fetchNearbySpotsEffect()
+                let festivalEffect: Effect<Action>
+                if state.festivals.isEmpty {
+                    state.isLoadingFestivals = true
+                    festivalEffect = self.fetchFestivalsEffect()
+                } else {
+                    festivalEffect = .none
+                }
+
+                guard state.currentRegion.isKorea else { return festivalEffect }
+                return .merge(self.fetchNearbySpotsEffect(), festivalEffect)
 
             case .requestLocationPermission:
                 return .run { send in
@@ -139,14 +174,21 @@ public struct HomeFeature: Sendable {
 
             case .regionResult(let region):
                 state.currentRegion = region
-                guard region.isKorea,
-                      state.hasLoadedInitialSpots == false else { return .none }
+
+                guard region.isKorea else {
+                    state.ongoingMatchedPlan = nil
+                    return .none
+                }
+
+                let travelPlansEffect = self.fetchTravelPlansEffect()
+
+                guard state.hasLoadedInitialSpots == false else { return travelPlansEffect }
                 state.hasLoadedInitialSpots = true
 
                 state.isLoadingTouristSpots = true
                 state.isLoadingRestaurants = true
 
-                return self.fetchNearbySpotsEffect()
+                return .merge(self.fetchNearbySpotsEffect(), travelPlansEffect)
 
             case .exchangeRateResult(let krwToJPYRate):
                 state.krwToJPYRate = krwToJPYRate.rate
@@ -166,10 +208,35 @@ public struct HomeFeature: Sendable {
                 state.isLoadingRestaurants = false
                 return .none
 
+            case .festivalsResult(let festivals):
+                state.festivals = festivals
+                state.isLoadingFestivals = false
+                return .none
+
+            case .festivalsFailed:
+                state.isLoadingFestivals = false
+                state.hasLoadedInitialFestivals = false
+                return .none
+
+            case .travelPlansResult(let plans):
+                guard case .korea(let region) = state.currentRegion,
+                      let matchedPlan = self.ongoingMatchedPlan(in: plans, region: region) else {
+                    state.ongoingMatchedPlan = nil
+                    state.ongoingMatchedPlanDayIndex = 0
+                    return .none
+                }
+
+                state.ongoingMatchedPlan = matchedPlan
+                state.ongoingMatchedPlanDayIndex = self.dayIndex(for: matchedPlan)
+                return .none
+
             case .planCreateButtonTapped:
                 return .none
 
             case .nearbySpotTapped:
+                return .none
+
+            case .festivalTapped:
                 return .none
 
             case .searchBarTapped:
@@ -194,7 +261,27 @@ public struct HomeFeature: Sendable {
             case .categoryCoordinateResolved:
                 return .none
 
-            case .recommendedEventBannerTapped:
+            case .festivalMoreButtonTapped:
+                return .none
+
+            case .openSettingsButtonTapped:
+                return .run { _ in
+                    guard let url = URL(string: UIApplication.openSettingsURLString) else {
+                        AppLogger.view.log(.error, "설정 앱 URL 생성 실패")
+                        return
+                    }
+                    await MainActor.run {
+                        UIApplication.shared.open(url)
+                    }
+                }
+
+            case .settingButtonTapped:
+                return .none
+
+            case .regionCardTapped:
+                return .none
+
+            case .moveToPlanButtonTapped:
                 return .none
             }
         }
@@ -244,5 +331,56 @@ private extension HomeFeature {
                 AppLogger.view.log(.error, "주변 관광정보 조회 실패: \(error.localizedDescription)")
             }
         }
+    }
+
+    func fetchFestivalsEffect() -> Effect<Action> {
+        .run { [festivalUseCase = self.festivalUseCase, limit = self.festivalListLimit] send in
+            do {
+                let festivals = try await festivalUseCase.fetchFestivals(
+                    startDate: Date(),
+                    endDate: nil,
+                    regionCode: nil,
+                    sigunguCode: nil,
+                    pageNo: 1
+                )
+                await send(.festivalsResult(Array(festivals.prefix(limit))))
+            } catch {
+                guard !Task.isCancelled else {
+                    AppLogger.view.log(.debug, "축제 조회 취소됨")
+                    return
+                }
+                await send(.festivalsFailed)
+                AppLogger.view.log(.error, "축제 조회 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func fetchTravelPlansEffect() -> Effect<Action> {
+        .run { [travelPlanUseCase = self.travelPlanUseCase] send in
+            do {
+                let plans = try await travelPlanUseCase.fetch()
+                await send(.travelPlansResult(plans))
+            } catch {
+                guard !Task.isCancelled else {
+                    AppLogger.view.log(.debug, "여행 플랜 조회 취소됨")
+                    return
+                }
+                await send(.travelPlansResult([]))
+                AppLogger.view.log(.error, "여행 플랜 조회 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func ongoingMatchedPlan(in plans: [TravelPlan], region: KoreanRegion) -> TravelPlan? {
+        plans
+            .filter { $0.section == .ongoing && $0.region == region }
+            .min { $0.startDate < $1.startDate }
+    }
+
+    func dayIndex(for plan: TravelPlan) -> Int {
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: plan.startDate)
+        let today = calendar.startOfDay(for: Date())
+        return calendar.dateComponents([.day], from: start, to: today).day ?? 0
     }
 }

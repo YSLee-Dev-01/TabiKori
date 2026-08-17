@@ -56,8 +56,28 @@ extension DependencyValues {
         set {self[TravelPlanDetailUseCaseDependencyKey.self] = newValue}
     }
 
+    public var travelPlanShareUseCase: TravelPlanShareUseCaseProtocol {
+        get {self[TravelPlanShareUseCaseDependencyKey.self]}
+        set {self[TravelPlanShareUseCaseDependencyKey.self] = newValue}
+    }
+
     public var festivalUseCase: FestivalUseCaseProtocol {
         get {self[FestivalUseCaseDependencyKey.self]}
         set {self[FestivalUseCaseDependencyKey.self] = newValue}
+    }
+
+    public var naverGeocodingUseCase: NaverGeocodingUseCaseProtocol {
+        get {self[NaverGeocodingUseCaseDependencyKey.self]}
+        set {self[NaverGeocodingUseCaseDependencyKey.self] = newValue}
+    }
+
+    public var dataResetUseCase: DataResetUseCaseProtocol {
+        get {self[DataResetUseCaseDependencyKey.self]}
+        set {self[DataResetUseCaseDependencyKey.self] = newValue}
+    }
+
+    public var travelItemUseCase: TravelItemUseCaseProtocol {
+        get {self[TravelItemUseCaseDependencyKey.self]}
+        set {self[TravelItemUseCaseDependencyKey.self] = newValue}
     }
 }

@@ -13,6 +13,14 @@ public protocol FestivalRepositoryProtocol: Sendable {
         startDate: Date,
         endDate: Date?,
         regionCode: String?,
+        sigunguCode: String?,
+        pageNo: Int
+    ) async throws -> [Festival]
+
+    func fetchRegionFestivals(
+        startDate: Date,
+        endDate: Date?,
+        region: KoreanRegion,
         pageNo: Int
     ) async throws -> [Festival]
 

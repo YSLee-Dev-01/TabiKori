@@ -19,6 +19,10 @@ public enum Strings {
     public enum Plan {}
     public enum Festival {}
     public enum AddToItinerary {}
+    public enum AddCustomPlace {}
+    public enum RegionSpot {}
+    public enum Setting {}
+    public enum TravelItems {}
 }
 
 public extension Strings.Common {
@@ -92,12 +96,18 @@ public extension Strings.Home {
     static let nearbyRestaurantEmptyDescription = "周辺に飲食店はありません。"
     /// 한국 배너 부제목 (서울)
     static let inKoreaBannerSubtitle = "ソウルにいますね！"
+    /// 진행중인 플랜이 있을 때 한국 배너 부제목 (%@: 일차)
+    nonisolated(unsafe) static let inKoreaBannerOngoingPlanSubtitle: ((String) -> String) = {
+        "\($0) 旅です！"
+    }
     /// 플랜으로 이동 버튼
     static let moveToPlanButton = "プランへ移動"
     /// 환율 기준 시각 (%@: 날짜/시간)
     nonisolated(unsafe) static let exchangeRateUpdatedAtTitle: ((String) -> String) = {
         "為替レート基準時刻: \($0)"
     }
+    /// 축제 더보기 버튼
+    static let festivalMoreButtonTitle = "もっと見る"
 }
 
 public extension Strings.Region {
@@ -145,6 +155,8 @@ public extension Strings.Tabbar {
     static let plan = "旅程"
     /// 저장
     static let bookmark = "保存"
+    /// 툴박스
+    static let toolbox = "ツール"
 }
 
 public extension Strings.Map {
@@ -202,10 +214,10 @@ public extension Strings.Plan {
     nonisolated(unsafe) static let dayChipTitle: ((Int) -> String) = {
         "\($0)日目"
     }
-    /// 합계 스팟 (Detail 미구현으로 항상 0 고정)
-    static let totalSpotCountFixed = "合計 0スポット"
-    /// 탭하여 상세를 표시 안내 문구
-    static let tapToViewDetail = "タップして詳細を表示"
+    /// 합계 스팟 (%d: 스팟 개수)
+    nonisolated(unsafe) static let totalSpotCount: ((Int) -> String) = {
+        "合計 \($0)スポット"
+    }
     /// 빈 상태 제목
     static let emptyTitle = "登録された日程がありません"
     /// 빈 상태 설명
@@ -215,6 +227,8 @@ public extension Strings.Plan {
     static let spotEmptyTitle = "まだスポットがありません"
     /// 스팟 빈 상태 설명
     static let spotEmptyDescription = "観光地や飲食店の詳細ページから「日程に追加する」で追加できます"
+    /// 지도 빈 상태 설명
+    static let mapEmptyDescription = "地図に表示するスポットがありません"
     /// 스팟 0건 안내
     static let spotCountZero = "スポットがまだ追加されていません"
     /// 스팟 N건 안내 (%d: 스팟 개수)
@@ -227,6 +241,8 @@ public extension Strings.Plan {
     }
     /// 스팟 추가 버튼 (일자 목록 footer)
     static let spotAddButtonTitle = "スポットを追加"
+    /// 스팟 추가 시트 - 관광지 검색 탭
+    static let spotAddSearchTabTitle = "観光地検索"
 
     /// 추가 화면 타이틀
     static let addScreenTitle = "新しい日程を作成"
@@ -258,6 +274,46 @@ public extension Strings.Plan {
     static let saveFailedAlertMessage = "もう一度お試しください"
     /// 알림 확인 버튼
     static let alertConfirm = "確認"
+    /// 편집 메뉴 타이틀
+    static let editMenuTitle = "編集"
+    /// 편집 모드 저장 버튼
+    static let editSaveButton = "保存"
+    /// 편집 모드 취소 버튼
+    static let editCancelButton = "キャンセル"
+    /// 스팟 삭제 실패 알림 타이틀
+    static let spotDeleteFailedAlertTitle = "削除に失敗しました"
+    /// 스팟 삭제 실패 알림 메시지
+    static let spotDeleteFailedAlertMessage = "もう一度お試しください"
+    /// 플랜 자체 편집 메뉴 타이틀
+    static let planEditMenuTitle = "予定を編集"
+    /// 플랜 편집 화면 타이틀
+    static let editPlanScreenTitle = "日程を編集"
+    /// 날짜 축소 확인 알림 타이틀
+    static let dayShrinkAlertTitle = "日程が短くなります"
+    /// 날짜 축소 확인 알림 메시지 (%d: 삭제 시작 일차)
+    nonisolated(unsafe) static let dayShrinkAlertMessage: ((Int) -> String) = {
+        "\($0)日目以降のスポットは削除されます。よろしいですか？"
+    }
+    /// 알림 취소 버튼
+    static let alertCancel = "キャンセル"
+    /// 전체보기 토글 타이틀
+    static let fullOverviewToggleTitle = "全体表示"
+    /// 일자별 보기로 돌아가기 타이틀
+    static let dayOverviewToggleTitle = "日別表示に戻る"
+    /// 내보내기 메뉴 타이틀
+    static let exportMenuTitle = "エクスポート"
+    /// 추가 메뉴 타이틀
+    static let addMenuTitle = "追加"
+    /// 가져오기 메뉴 타이틀
+    static let importMenuTitle = "インポート"
+    /// 가져오기 성공 알림 타이틀
+    static let importSuccessAlertTitle = "インポートが完了しました"
+    /// 가져오기 성공 알림 메시지
+    static let importSuccessAlertMessage = "日程一覧に追加されました"
+    /// 가져오기 실패 알림 타이틀
+    static let importFailedAlertTitle = "インポートに失敗しました"
+    /// 가져오기 실패 알림 메시지
+    static let importFailedAlertMessage = "ファイルを確認してもう一度お試しください"
 }
 
 public extension Strings.Detail {
@@ -312,9 +368,162 @@ public extension Strings.AddToItinerary {
     static let saveButton = "追加する"
 }
 
+public extension Strings.AddCustomPlace {
+    /// 화면 타이틀
+    static let screenTitle = "カスタムスポットを追加"
+    /// Bookmark 화면 진입 버튼
+    static let entryButtonTitle = "カスタムスポット"
+    /// 타이틀 입력 라벨
+    static let titleLabel = "タイトル"
+    /// 타이틀 입력 placeholder
+    static let titlePlaceholder = "スポット名を入力"
+    /// 주소 입력 라벨
+    static let addressLabel = "住所"
+    /// 주소 입력 placeholder
+    static let addressPlaceholder = "住所を入力"
+    /// 저장 버튼
+    static let saveButton = "保存する"
+    /// 주소를 찾을 수 없음 알림 타이틀
+    static let addressNotFoundAlertTitle = "住所が見つかりませんでした"
+    /// 주소를 찾을 수 없음 알림 메시지
+    static let addressNotFoundAlertMessage = "住所を確認してもう一度お試しください"
+    /// 커스텀 스팟 배지 타이틀
+    static let customBadgeTitle = "カスタム"
+}
+
+public extension Strings.RegionSpot {
+    /// 축제 섹션 제목
+    static let festivalSectionTitle = "開催中のイベント"
+    /// 관광지 탭 라벨
+    static let spotTabLabel = "観光スポット"
+    /// 이벤트 탭 라벨
+    static let festivalTabLabel = "イベント"
+    /// 관광지 빈 상태 제목
+    static let spotEmptyTitle = "観光スポットが見つかりませんでした"
+    /// 관광지 빈 상태 설명
+    static let spotEmptyDescription = "他のカテゴリーもお試しください"
+    /// 축제 빈 상태 설명
+    static let festivalEmptyDescription = "現在開催中のイベントはありません"
+    /// 에러 상태 제목
+    static let errorTitle = "読み込みに失敗しました"
+    /// 에러 상태 설명
+    static let errorDescription = "通信状態を確認してもう一度お試しください"
+    /// 재시도 버튼 라벨
+    static let retryButtonTitle = "再試行"
+}
+
 public extension Strings.Festival {
+    /// 검색 시작일 라벨
+    static let startDateLabel = "検索開始日"
+    /// 검색 종료일 라벨
+    static let endDateLabel = "検索終了日"
     /// 결과 없음 제목
     static let emptyTitle = "イベントが見つかりませんでした"
     /// 결과 없음 설명
     static let emptyDescription = "条件を変更して再度お試しください"
+    /// 종료일 지정 시 기간 내 완결 이벤트만 표시된다는 안내 문구
+    static let dateRangeFilterNotice = "終了日を指定すると、期間内に開催が完結するイベントのみ表示されます"
+}
+
+public extension Strings.Setting {
+    /// 화면 타이틀
+    static let screenTitle = "設定"
+
+    /// GPS 권한 섹션 타이틀
+    static let gpsSectionTitle = "位置情報の権限"
+    /// GPS 권한 행 타이틀
+    static let gpsRowTitle = "位置情報へのアクセス"
+    /// GPS 권한 상태 - 허용
+    static let gpsStatusAllowed = "許可済み"
+    /// GPS 권한 상태 - 거부
+    static let gpsStatusDenied = "拒否"
+    /// GPS 권한 상태 - 미결정
+    static let gpsStatusUndetermined = "未設定"
+
+    /// 데이터 초기화 섹션 타이틀
+    static let dataResetSectionTitle = "データの初期化"
+    /// 데이터 초기화 행 타이틀
+    static let dataResetRowTitle = "すべてのデータを初期化"
+    /// 데이터 초기화 행 설명
+    static let dataResetRowDescription = "保存したスポット、旅程、最近の検索履歴が削除されます"
+    /// 초기화 확인 Alert 타이틀
+    static let dataResetAlertTitle = "データを初期化しますか？"
+    /// 초기화 확인 Alert 메시지
+    static let dataResetAlertMessage = "保存済みスポット・旅程・最近の検索履歴が削除されます。この操作は取り消せません。"
+    /// 초기화 확인 Alert 삭제(확정) 버튼
+    static let dataResetAlertConfirmButton = "初期化する"
+    /// 초기화 성공 Alert 타이틀
+    static let dataResetSuccessAlertTitle = "初期化が完了しました"
+    /// 초기화 실패 Alert 타이틀
+    static let dataResetFailureAlertTitle = "初期化に失敗しました"
+    /// 초기화 실패 Alert 메시지
+    static let dataResetFailureAlertMessage = "一部のデータが削除できませんでした。もう一度お試しください"
+
+    /// 기타 섹션 타이틀
+    static let etcSectionTitle = "その他"
+    /// 데이터 출처 행 타이틀
+    static let etcDataSourceTitle = "データ出典"
+    /// 개인정보처리방침 행 타이틀
+    static let etcPrivacyPolicyTitle = "プライバシーポリシー"
+    /// 오픈소스 라이선스 행 타이틀
+    static let etcLicenseTitle = "オープンソースライセンス"
+    /// 기타 정보 행 타이틀
+    static let etcInfoTitle = "その他の情報"
+    /// 문의하기 행 타이틀
+    static let etcContactTitle = "お問い合わせ"
+    /// 버전 정보 행 타이틀
+    static let etcVersionTitle = "バージョン情報"
+    /// 비활성화(TODO) 행 보조 라벨
+    static let etcComingSoonLabel = "準備中"
+
+    /// 데이터 출처 안내 본문
+    static let dataSourceContent = "本アプリは韓国観光公社 多言語観光情報サービス(EngService2)、NAVER 地図・Geocoding API、為替レートAPIの情報を利用しています。"
+    /// 오픈소스 라이선스 안내 본문
+    static let licenseContent = "本アプリは以下のオープンソースライブラリを使用しています。\n\n・swift-composable-architecture\n・Kingfisher\n・lottie-ios\n・firebase-ios-sdk\n・SPM-NMapsMap"
+    /// 기타 정보 안내 본문 (TODO: 내용 추가 예정)
+    static let etcInfoContent = ""
+    /// 버전 정보 표시 (%@: 버전, %@: 빌드번호)
+    nonisolated(unsafe) static let versionTitle: ((String, String) -> String) = { version, build in
+        "バージョン \(version) (\(build))"
+    }
+}
+
+public extension Strings.TravelItems {
+    /// 화면 타이틀 (마스터/저장된 체크리스트 공용)
+    static let title = "持ち物リスト"
+    /// 플랜에 저장 버튼
+    static let saveToPlanButton = "旅程に保存"
+    /// 마스터 리스트 로드 실패 설명
+    static let loadFailedDescription = "リストを読み込めませんでした"
+
+    /// 플랜 선택 시트 타이틀
+    static let planPickerTitle = "保存する旅程を選択"
+    /// 플랜 선택 시트 빈 상태 제목 (플랜 0건)
+    static let planPickerEmptyTitle = "登録された日程がありません"
+    /// 플랜 선택 시트 빈 상태 설명 (플랜 0건)
+    static let planPickerEmptyDescription = "先に旅程を作成してください"
+
+    /// 덮어쓰기 확인 알림 타이틀
+    static let overwriteAlertTitle = "持ち物リストを上書きしますか？"
+    /// 덮어쓰기 확인 알림 메시지
+    static let overwriteAlertMessage = "この旅程には既に持ち物リストが保存されています。上書きすると、チェック状態を含む既存のリストは削除されます。"
+    /// 덮어쓰기 확인 버튼
+    static let overwriteAlertConfirm = "上書きする"
+    /// 덮어쓰기 알림 취소 버튼
+    static let overwriteAlertCancel = "キャンセル"
+
+    /// 저장 실패 설명
+    static let saveFailedDescription = "保存に失敗しました。もう一度お試しください"
+
+    /// PlanDetail 진입 버튼 (접근성 라벨)
+    static let planDetailEntryTitle = "持ち物リスト"
+
+    /// 저장된 체크리스트 빈 상태 제목 (아직 저장 안 됨)
+    static let savedEmptyTitle = "持ち物リストがまだありません"
+    /// 저장된 체크리스트 빈 상태 설명 (아직 저장 안 됨)
+    static let savedEmptyDescription = "ツールタブの持ち物リストから、この旅程に保存できます"
+    /// 완료 개수 표시 (%d: 완료 개수, %d: 전체 개수)
+    nonisolated(unsafe) static let checkedCountTitle: ((Int, Int) -> String) = { checked, total in
+        "\(checked)/\(total) 完了"
+    }
 }

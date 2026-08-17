@@ -14,6 +14,7 @@ import Resource
 
 struct PlanCardView: View {
     let plan: TravelPlan
+    let spotCount: Int
     let onTapped: () -> Void
 
     var body: some View {
@@ -72,11 +73,7 @@ private extension PlanCardView {
                 )
             }
 
-            HStack {
-                TabiLabel(title: Strings.Plan.totalSpotCountFixed, style: .captionM, color: .tabiTextTertiary)
-                Spacer()
-                TabiLabel(title: Strings.Plan.tapToViewDetail, style: .captionM, color: .tabiTextTertiary)
-            }
+            TabiLabel(title: Strings.Plan.totalSpotCount(self.spotCount), style: .captionM, color: .tabiTextTertiary)
         }
         .padding(16)
     }

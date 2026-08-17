@@ -59,7 +59,10 @@ public struct MapView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { notification in
             guard self.isPanelDragging == false else { return }
             guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-            self.keyboardHeight = max(0, UIScreen.main.bounds.height - frame.origin.y)
+            let screenHeight = UIApplication.shared.connectedScenes
+                .compactMap { ($0 as? UIWindowScene)?.screen.bounds.height }
+                .first ?? self.mapContainerHeight
+            self.keyboardHeight = max(0, screenHeight - frame.origin.y)
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             guard self.isPanelDragging == false else { return }
@@ -80,7 +83,7 @@ private extension TouristSpot {
             id: self.id,
             latitude: self.coordinate.latitude,
             longitude: self.coordinate.longitude,
-            title: self.title.removingHangul,
+            title: self.title.removingBracketedTags.removingHangul.truncated(to: 15),
             icon: self.contentType.icon,
             color: self.contentType.color
         )
@@ -213,47 +216,18 @@ private extension MapView {
     }
 
     func searchGuideState() -> some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 0)
-
-            VStack(spacing: 10) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 34))
-                    .foregroundStyle(TabiColor.tabiTextTertiary)
-                TabiLabel(
-                    title: Strings.Map.searchEmptyDescription,
-                    style: .bodyS,
-                    color: .tabiTextTertiary,
-                    alignment: .center
-                )
-            }
-
-            Spacer(minLength: 0)
-        }
+        TabiEmptyState(
+            systemImageName: "magnifyingglass",
+            description: Strings.Map.searchEmptyDescription
+        )
     }
 
     func searchResultEmptyState() -> some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 0)
-
-            VStack(spacing: 10) {
-                Image(systemName: "mappin.slash")
-                    .font(.system(size: 34))
-                    .foregroundStyle(TabiColor.tabiTextTertiary)
-
-                VStack(spacing: 3) {
-                    TabiLabel(title: Strings.Map.searchResultEmptyTitle, style: .bodySBold, color: .tabiTextSecondary)
-                    TabiLabel(
-                        title: Strings.Map.searchResultEmptyDescription,
-                        style: .captionM,
-                        color: .tabiTextTertiary,
-                        alignment: .center
-                    )
-                }
-            }
-
-            Spacer(minLength: 0)
-        }
+        TabiEmptyState(
+            systemImageName: "mappin.slash",
+            title: Strings.Map.searchResultEmptyTitle,
+            description: Strings.Map.searchResultEmptyDescription
+        )
     }
 
     func searchResultSkeletonList() -> some View {
@@ -345,7 +319,9 @@ private extension MapView {
                         placeholder: Strings.Map.searchPlaceholder,
                         style: .glass
                     ) {
-                        self.store.send(.searchFieldTapped)
+                        withAnimation(.tabiStandard) {
+                            _ = self.store.send(.searchFieldTapped)
+                        }
                     }
                     .matchedGeometryEffect(id: "mapSearchField", in: self.searchFieldNamespace)
 
@@ -460,7 +436,9 @@ private extension MapView {
 
     func categoryChip(_ item: CategoryType) -> some View {
         Button {
-            self.store.send(.categorySelected(item, coordinate: nil))
+            withAnimation(.tabiStandard) {
+                _ = self.store.send(.categorySelected(item, coordinate: nil))
+            }
         } label: {
             HStack(spacing: 6) {
                 Image(item.icon)
@@ -493,6 +471,9 @@ private extension MapView {
 private extension MapView {
     func cancelSearch() {
         self.lastTappedSpotID = nil
-        self.store.send(.searchCancelTapped)
+        self.isSearchFieldFocused = false
+        withAnimation(.tabiStandard) {
+            _ = self.store.send(.searchCancelTapped)
+        }
     }
 }

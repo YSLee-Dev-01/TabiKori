@@ -20,25 +20,31 @@ struct FestivalDateRangeView: View {
     var body: some View {
         VStack(spacing: 16) {
             HStack(spacing: 12) {
-                self.dateBox(label: Strings.Plan.departureLabel, date: self.startDate, field: .start)
-                self.dateBox(label: Strings.Plan.returnLabel, date: self.endDate, field: .end)
+                self.dateBox(label: Strings.Festival.startDateLabel, date: self.startDate, field: .start)
+                self.dateBox(label: Strings.Festival.endDateLabel, date: self.endDate, field: .end)
+            }
+
+            if self.endDate != nil {
+                TabiLabel(
+                    title: Strings.Festival.dateRangeFilterNotice,
+                    style: .captionM,
+                    color: .tabiTextTertiary,
+                    isExpanded: true
+                )
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
             if let activeField {
-                // 활성 필드 전환 시 캘린더 자체는 유지된 채 표시 월만 이동해야 하므로,
-                // transition은 바깥 Group에 걸고 표시 월 재계산용 .id()는 안쪽 TabiRangeCalendar에만 적용
-                Group {
-                    TabiRangeCalendar(
-                        startDate: self.$startDate,
-                        endDate: self.$endDate,
-                        initialMonth: self.initialMonth(for: activeField),
-                        editingField: self.calendarField(for: activeField)
-                    )
-                    .id(activeField)
-                }
+                TabiRangeCalendar(
+                    startDate: self.$startDate,
+                    endDate: self.validatedEndDate,
+                    initialMonth: self.initialMonth(for: activeField),
+                    editingField: self.calendarField(for: activeField)
+                )
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+        .animation(.tabiStandard, value: self.endDate)
     }
 }
 
@@ -47,7 +53,21 @@ struct FestivalDateRangeView: View {
 private extension FestivalDateRangeView {
     func dateBox(label: String, date: Date?, field: FestivalDateField) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            TabiLabel(title: label, style: .captionM, color: .tabiTextSecondary)
+            HStack(spacing: 4) {
+                TabiLabel(title: label, style: .captionM, color: .tabiTextSecondary)
+
+                if field == .end, date != nil {
+                    Spacer(minLength: 0)
+                    Button {
+                        self.endDate = nil
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(TabiColor.tabiTextTertiary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
             TabiLabel(
                 title: date?.festivalPeriodDateTitle ?? Strings.Plan.datePlaceholder,
                 style: .bodyMBold,
@@ -72,6 +92,19 @@ private extension FestivalDateRangeView {
 // MARK: - Method
 
 private extension FestivalDateRangeView {
+    /// 종료일이 시작일보다 이전인 탭은 store에 전달하지 않고 무시한다
+    var validatedEndDate: Binding<Date?> {
+        Binding(
+            get: { self.endDate },
+            set: { newValue in
+                if let newValue, let startDate = self.startDate, newValue < startDate {
+                    return
+                }
+                self.endDate = newValue
+            }
+        )
+    }
+
     func initialMonth(for field: FestivalDateField) -> Date {
         switch field {
         case .start:

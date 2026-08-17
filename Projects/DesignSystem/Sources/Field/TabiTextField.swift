@@ -17,23 +17,26 @@ public struct TabiTextField: View {
     private let placeholder: String
     private let text: Binding<String>
     private let maxLength: Int?
+    private let focus: FocusState<Bool>.Binding?
 
     // MARK: - Init
 
     public init(
         placeholder: String,
         text: Binding<String>,
-        maxLength: Int? = nil
+        maxLength: Int? = nil,
+        focus: FocusState<Bool>.Binding? = nil
     ) {
         self.placeholder = placeholder
         self.text = text
         self.maxLength = maxLength
+        self.focus = focus
     }
 
     // MARK: - View
 
     public var body: some View {
-        TextField(self.placeholder, text: self.text)
+        let field = TextField(self.placeholder, text: self.text)
             .font(.pretendard(TypographyStyle.bodyM.weight, size: TypographyStyle.bodyM.size))
             .foregroundStyle(TabiColor.tabiTextPrimary)
             .onChange(of: self.text.wrappedValue) { _, newValue in
@@ -41,13 +44,21 @@ public struct TabiTextField: View {
                     self.text.wrappedValue = String(newValue.prefix(maxLength))
                 }
             }
-            .padding(.horizontal, 14)
-            .frame(height: 46)
-            .background(TabiColor.tabiSurface)
-            .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
-            .overlay {
-                RoundedRectangle(cornerRadius: .tabiRadiusMd)
-                    .stroke(TabiColor.tabiBorder, lineWidth: 1)
+
+        Group {
+            if let focus = self.focus {
+                field.focused(focus)
+            } else {
+                field
             }
+        }
+        .padding(.horizontal, 14)
+        .frame(height: 46)
+        .background(TabiColor.tabiSurface)
+        .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
+        .overlay {
+            RoundedRectangle(cornerRadius: .tabiRadiusMd)
+                .stroke(TabiColor.tabiBorder, lineWidth: 1)
+        }
     }
 }

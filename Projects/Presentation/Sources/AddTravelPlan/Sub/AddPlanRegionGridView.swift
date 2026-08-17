@@ -44,7 +44,7 @@ private extension AddPlanRegionGridView {
             self.onSelect(region)
         } label: {
             VStack(spacing: 4) {
-                Text(region == .etc ? "✏️" : (region.emoji ?? ""))
+                Text(region.gridEmoji)
                     .font(.system(size: 28))
                 TabiLabel(
                     title: region.jaTitle,

@@ -20,6 +20,12 @@ final class TravelPlanDetailSpotModel {
     var subtitle: String?
     var startTime: Date
     var durationMinutes: Int
+    var contentId: String = ""
+    var latitude: Double = 0.0
+    var longitude: Double = 0.0
+    var thumbnailURLString: String?
+    var isCustom: Bool = true
+    var address: String?
 
     init(
         id: UUID,
@@ -30,7 +36,13 @@ final class TravelPlanDetailSpotModel {
         title: String,
         subtitle: String?,
         startTime: Date,
-        durationMinutes: Int
+        durationMinutes: Int,
+        contentId: String,
+        latitude: Double,
+        longitude: Double,
+        thumbnailURLString: String?,
+        isCustom: Bool,
+        address: String?
     ) {
         self.id = id
         self.planId = planId
@@ -41,5 +53,11 @@ final class TravelPlanDetailSpotModel {
         self.subtitle = subtitle
         self.startTime = startTime
         self.durationMinutes = durationMinutes
+        self.contentId = contentId
+        self.latitude = latitude
+        self.longitude = longitude
+        self.thumbnailURLString = thumbnailURLString
+        self.isCustom = isCustom
+        self.address = address
     }
 }

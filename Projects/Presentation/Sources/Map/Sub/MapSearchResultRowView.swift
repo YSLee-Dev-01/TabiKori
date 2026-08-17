@@ -8,6 +8,7 @@
 
 import SwiftUI
 
+import Core
 import DesignSystem
 import Domain
 
@@ -19,10 +20,11 @@ struct MapSearchResultRowView: View {
     var body: some View {
         TabiSpotRow(
             thumbnailURL: self.spot.thumbnailURL,
-            japaneseTitle: self.spot.japaneseTitle,
-            koreanTitle: self.spot.koreanTitle,
+            japaneseTitle: self.spot.japaneseTitle.removingBracketedTags,
+            koreanTitle: self.spot.koreanTitle?.removingBracketedTags,
             tagTitle: self.spot.contentType.label,
             tagColor: self.spot.contentType.color,
+            isCustom: self.spot.isCustom,
             distance: self.spot.formattedDistance,
             onTap: self.onTapped
         )

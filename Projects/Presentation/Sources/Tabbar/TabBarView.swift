@@ -51,6 +51,12 @@ public struct TabBarView: View {
                         Image(systemName: AppTab.bookmark.systemImage)
                     }
                     .tag(AppTab.bookmark)
+
+                TravelItemsView(store: self.store.scope(state: \.toolboxState, action: \.toolbox))
+                    .tabItem {
+                        Image(systemName: AppTab.toolbox.systemImage)
+                    }
+                    .tag(AppTab.toolbox)
             }
             .tint(Color.getTabiColor(.tabiPrimary))
         } destination: { store in
@@ -63,6 +69,12 @@ public struct TabBarView: View {
                 PlanDetailView(store: store)
             case .festival(let store):
                 FestivalView(store: store)
+            case .region(let store):
+                RegionSpotView(store: store)
+            case .setting(let store):
+                SettingView(store: store)
+            case .planTravelItems(let store):
+                PlanTravelItemsView(store: store)
             }
         }
     }

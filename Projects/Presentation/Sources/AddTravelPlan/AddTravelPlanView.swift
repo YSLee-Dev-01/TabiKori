@@ -16,6 +16,9 @@ public struct AddTravelPlanView: View {
 
     @Bindable private var store: StoreOf<AddTravelPlanFeature>
 
+    @State private var selectedDetent: PresentationDetent = .medium
+    @FocusState private var isTitleFocused: Bool
+
     public init(store: StoreOf<AddTravelPlanFeature>) {
         self.store = store
     }
@@ -37,13 +40,18 @@ public struct AddTravelPlanView: View {
             }
             .padding(.top, 20)
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            AddPlanBottomCTAView(isEnabled: self.store.isConfirmEnabled) {
+        .safeAreaBar(edge: .bottom) {
+            AddPlanBottomCTAView(isEnabled: self.store.isConfirmEnabled, isLoading: self.store.isSaving) {
                 self.store.send(.confirmTapped)
             }
         }
+        .presentationDetents([.medium, .large], selection: self.$selectedDetent)
         .presentationDragIndicator(.visible)
         .alert($store.scope(state: \.alert, action: \.alert))
+        .onChange(of: self.isTitleFocused) { _, isFocused in
+            guard isFocused else { return }
+            self.selectedDetent = .large
+        }
     }
 }
 
@@ -51,22 +59,15 @@ public struct AddTravelPlanView: View {
 
 private extension AddTravelPlanView {
     func closeButton() -> some View {
-        Button {
+        TabiCircleIconButton(systemName: "xmark") {
             self.store.send(.closeTapped)
-        } label: {
-            Image(systemName: "xmark")
-                .foregroundStyle(TabiColor.tabiTextSecondary)
-                .frame(width: 32, height: 32)
-                .background(TabiColor.tabiSurface)
-                .clipShape(Circle())
         }
-        .buttonStyle(TabiPressStyle())
     }
 
     func nameField() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             TabiLabel(title: Strings.Plan.nameLabel, style: .bodyMBold, color: .tabiTextPrimary)
-            TabiTextField(placeholder: Strings.Plan.namePlaceholder, text: self.$store.title)
+            TabiTextField(placeholder: Strings.Plan.namePlaceholder, text: self.$store.title, focus: self.$isTitleFocused)
         }
     }
 

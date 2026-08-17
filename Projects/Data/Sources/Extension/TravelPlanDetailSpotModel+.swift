@@ -25,7 +25,12 @@ extension TravelPlanDetailSpotModel {
             title: self.title,
             subtitle: self.subtitle,
             startTime: self.startTime,
-            durationMinutes: self.durationMinutes
+            durationMinutes: self.durationMinutes,
+            contentId: self.contentId,
+            coordinate: Coordinate(latitude: self.latitude, longitude: self.longitude),
+            thumbnailURLString: self.thumbnailURLString,
+            isCustom: self.isCustom,
+            address: self.address
         )
     }
 
@@ -39,7 +44,13 @@ extension TravelPlanDetailSpotModel {
             title: spot.title,
             subtitle: spot.subtitle,
             startTime: spot.startTime,
-            durationMinutes: spot.durationMinutes
+            durationMinutes: spot.durationMinutes,
+            contentId: spot.contentId,
+            latitude: spot.coordinate.latitude,
+            longitude: spot.coordinate.longitude,
+            thumbnailURLString: spot.thumbnailURLString,
+            isCustom: spot.isCustom,
+            address: spot.address
         )
     }
 }

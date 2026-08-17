@@ -26,18 +26,18 @@ public struct TabiNavigationBar<Trailing: View>: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            if let subtitle = self.subtitle {
-                TabiLabel(title: subtitle, style: .bodyMBold, color: .tabiTextPrimary)
-            }
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 5) {
+                if let subtitle = self.subtitle {
+                    TabiLabel(title: subtitle, style: .bodyMBold, color: .tabiTextPrimary)
+                }
 
-            HStack {
                 TabiLabel(title: self.title, style: .titleL, color: .tabiTextPrimary)
-
-                Spacer()
-
-                self.trailing
             }
+
+            Spacer()
+
+            self.trailing
         }
         .padding(.horizontal, 20)
     }

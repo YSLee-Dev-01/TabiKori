@@ -12,20 +12,21 @@ import DesignSystem
 import Resource
 
 struct DetailBottomCTAView: View {
-    let onRouteDirectionsTapped: () -> Void
+    let isSaved: Bool
+    let isSaveDisabled: Bool
+    let onSaveTapped: () -> Void
     let onAddToItineraryTapped: () -> Void
-    let isRouteDirectionsDisabled: Bool
 
     var body: some View {
         HStack(spacing: 12) {
             TabiGlassIconButton(
-                systemName: "arrow.triangle.turn.up.right.diamond",
+                systemName: self.isSaved ? "heart.fill" : "heart",
                 size: .lg,
-                foregroundColor: .tabiTextSecondary
+                foregroundColor: .tabiPrimary
             ) {
-                self.onRouteDirectionsTapped()
+                self.onSaveTapped()
             }
-            .disabled(self.isRouteDirectionsDisabled)
+            .disabled(self.isSaveDisabled)
 
             TabiButton(
                 Strings.Detail.ctaAddToItinerary,

@@ -29,10 +29,15 @@ public struct AddTravelPlanFeature: Sendable {
         var emojiText: String = ""
         var startDate: Date? = nil
         var endDate: Date? = nil
+        var isSaving: Bool = false
         @Presents var alert: AlertState<Action.Alert>?
 
+        var trimmedTitle: String {
+            self.title.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
         var isConfirmEnabled: Bool {
-            guard !self.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
+            guard !self.trimmedTitle.isEmpty else { return false }
             guard let region = self.selectedRegion else { return false }
             if region == .etc, self.customRegionText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 return false
@@ -79,6 +84,7 @@ public struct AddTravelPlanFeature: Sendable {
 
             case .confirmTapped:
                 guard
+                    state.isSaving == false,
                     state.isConfirmEnabled,
                     let region = state.selectedRegion,
                     let startDate = state.startDate,
@@ -86,10 +92,11 @@ public struct AddTravelPlanFeature: Sendable {
                     startDate <= endDate
                 else { return .none }
 
+                state.isSaving = true
                 let customRegionText = state.customRegionText.trimmingCharacters(in: .whitespacesAndNewlines)
                 let plan = TravelPlan(
                     id: UUID(),
-                    title: state.title.trimmingCharacters(in: .whitespacesAndNewlines),
+                    title: state.trimmedTitle,
                     region: region,
                     customRegionText: region == .etc ? customRegionText : nil,
                     customEmoji: state.emojiText.isEmpty ? nil : state.emojiText,
@@ -102,6 +109,7 @@ public struct AddTravelPlanFeature: Sendable {
                 return .none
 
             case .saveResult(false):
+                state.isSaving = false
                 state.alert = AlertState {
                     TextState(Strings.Plan.saveFailedAlertTitle)
                 } actions: {

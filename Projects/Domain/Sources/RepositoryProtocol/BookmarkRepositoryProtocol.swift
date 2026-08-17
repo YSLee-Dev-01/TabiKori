@@ -12,5 +12,6 @@ public protocol BookmarkRepositoryProtocol: Sendable {
     func fetch() async throws -> [Bookmark]
     func add(_ spot: TouristSpot) async throws
     func remove(contentId: String) async throws
+    func removeAll() async throws
     func isBookmarked(contentId: String) async throws -> Bool
 }

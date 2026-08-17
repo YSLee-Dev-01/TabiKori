@@ -66,6 +66,11 @@ extension KoreanRegion {
         }
     }
 
+    /// 일정 추가 화면 그리드 전용 아이콘. `.etc`는 직접 입력을 유도하는 연필 아이콘을 반환
+    var gridEmoji: String {
+        self.emoji ?? "✏️"
+    }
+
     static let allItems: [Self] = [
         .seoul, .busan, .jeju, .gyeongju, .yeosu, .gangneung, .jeonju
     ]

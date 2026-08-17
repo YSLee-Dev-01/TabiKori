@@ -15,6 +15,8 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
     public let distanceMeters: Double?
     public let contentType: CategoryType
     public let coordinate: Coordinate
+    public let isCustom: Bool
+    public let address: String?
 
     public init(
         id: String,
@@ -22,7 +24,9 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
         thumbnailURLString: String?,
         distanceMeters: Double?,
         contentType: CategoryType,
-        coordinate: Coordinate
+        coordinate: Coordinate,
+        isCustom: Bool = false,
+        address: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -30,6 +34,8 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
         self.distanceMeters = distanceMeters
         self.contentType = contentType
         self.coordinate = coordinate
+        self.isCustom = isCustom
+        self.address = address
     }
     
     public var thumbnailURL: URL? {
@@ -37,14 +43,21 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
     }
 
     public var japaneseTitle: String {
-        guard let range = self.title.range(of: "（") else { return self.title }
-        return String(self.title[self.title.startIndex ..< range.lowerBound]).trimmingCharacters(in: .whitespaces)
+        guard let openRange = self.title.rangeOfCharacter(from: Self.openParenthesisCharacters) else { return self.title }
+        return String(self.title[self.title.startIndex ..< openRange.lowerBound]).trimmingCharacters(in: .whitespaces)
     }
 
     public var koreanTitle: String? {
-        guard let openRange = self.title.range(of: "（"),
-              let closeRange = self.title.range(of: "）") else { return nil }
+        guard let openRange = self.title.rangeOfCharacter(from: Self.openParenthesisCharacters),
+              let closeRange = self.title.rangeOfCharacter(from: Self.closeParenthesisCharacters, range: openRange.upperBound ..< self.title.endIndex) else { return nil }
         let korean = String(self.title[openRange.upperBound ..< closeRange.lowerBound]).trimmingCharacters(in: .whitespaces)
         return korean.isEmpty ? nil : korean
     }
+}
+
+// MARK: - Constants
+
+private extension TouristSpot {
+    static let openParenthesisCharacters = CharacterSet(charactersIn: "（(")
+    static let closeParenthesisCharacters = CharacterSet(charactersIn: "）)")
 }

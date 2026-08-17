@@ -15,8 +15,10 @@ public struct TabiSpotRow: View {
     private let thumbnailURL: URL?
     private let japaneseTitle: String
     private let koreanTitle: String?
+    private let address: String?
     private let tagTitle: String
     private let tagColor: TabiColor
+    private let isCustom: Bool
     private let distance: String?
     private let onTap: () -> Void
 
@@ -24,16 +26,20 @@ public struct TabiSpotRow: View {
         thumbnailURL: URL?,
         japaneseTitle: String,
         koreanTitle: String?,
+        address: String? = nil,
         tagTitle: String,
         tagColor: TabiColor,
+        isCustom: Bool,
         distance: String?,
         onTap: @escaping () -> Void
     ) {
         self.thumbnailURL = thumbnailURL
         self.japaneseTitle = japaneseTitle
         self.koreanTitle = koreanTitle
+        self.address = address
         self.tagTitle = tagTitle
         self.tagColor = tagColor
+        self.isCustom = isCustom
         self.distance = distance
         self.onTap = onTap
     }
@@ -52,20 +58,29 @@ public struct TabiSpotRow: View {
                                     .foregroundStyle(TabiColor.tabiTextTertiary)
                             }
                     }
+                    .resizable()
                     .scaledToFill()
                     .frame(width: 64, height: 64)
                     .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
 
-                VStack(alignment: .leading, spacing: 4) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        TabiLabel(title: self.japaneseTitle, style: .bodyMBold, color: .tabiTextPrimary, lineLimit: 1)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        TabiTag(self.tagTitle, color: self.tagColor)
 
-                        if let koreanTitle = self.koreanTitle {
-                            TabiLabel(title: koreanTitle, style: .captionM, color: .tabiTextSecondary, lineLimit: 1)
+                        if self.isCustom {
+                            TabiTag(Strings.AddCustomPlace.customBadgeTitle, color: .tabiTextTertiary)
                         }
+
+                        TabiLabel(title: self.japaneseTitle, style: .bodyMBold, color: .tabiTextPrimary, lineLimit: 1)
                     }
 
-                    TabiTag(self.tagTitle, color: self.tagColor)
+                    if let koreanTitle = self.koreanTitle {
+                        TabiLabel(title: koreanTitle, style: .captionM, color: .tabiTextSecondary, lineLimit: 1)
+                    }
+
+                    if let address = self.address {
+                        TabiLabel(title: address, style: .captionM, color: .tabiTextTertiary, lineLimit: 1)
+                    }
                 }
 
                 Spacer()

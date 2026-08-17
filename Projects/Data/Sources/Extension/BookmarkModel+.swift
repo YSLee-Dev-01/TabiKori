@@ -24,7 +24,9 @@ extension BookmarkModel {
             thumbnailURLString: self.thumbnailURLString,
             distanceMeters: nil,
             contentType: contentType,
-            coordinate: Coordinate(latitude: self.latitude, longitude: self.longitude)
+            coordinate: Coordinate(latitude: self.latitude, longitude: self.longitude),
+            isCustom: self.isCustom,
+            address: self.address
         )
         return Bookmark(touristSpot: touristSpot, savedAt: self.savedAt)
     }
@@ -37,7 +39,9 @@ extension BookmarkModel {
             contentTypeRaw: spot.contentType.rawValue,
             latitude: spot.coordinate.latitude,
             longitude: spot.coordinate.longitude,
-            savedAt: savedAt
+            savedAt: savedAt,
+            isCustom: spot.isCustom,
+            address: spot.address
         )
     }
 }

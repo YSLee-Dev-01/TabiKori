@@ -18,6 +18,14 @@ public enum FestivalDateField: Equatable, Hashable, Sendable {
     case end
 }
 
+/// 이벤트(축제) 검색 로드 상태. 네트워크 실패와 검색 결과 0건을 구분하기 위해 사용
+public enum FestivalLoadState: Equatable, Sendable {
+    case idle
+    case loading
+    case loaded
+    case failed
+}
+
 @Reducer
 public struct FestivalFeature: Sendable {
 
@@ -35,7 +43,7 @@ public struct FestivalFeature: Sendable {
         var regions: [LDongRegion] = []
         var selectedRegionCode: String? = nil
         var festivals: [Festival] = []
-        var isLoading: Bool = false
+        var loadState: FestivalLoadState = .idle
         fileprivate var hasLoadedRegions: Bool = false
         fileprivate var hasLoadedInitialFestivals: Bool = false
 
@@ -48,7 +56,9 @@ public struct FestivalFeature: Sendable {
         case dateFieldTapped(FestivalDateField)
         case regionChipTapped(String?)
         case festivalTapped(Festival)
+        case retryButtonTapped
         case festivalsResult([Festival])
+        case festivalsFailed
         case regionsResult([LDongRegion])
     }
 
@@ -59,11 +69,12 @@ public struct FestivalFeature: Sendable {
         Reduce { state, action in
             switch action {
             case .binding(\.startDate):
-                state.isLoading = true
+                self.clearEndDateIfInvalid(state: &state)
+                state.loadState = .loading
                 return self.searchEffect(state: state)
 
             case .binding(\.endDate):
-                state.isLoading = true
+                state.loadState = .loading
                 return self.searchEffect(state: state)
 
             case .binding:
@@ -79,7 +90,7 @@ public struct FestivalFeature: Sendable {
 
                 if state.hasLoadedInitialFestivals == false {
                     state.hasLoadedInitialFestivals = true
-                    state.isLoading = true
+                    state.loadState = .loading
                     effects.append(self.searchEffect(state: state))
                 }
 
@@ -91,15 +102,23 @@ public struct FestivalFeature: Sendable {
 
             case .regionChipTapped(let regionCode):
                 state.selectedRegionCode = state.selectedRegionCode == regionCode ? nil : regionCode
-                state.isLoading = true
+                state.loadState = .loading
                 return self.searchEffect(state: state)
 
             case .festivalTapped:
                 return .none
 
+            case .retryButtonTapped:
+                state.loadState = .loading
+                return self.searchEffect(state: state)
+
             case .festivalsResult(let festivals):
                 state.festivals = festivals
-                state.isLoading = false
+                state.loadState = .loaded
+                return .none
+
+            case .festivalsFailed:
+                state.loadState = .failed
                 return .none
 
             case .regionsResult(let regions):
@@ -120,7 +139,9 @@ private enum CancelID {
 
 private extension FestivalFeature {
     func searchEffect(state: State) -> Effect<Action> {
-        guard let startDate = state.startDate else { return .none }
+        guard let startDate = state.startDate else {
+            return .send(.festivalsResult([]))
+        }
         let endDate = state.endDate
         let regionCode = state.selectedRegionCode
 
@@ -130,6 +151,7 @@ private extension FestivalFeature {
                     startDate: startDate,
                     endDate: endDate,
                     regionCode: regionCode,
+                    sigunguCode: nil,
                     pageNo: 1
                 )
                 await send(.festivalsResult(festivals))
@@ -139,10 +161,15 @@ private extension FestivalFeature {
                     return
                 }
                 AppLogger.view.log(.error, "행사 검색 실패: \(error.localizedDescription)")
-                await send(.festivalsResult([]))
+                await send(.festivalsFailed)
             }
         }
         .cancellable(id: CancelID.festivalSearch, cancelInFlight: true)
+    }
+
+    func clearEndDateIfInvalid(state: inout State) {
+        guard let startDate = state.startDate, let endDate = state.endDate, endDate < startDate else { return }
+        state.endDate = nil
     }
 
     func fetchRegionsEffect() -> Effect<Action> {

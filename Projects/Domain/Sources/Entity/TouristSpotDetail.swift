@@ -50,14 +50,21 @@ public struct TouristSpotDetail: Equatable, Sendable {
     }
 
     public var japaneseTitle: String {
-        guard let range = self.title.range(of: "（") else { return self.title }
-        return String(self.title[self.title.startIndex ..< range.lowerBound]).trimmingCharacters(in: .whitespaces)
+        guard let openRange = self.title.rangeOfCharacter(from: Self.openParenthesisCharacters) else { return self.title }
+        return String(self.title[self.title.startIndex ..< openRange.lowerBound]).trimmingCharacters(in: .whitespaces)
     }
 
     public var koreanTitle: String? {
-        guard let openRange = self.title.range(of: "（"),
-              let closeRange = self.title.range(of: "）") else { return nil }
+        guard let openRange = self.title.rangeOfCharacter(from: Self.openParenthesisCharacters),
+              let closeRange = self.title.rangeOfCharacter(from: Self.closeParenthesisCharacters, range: openRange.upperBound ..< self.title.endIndex) else { return nil }
         let korean = String(self.title[openRange.upperBound ..< closeRange.lowerBound]).trimmingCharacters(in: .whitespaces)
         return korean.isEmpty ? nil : korean
     }
+}
+
+// MARK: - Constants
+
+private extension TouristSpotDetail {
+    static let openParenthesisCharacters = CharacterSet(charactersIn: "（(")
+    static let closeParenthesisCharacters = CharacterSet(charactersIn: "）)")
 }

@@ -49,6 +49,9 @@ public struct DetailFeature {
         fileprivate var hasReceivedDetail: Bool = false
         fileprivate var hasReceivedIntro: Bool = false
         fileprivate var hasReceivedImages: Bool = false
+        fileprivate var hasDetailFailed: Bool = false
+        fileprivate var hasIntroFailed: Bool = false
+        fileprivate var hasImagesFailed: Bool = false
         @Presents var addToItineraryState: AddToItineraryFeature.State?
 
         public init(touristSpot: TouristSpot) {
@@ -60,30 +63,41 @@ public struct DetailFeature {
                 tel: nil,
                 homepageURLString: nil,
                 imageURLString: touristSpot.thumbnailURLString,
-                address: "",
-                coordinate: Coordinate(latitude: 0, longitude: 0),
+                address: touristSpot.isCustom ? (touristSpot.address ?? "") : "",
+                coordinate: touristSpot.isCustom ? touristSpot.coordinate : .zero,
                 overview: nil
             )
             self.intro = .empty(for: touristSpot.contentType)
         }
 
         fileprivate var hasReceivedAllResults: Bool {
-            self.hasReceivedDetail && self.hasReceivedIntro && self.hasReceivedImages
+            self.touristSpot.isCustom || (self.hasReceivedDetail && self.hasReceivedIntro && self.hasReceivedImages)
+        }
+
+        var loadFailed: Bool {
+            self.touristSpot.isCustom == false
+                && self.hasReceivedAllResults
+                && self.hasDetailFailed && self.hasIntroFailed && self.hasImagesFailed
         }
     }
 
     public enum Action: Equatable, BindableAction {
         case binding(BindingAction<State>)
         case onAppear
+        case onDisappear
         case tabSelected(DetailTab)
         case saveButtonTapped
         case photoCellTapped(index: Int)
         case mapSearchButtonTapped
         case routeDirectionsButtonTapped
         case addToItineraryButtonTapped
-        case detailResult(TouristSpotDetail?)
-        case introResult(TouristSpotIntro?)
-        case imagesResult([TouristSpotImage]?)
+        case retryButtonTapped
+        case detailResult(TouristSpotDetail)
+        case detailFailed
+        case introResult(TouristSpotIntro)
+        case introFailed
+        case imagesResult([TouristSpotImage])
+        case imagesFailed
         case isBookmarkedResult(Bool)
         case addToItinerary(PresentationAction<AddToItineraryFeature.Action>)
     }
@@ -97,6 +111,14 @@ public struct DetailFeature {
             case .onAppear:
                 guard state.hasStartedLoading == false else { return .none }
                 state.hasStartedLoading = true
+
+                if state.touristSpot.isCustom {
+                    state.isLoading = false
+                    let shareURL = self.naverMapUseCase.makeShareURL(query: state.touristSpot.japaneseTitle)
+                    state.shareText = Self.makeShareText(spot: state.touristSpot, address: state.detail.address, shareURL: shareURL)
+                    return self.fetchIsBookmarkedEffect(contentId: state.touristSpot.id)
+                }
+
                 state.isLoading = true
                 return .merge(
                     self.fetchDetailEffect(contentId: state.touristSpot.id),
@@ -104,6 +126,10 @@ public struct DetailFeature {
                     self.fetchImagesEffect(contentId: state.touristSpot.id),
                     self.fetchIsBookmarkedEffect(contentId: state.touristSpot.id)
                 )
+
+            case .onDisappear:
+                state.addToItineraryState = nil
+                return .none
 
             case .tabSelected(let tab):
                 state.selectedTab = tab
@@ -116,7 +142,7 @@ public struct DetailFeature {
                         .cancellable(id: CancelID.bookmarkToggle, cancelInFlight: true)
                 } else {
                     state.isSaved = true
-                    return self.addBookmarkEffect(spot: state.touristSpot)
+                    return self.addBookmarkEffect(spot: state.touristSpot, address: state.detail.address)
                         .cancellable(id: CancelID.bookmarkToggle, cancelInFlight: true)
                 }
 
@@ -140,28 +166,59 @@ public struct DetailFeature {
                 )
                 return .none
 
+            case .retryButtonTapped:
+                state.hasReceivedDetail = false
+                state.hasReceivedIntro = false
+                state.hasReceivedImages = false
+                state.hasDetailFailed = false
+                state.hasIntroFailed = false
+                state.hasImagesFailed = false
+                state.isLoading = true
+                return .merge(
+                    self.fetchDetailEffect(contentId: state.touristSpot.id),
+                    self.fetchIntroEffect(contentId: state.touristSpot.id, contentType: state.touristSpot.contentType),
+                    self.fetchImagesEffect(contentId: state.touristSpot.id)
+                )
+
             case .detailResult(let detail):
                 state.hasReceivedDetail = true
                 state.isLoading = !state.hasReceivedAllResults
-                guard let detail else { return .none }
                 state.detail = detail
                 let shareURL = self.naverMapUseCase.makeShareURL(query: state.touristSpot.japaneseTitle)
                 state.shareText = Self.makeShareText(spot: state.touristSpot, address: detail.address, shareURL: shareURL)
                 return .none
 
+            case .detailFailed:
+                state.hasReceivedDetail = true
+                state.hasDetailFailed = true
+                state.isLoading = !state.hasReceivedAllResults
+                return .none
+
             case .introResult(let intro):
-                if let intro { state.intro = intro }
+                state.intro = intro
                 state.hasReceivedIntro = true
                 state.isLoading = !state.hasReceivedAllResults
                 return .none
 
+            case .introFailed:
+                state.hasReceivedIntro = true
+                state.hasIntroFailed = true
+                state.isLoading = !state.hasReceivedAllResults
+                return .none
+
             case .imagesResult(let images):
-                if let images { state.images = images }
+                state.images = images
                 state.hasReceivedImages = true
                 state.isLoading = !state.hasReceivedAllResults
                 if state.images.isEmpty, state.selectedTab == .photos {
                     state.selectedTab = .info
                 }
+                return .none
+
+            case .imagesFailed:
+                state.hasReceivedImages = true
+                state.hasImagesFailed = true
+                state.isLoading = !state.hasReceivedAllResults
                 return .none
 
             case .isBookmarkedResult(let isSaved):
@@ -202,7 +259,7 @@ private extension DetailFeature {
             } catch {
                 guard !Task.isCancelled else { return }
                 AppLogger.view.log(.error, "관광지 상세 조회 실패: \(error.localizedDescription)")
-                await send(.detailResult(nil))
+                await send(.detailFailed)
             }
         }
     }
@@ -215,7 +272,7 @@ private extension DetailFeature {
             } catch {
                 guard !Task.isCancelled else { return }
                 AppLogger.view.log(.error, "관광지 소개정보 조회 실패: \(error.localizedDescription)")
-                await send(.introResult(nil))
+                await send(.introFailed)
             }
         }
     }
@@ -228,7 +285,7 @@ private extension DetailFeature {
             } catch {
                 guard !Task.isCancelled else { return }
                 AppLogger.view.log(.error, "관광지 이미지 조회 실패: \(error.localizedDescription)")
-                await send(.imagesResult(nil))
+                await send(.imagesFailed)
             }
         }
     }
@@ -245,10 +302,20 @@ private extension DetailFeature {
         }
     }
 
-    func addBookmarkEffect(spot: TouristSpot) -> Effect<Action> {
+    func addBookmarkEffect(spot: TouristSpot, address: String) -> Effect<Action> {
         .run { [bookmarkUseCase = self.bookmarkUseCase] send in
+            let spotToSave = TouristSpot(
+                id: spot.id,
+                title: spot.title,
+                thumbnailURLString: spot.thumbnailURLString,
+                distanceMeters: spot.distanceMeters,
+                contentType: spot.contentType,
+                coordinate: spot.coordinate,
+                isCustom: spot.isCustom,
+                address: address.isEmpty ? spot.address : address
+            )
             do {
-                try await bookmarkUseCase.add(spot)
+                try await bookmarkUseCase.add(spotToSave)
                 await send(.isBookmarkedResult(true))
             } catch {
                 AppLogger.view.log(.error, "북마크 저장 실패: \(error.localizedDescription)")

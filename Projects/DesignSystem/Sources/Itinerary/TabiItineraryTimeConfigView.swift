@@ -1,6 +1,6 @@
 //
-//  AddToItineraryTimeConfigView.swift
-//  Presentation
+//  TabiItineraryTimeConfigView.swift
+//  DesignSystem
 //
 //  Created by 이윤수 on 8/4/26.
 //  Copyright © 2026 yslee. All rights reserved.
@@ -8,11 +8,10 @@
 
 import SwiftUI
 
-import DesignSystem
 import Resource
 
 /// Step 2 — 선택한 일정/날짜 요약 + 시작·종료 시각 입력 + 저장 버튼
-struct AddToItineraryTimeConfigView: View {
+public struct TabiItineraryTimeConfigView: View {
     let planTitle: String
     let dayTitle: String
     let dateTitle: String
@@ -23,11 +22,33 @@ struct AddToItineraryTimeConfigView: View {
     let isSaving: Bool
     let onSaveTapped: () -> Void
 
-    var body: some View {
+    public init(
+        planTitle: String,
+        dayTitle: String,
+        dateTitle: String,
+        startTime: Binding<Date>,
+        endTime: Binding<Date>,
+        durationMinutes: Int,
+        isSaveEnabled: Bool,
+        isSaving: Bool,
+        onSaveTapped: @escaping () -> Void
+    ) {
+        self.planTitle = planTitle
+        self.dayTitle = dayTitle
+        self.dateTitle = dateTitle
+        self._startTime = startTime
+        self._endTime = endTime
+        self.durationMinutes = durationMinutes
+        self.isSaveEnabled = isSaveEnabled
+        self.isSaving = isSaving
+        self.onSaveTapped = onSaveTapped
+    }
+
+    public var body: some View {
         ScrollView {
             VStack(spacing: 20) {
                 self.selectionSummary()
-                AddToItineraryTimeForm(
+                TabiItineraryTimeForm(
                     startTime: self.$startTime,
                     endTime: self.$endTime,
                     durationMinutes: self.durationMinutes
@@ -35,7 +56,7 @@ struct AddToItineraryTimeConfigView: View {
             }
             .padding(20)
         }
-        .safeAreaInset(edge: .bottom) {
+        .safeAreaBar(edge: .bottom) {
             self.saveButton()
                 .padding(.horizontal, 20)
                 .padding(.bottom, 12)
@@ -45,7 +66,7 @@ struct AddToItineraryTimeConfigView: View {
 
 // MARK: - Method
 
-private extension AddToItineraryTimeConfigView {
+private extension TabiItineraryTimeConfigView {
     func selectionSummary() -> some View {
         VStack(alignment: .leading, spacing: 4) {
             TabiLabel(title: self.planTitle, style: .bodyMBold, color: .tabiTextPrimary)

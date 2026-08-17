@@ -17,8 +17,7 @@ struct PlanDetailAddSpotButton: View {
     var body: some View {
         TabiButton(
             Strings.Plan.spotAddButtonTitle,
-            style: .secondary,
-            icon: Image(systemName: "plus"),
+            style: .primary,
             isExpanded: true,
             height: 45,
             cornerRadius: .tabiRadiusFull

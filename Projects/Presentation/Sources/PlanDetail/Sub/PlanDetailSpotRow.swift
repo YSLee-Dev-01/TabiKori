@@ -14,27 +14,40 @@ import Resource
 
 struct PlanDetailSpotRow: View {
     let spot: TravelPlanDetailSpot
+    let index: Int
     let isFirst: Bool
     let isLast: Bool
+    let isEditing: Bool
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
             TabiLabel(title: self.spot.startTimeTitle, style: .captionMBold, color: .tabiTextSecondary)
                 .frame(width: 40, alignment: .leading)
+                .padding(.top, 4)
 
             self.timeline
 
             TabiCard {
-                VStack(alignment: .leading, spacing: 6) {
-                    TabiTag(self.spot.category.label, color: self.spot.category.color)
-                    TabiLabel(title: self.spot.title, style: .bodyMBold, color: .tabiTextPrimary)
-                    if let subtitle = self.spot.subtitle {
-                        TabiLabel(title: subtitle, style: .captionM, color: .tabiTextSecondary)
+                HStack(alignment: .center, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        TabiTag(self.spot.category.label, color: self.spot.category.color)
+                        TabiLabel(title: self.spot.title, style: .bodyMBold, color: .tabiTextPrimary)
+                        if let subtitle = self.spot.subtitle {
+                            TabiLabel(title: subtitle, style: .captionM, color: .tabiTextSecondary)
+                        }
+                        TabiLabel(title: self.spot.durationTitle, style: .captionM, color: .tabiTextTertiary)
                     }
-                    TabiLabel(title: self.spot.durationTitle, style: .captionM, color: .tabiTextTertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                    if self.isEditing == false {
+                        Image(systemName: "chevron.right")
+                            .foregroundStyle(TabiColor.tabiTextTertiary)
+                    }
                 }
                 .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .padding(.vertical, 4)
         }
     }
 }
@@ -51,13 +64,16 @@ private extension PlanDetailSpotRow {
 
             Circle()
                 .fill(self.spot.category.color)
-                .frame(width: 10, height: 10)
+                .overlay {
+                    TabiLabel(title: "\(self.index)", style: .captionXSBold, color: .tabiOnColor)
+                }
+                .frame(width: 22, height: 22)
 
             Rectangle()
                 .fill(TabiColor.tabiBorder)
                 .opacity(self.isLast ? 0 : 1)
                 .frame(width: 2)
         }
-        .frame(width: 10)
+        .frame(width: 22)
     }
 }

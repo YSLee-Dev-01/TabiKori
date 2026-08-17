@@ -8,6 +8,7 @@
 
 import Foundation
 import ComposableArchitecture
+import Domain
 
 @Reducer
 public struct TabBarFeature {
@@ -20,6 +21,7 @@ public struct TabBarFeature {
         var mapState: MapFeature.State = .init()
         var planState: PlanFeature.State = .init()
         var bookmarkState: BookmarkFeature.State = .init()
+        var toolboxState: TravelItemsFeature.State = .init()
 
         var path = StackState<StackPath.State>()
 
@@ -32,6 +34,7 @@ public struct TabBarFeature {
         case map(MapFeature.Action)
         case plan(PlanFeature.Action)
         case bookmark(BookmarkFeature.Action)
+        case toolbox(TravelItemsFeature.Action)
         case path(StackActionOf<StackPath>)
     }
 
@@ -50,6 +53,9 @@ public struct TabBarFeature {
         Scope(state: \.planState, action: \.plan) {
             PlanFeature()
         }
+        Scope(state: \.toolboxState, action: \.toolbox) {
+            TravelItemsFeature()
+        }
 
         Reduce { state, action in
             switch action {
@@ -63,8 +69,7 @@ public struct TabBarFeature {
 
             case .home(.searchBarTapped):
                 state.selectedTab = .map
-                state.mapState.mode = .typing
-                return .none
+                return .send(.map(.searchFieldTapped))
 
             case .home(.categoryTapped):
                 state.selectedTab = .map
@@ -74,8 +79,30 @@ public struct TabBarFeature {
                 guard state.selectedTab == .map else { return .none }
                 return .send(.map(.categorySelected(category, coordinate: coordinate)))
 
-            case .home(.recommendedEventBannerTapped):
+            case .home(.festivalMoreButtonTapped):
                 state.path.append(.festival(FestivalFeature.State()))
+                return .none
+
+            case .home(.festivalTapped(let festival)):
+                state.path.append(.detail(DetailFeature.State(touristSpot: festival.touristSpot)))
+                return .none
+
+            case .home(.regionCardTapped(let region)):
+                state.path.append(.region(RegionSpotFeature.State(region: region)))
+                return .none
+
+            case .home(.settingButtonTapped):
+                state.path.append(.setting(SettingFeature.State()))
+                return .none
+
+            case .home(.moveToPlanButtonTapped):
+                state.selectedTab = .plan
+                if let matchedPlan = state.homeState.ongoingMatchedPlan {
+                    state.path.append(.planDetail(PlanDetailFeature.State(
+                        plan: matchedPlan,
+                        initialDayIndex: state.homeState.ongoingMatchedPlanDayIndex
+                    )))
+                }
                 return .none
 
             case .home:
@@ -95,6 +122,9 @@ public struct TabBarFeature {
             case .bookmark:
                 return .none
 
+            case .toolbox:
+                return .none
+
             case .plan(.planTapped(let plan)):
                 state.path.append(.planDetail(PlanDetailFeature.State(plan: plan)))
                 return .none
@@ -102,8 +132,25 @@ public struct TabBarFeature {
             case .plan:
                 return .none
 
+            case .path(.element(id: _, action: .planDetail(.spotRowTapped(let spot)))):
+                let touristSpot = TouristSpot(
+                    id: spot.contentId,
+                    title: spot.title,
+                    thumbnailURLString: spot.thumbnailURLString,
+                    distanceMeters: nil,
+                    contentType: spot.category,
+                    coordinate: spot.coordinate,
+                    isCustom: spot.isCustom,
+                    address: spot.address
+                )
+                state.path.append(.detail(DetailFeature.State(touristSpot: touristSpot)))
+                return .none
+
             case .path(.element(id: _, action: .detail(.isBookmarkedResult))):
                 return .send(.bookmark(.onAppear))
+
+            case .path(.element(id: _, action: .setting(.resetCompleted))):
+                return .merge(.send(.bookmark(.onAppear)), .send(.plan(.onAppear)))
 
             case .path(.element(id: let id, action: .detail(.photoCellTapped(let index)))):
                 guard case .detail(let detailState) = state.path[id: id] else { return .none }
@@ -114,7 +161,20 @@ public struct TabBarFeature {
                 )))
                 return .none
 
+            case .path(.element(id: let id, action: .planDetail(.travelItemsButtonTapped))):
+                guard case .planDetail(let planDetailState) = state.path[id: id] else { return .none }
+                state.path.append(.planTravelItems(PlanTravelItemsFeature.State(plan: planDetailState.plan)))
+                return .none
+
             case .path(.element(id: _, action: .festival(.festivalTapped(let festival)))):
+                state.path.append(.detail(DetailFeature.State(touristSpot: festival.touristSpot)))
+                return .none
+
+            case .path(.element(id: _, action: .region(.spotTapped(let spot)))):
+                state.path.append(.detail(DetailFeature.State(touristSpot: spot)))
+                return .none
+
+            case .path(.element(id: _, action: .region(.festivalTapped(let festival)))):
                 state.path.append(.detail(DetailFeature.State(touristSpot: festival.touristSpot)))
                 return .none
 

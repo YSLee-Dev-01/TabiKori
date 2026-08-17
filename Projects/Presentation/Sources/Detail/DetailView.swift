@@ -18,7 +18,9 @@ struct DetailView: View {
     let namespace: Namespace.ID
 
     @Environment(\.dismiss) private var dismiss
-    
+
+    @State private var isMovingForward: Bool = true
+
     fileprivate var visibleTabs: [DetailTab] {
         DetailTab.allCases.filter { tab in
             switch tab {
@@ -47,10 +49,18 @@ struct DetailView: View {
                     )
                     .id(Self.heroTopAnchorID)
                     self.contentHeaderSection()
-                    self.tabBarSection(proxy: proxy)
-                    self.tabContentSection()
-                        .animation(.tabiStandard, value: self.store.selectedTab)
-                        .animation(.tabiStandard, value: self.store.isLoading)
+                    if self.store.loadFailed {
+                        TabiRetryableEmptyState(description: Strings.RegionSpot.errorDescription) {
+                            self.store.send(.retryButtonTapped)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 24)
+                    } else {
+                        self.tabBarSection(proxy: proxy)
+                        self.tabContentSection()
+                            .animation(.tabiStandard, value: self.store.selectedTab)
+                            .animation(.tabiStandard, value: self.store.isLoading)
+                    }
                 }
                 .padding(.bottom, 115)
             }
@@ -79,21 +89,24 @@ struct DetailView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        self.store.send(.saveButtonTapped)
+                        self.store.send(.routeDirectionsButtonTapped)
                     } label: {
-                        Image(systemName: self.store.isSaved ? "heart.fill" : "heart")
+                        Image(systemName: "arrow.triangle.turn.up.right.diamond")
                     }
                     .tint(Color.getTabiColor(.tabiPrimary))
+                    .disabled(self.store.isLoading || self.store.loadFailed)
                 }
             }
             .navigationTransition(.zoom(sourceID: self.store.touristSpot.id, in: self.namespace))
             .navigationBarBackButtonHidden(true)
+            .interactivePopGestureEnabled(true)
             .toolbarBackground(.hidden, for: .navigationBar)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
+            .safeAreaBar(edge: .bottom) {
                 DetailBottomCTAView(
-                    onRouteDirectionsTapped: { self.store.send(.routeDirectionsButtonTapped) },
-                    onAddToItineraryTapped: { self.store.send(.addToItineraryButtonTapped) },
-                    isRouteDirectionsDisabled: self.store.isLoading
+                    isSaved: self.store.isSaved,
+                    isSaveDisabled: self.store.isLoading && self.store.isSaved == false,
+                    onSaveTapped: { self.store.send(.saveButtonTapped) },
+                    onAddToItineraryTapped: { self.store.send(.addToItineraryButtonTapped) }
                 )
             }
             .sheet(item: self.$store.scope(state: \.addToItineraryState, action: \.addToItinerary)) { store in
@@ -103,6 +116,9 @@ struct DetailView: View {
             }
             .onAppear {
                 self.store.send(.onAppear)
+            }
+            .onDisappear {
+                self.store.send(.onDisappear)
             }
         }
     }
@@ -119,7 +135,12 @@ private extension DetailView {
                     .padding(.top, 4)
             }
             HStack {
-                TabiTag(self.store.detail.contentType.label, color: self.store.detail.contentType.color)
+                HStack(spacing: 6) {
+                    TabiTag(self.store.detail.contentType.label, color: self.store.detail.contentType.color)
+                    if self.store.touristSpot.isCustom {
+                        TabiTag(Strings.AddCustomPlace.customBadgeTitle, color: .tabiTextTertiary)
+                    }
+                }
                 Spacer()
                 HStack(spacing: 3) {
                     Image(systemName: "location.fill")
@@ -149,6 +170,10 @@ private extension DetailView {
     }
 
     func selectTab(_ tab: DetailTab, proxy: ScrollViewProxy) {
+        if let currentIndex = self.visibleTabs.firstIndex(of: self.store.selectedTab),
+           let newIndex = self.visibleTabs.firstIndex(of: tab) {
+            self.isMovingForward = newIndex >= currentIndex
+        }
         withAnimation(.tabiStandard) {
             proxy.scrollTo(Self.heroTopAnchorID, anchor: .top)
         } completion: {
@@ -158,30 +183,38 @@ private extension DetailView {
 
     @ViewBuilder
     func tabContentSection() -> some View {
-        if self.store.selectedTab == .info {
-            if self.store.isLoading {
-                self.infoLoadingPlaceholder()
-                    .transition(.opacity)
-            } else {
-                DetailInfoTabView(intro: self.$store.intro, detail: self.$store.detail)
-                    .transition(.opacity)
+        Group {
+            if self.store.selectedTab == .info {
+                ZStack {
+                    self.infoLoadingPlaceholder()
+                        .opacity(self.store.isLoading ? 1 : 0)
+                        .allowsHitTesting(self.store.isLoading)
+                    DetailInfoTabView(intro: self.$store.intro, detail: self.$store.detail)
+                        .opacity(self.store.isLoading ? 0 : 1)
+                        .allowsHitTesting(self.store.isLoading == false)
+                }
+            }
+            if self.store.selectedTab == .photos {
+                DetailPhotosTabView(
+                    images: self.store.images,
+                    onImageTapped: { self.store.send(.photoCellTapped(index: $0)) }
+                )
+            }
+            if self.store.selectedTab == .map {
+                DetailMapTabView(
+                    touristSpotID: self.store.touristSpot.id,
+                    title: self.store.touristSpot.title,
+                    contentType: self.store.touristSpot.contentType,
+                    coordinate: self.store.detail.coordinate,
+                    onViewInMapTapped: { self.store.send(.mapSearchButtonTapped) }
+                )
             }
         }
-        if self.store.selectedTab == .photos {
-            DetailPhotosTabView(
-                images: self.store.images,
-                onImageTapped: { self.store.send(.photoCellTapped(index: $0)) }
-            )
-        }
-        if self.store.selectedTab == .map {
-            DetailMapTabView(
-                touristSpotID: self.store.touristSpot.id,
-                title: self.store.touristSpot.title,
-                contentType: self.store.touristSpot.contentType,
-                coordinate: self.store.detail.coordinate,
-                onViewInMapTapped: { self.store.send(.mapSearchButtonTapped) }
-            )
-        }
+        .id(self.store.selectedTab)
+        .transition(.asymmetric(
+            insertion: .move(edge: self.isMovingForward ? .trailing : .leading),
+            removal: .move(edge: self.isMovingForward ? .leading : .trailing)
+        ))
     }
 
     func infoLoadingPlaceholder() -> some View {

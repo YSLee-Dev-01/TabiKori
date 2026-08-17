@@ -35,4 +35,17 @@ public extension String {
         let brRange = NSRange(self.startIndex..., in: self)
         return brRegex.stringByReplacingMatches(in: self, range: brRange, withTemplate: "\n")
     }
+
+    var removingBracketedTags: String {
+        let bracketPattern = "\\[[^\\]]*\\]"
+        guard let bracketRegex = try? NSRegularExpression(pattern: bracketPattern) else { return self }
+        let bracketRange = NSRange(self.startIndex..., in: self)
+        let withoutBrackets = bracketRegex.stringByReplacingMatches(in: self, range: bracketRange, withTemplate: "")
+        return withoutBrackets.trimmingCharacters(in: .whitespaces)
+    }
+
+    func truncated(to length: Int, trailing: String = "…") -> String {
+        guard self.count > length else { return self }
+        return String(self.prefix(length)) + trailing
+    }
 }

@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 import ComposableArchitecture
 import DesignSystem
@@ -25,12 +26,27 @@ public struct PlanView: View {
         self.planList()
             .safeAreaBar(edge: .top) {
                 TabiNavigationBar(title: Strings.Plan.title) {
-                    self.newPlanButton()
+                    self.planMenuButton()
                 }
             }
             .sheet(item: self.$store.scope(state: \.addPlanState, action: \.addPlan)) { store in
                 AddTravelPlanView(store: store)
             }
+            .fileImporter(
+                isPresented: Binding(
+                    get: { self.store.isImporterPresented },
+                    set: { self.store.send(.importerPresentationChanged($0)) }
+                ),
+                allowedContentTypes: [.json]
+            ) { result in
+                switch result {
+                case .success(let url):
+                    self.store.send(.importFileSelected(url))
+                case .failure:
+                    self.store.send(.importFileSelected(nil))
+                }
+            }
+            .alert($store.scope(state: \.alert, action: \.alert))
             .onAppear {
                 self.store.send(.onAppear)
             }
@@ -40,20 +56,17 @@ public struct PlanView: View {
 // MARK: - View
 
 private extension PlanView {
-    func newPlanButton() -> some View {
-        Button {
-            self.store.send(.addButtonTapped)
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "plus")
-                TabiLabel(title: Strings.Plan.newPlanButton, style: .bodyMBold, color: .tabiOnColor)
+    func planMenuButton() -> some View {
+        Menu {
+            Button(Strings.Plan.addMenuTitle) {
+                self.store.send(.addButtonTapped)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(TabiColor.tabiPrimary)
-            .clipShape(Capsule())
+            Button(Strings.Plan.importMenuTitle) {
+                self.store.send(.importButtonTapped)
+            }
+        } label: {
+            TabiGlassIconLabel(systemName: "ellipsis", size: .ml, foregroundColor: .tabiPrimary)
         }
-        .buttonStyle(TabiPressStyle())
     }
 
     func planList() -> some View {
@@ -88,6 +101,7 @@ private extension PlanView {
                 ForEach(plans) { plan in
                     PlanCardView(
                         plan: plan,
+                        spotCount: self.store.spotCounts[plan.id] ?? 0,
                         onTapped: { self.store.send(.planTapped(plan: plan)) }
                     )
                     .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))

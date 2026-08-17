@@ -16,8 +16,9 @@ import Resource
 struct PhotoViewerView: View {
     @Bindable private var store: StoreOf<PhotoViewerFeature>
     @Environment(\.dismiss) private var dismiss
-    
-    fileprivate var currentIndexBinding: Binding<Int?> {
+    @State private var isZoomed = false
+
+    private var currentIndexBinding: Binding<Int?> {
         Binding(
             get: { self.store.currentIndex },
             set: { newValue in
@@ -26,7 +27,6 @@ struct PhotoViewerView: View {
             }
         )
     }
-
 
     init(store: StoreOf<PhotoViewerFeature>) {
         self.store = store
@@ -67,7 +67,11 @@ private extension PhotoViewerView {
         ScrollView(.horizontal) {
             LazyHStack(spacing: 0) {
                 ForEach(Array(self.store.images.enumerated()), id: \.offset) { index, image in
-                    ZoomableImageView(imageURL: image.imageURL, isActive: index == self.store.currentIndex)
+                    ZoomableImageView(
+                        imageURL: image.imageURL,
+                        isActive: index == self.store.currentIndex,
+                        isZoomed: self.$isZoomed
+                    )
                         .containerRelativeFrame(.horizontal)
                         .id(index)
                 }
@@ -77,6 +81,7 @@ private extension PhotoViewerView {
         .scrollTargetBehavior(.paging)
         .scrollPosition(id: self.currentIndexBinding)
         .scrollIndicators(.hidden)
+        .scrollDisabled(self.isZoomed)
     }
 }
 

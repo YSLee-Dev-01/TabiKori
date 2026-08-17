@@ -47,12 +47,14 @@ public struct HomeView: View {
                         
                         self.exchangeRateCard()
                             .staggeredAppear(index: 2)
-                        self.categoryView()
+                        self.recommendedEventBanner()
                             .staggeredAppear(index: 3)
-                        self.nearbyTouristSpotBanner()
+                        self.categoryView()
                             .staggeredAppear(index: 4)
-                        self.nearbyRestaurantBanner()
+                        self.nearbyTouristSpotBanner()
                             .staggeredAppear(index: 5)
+                        self.nearbyRestaurantBanner()
+                            .staggeredAppear(index: 6)
                     } else {
                         if self.store.locationStatus == .allowed {
                             self.inJapanBanner()
@@ -65,13 +67,13 @@ public struct HomeView: View {
                             self.store.send(.searchBarTapped)
                         }
                         .staggeredAppear(index: 1)
-                        self.categoryView()
+                        self.exchangeRateCard()
                             .staggeredAppear(index: 2)
                         self.recommendedRegionBanner()
                             .staggeredAppear(index: 3)
+                        self.festivalListSection()
+                            .staggeredAppear(index: 4)
                     }
-                    self.recommendedEventBanner()
-                        .staggeredAppear(index: 6)
                 }
                 .animation(.tabiStandard, value: self.store.locationStatus)
                 .animation(.tabiStandard, value: self.store.currentRegion.isKorea)
@@ -84,7 +86,11 @@ public struct HomeView: View {
             }
         }
         .safeAreaBar(edge: .top) {
-            TabiNavigationBar(subtitle: self.store.currentDate, title: Strings.Common.tabicori)
+            TabiNavigationBar(subtitle: self.store.currentDate, title: Strings.Common.tabicori) {
+                TabiGlassIconButton(systemName: "gearshape", size: .ml, foregroundColor: .tabiPrimary) {
+                    self.store.send(.settingButtonTapped)
+                }
+            }
         }
         .onAppear {
             self.store.send(.onAppear)
@@ -189,7 +195,7 @@ fileprivate extension HomeView {
 
     func locationPermissionBanner() -> some View {
         Button {
-            // 설정 탭 이동
+            self.store.send(.openSettingsButtonTapped)
         } label: {
             TabiCard {
                 HStack(alignment: .center, spacing: 10) {
@@ -472,7 +478,7 @@ fileprivate extension HomeView {
 
     func recommendedEventBanner() -> some View {
         Button {
-            self.store.send(.recommendedEventBannerTapped)
+            self.store.send(.festivalMoreButtonTapped)
         } label: {
             TabiCard {
                 HStack(alignment: .center, spacing: 10) {
@@ -484,7 +490,11 @@ fileprivate extension HomeView {
                         .opacity(0.6)
 
                     VStack(alignment: .leading, spacing: 3) {
-                        TabiLabel(title: Strings.Home.festivalRecommendationTitle(6), style: .bodyLBold, color: .tabiTextPrimary)
+                        TabiLabel(
+                            title: Strings.Home.festivalRecommendationTitle(Calendar.current.component(.month, from: Date())),
+                            style: .bodyLBold,
+                            color: .tabiTextPrimary
+                        )
                         TabiLabel(
                             title: Strings.Home.eventFestivalTitle,
                             style: .bodyS,
@@ -499,6 +509,58 @@ fileprivate extension HomeView {
                 .padding(16)
             }
             .contentShape(RoundedRectangle(cornerRadius: .tabiRadiusLg))
+        }
+        .buttonStyle(TabiPressStyle())
+    }
+
+    func festivalListSection() -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            TabiLabel(title: Strings.RegionSpot.festivalSectionTitle, style: .titleM, color: .tabiTextPrimary)
+
+            if self.store.isLoadingFestivals {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 24)
+            } else if self.store.festivals.isEmpty {
+                TabiEmptyState(
+                    systemImageName: "calendar.badge.exclamationmark",
+                    description: Strings.RegionSpot.festivalEmptyDescription,
+                    style: .card
+                )
+            } else {
+                TabiCard {
+                    LazyVStack(spacing: 0) {
+                        ForEach(Array(self.store.festivals.enumerated()), id: \.element.id) { index, festival in
+                            if index > 0 {
+                                Divider()
+                                    .padding(.horizontal, 16)
+                            }
+                            TabiFestivalRow(
+                                thumbnailURL: festival.touristSpot.thumbnailURL,
+                                japaneseTitle: festival.touristSpot.japaneseTitle,
+                                koreanTitle: festival.touristSpot.koreanTitle,
+                                periodTitle: festival.periodTitle,
+                                onTap: { self.store.send(.festivalTapped(festival)) }
+                            )
+                        }
+                    }
+                }
+            }
+
+            self.festivalMoreButton()
+        }
+    }
+
+    func festivalMoreButton() -> some View {
+        Button {
+            self.store.send(.festivalMoreButtonTapped)
+        } label: {
+            HStack(spacing: 4) {
+                TabiLabel(title: Strings.Home.festivalMoreButtonTitle, style: .bodySBold, color: .tabiTextSecondary)
+                self.chevronIcon()
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
         }
         .buttonStyle(TabiPressStyle())
     }
@@ -520,6 +582,7 @@ fileprivate extension HomeView {
 
     func regionCard(_ region: KoreanRegion) -> some View {
         Button {
+            self.store.send(.regionCardTapped(region))
         } label: {
             VStack(alignment: .leading, spacing: 4) {
                 if let image = region.image {
@@ -689,15 +752,28 @@ fileprivate extension HomeView {
             VStack(alignment: .leading, spacing: 8) {
                 Spacer()
                 TabiLabel(title: Strings.Region.seoul, style: .titleM, color: .tabiOnColor)
-                TabiLabel(title: Strings.Home.inKoreaBannerSubtitle, style: .bodyS, color: .tabiOnColor)
+                if self.store.ongoingMatchedPlan != nil {
+                    TabiLabel(
+                        title: Strings.Home.inKoreaBannerOngoingPlanSubtitle(
+                            Strings.Plan.dayChipTitle(self.store.ongoingMatchedPlanDayIndex + 1)
+                        ),
+                        style: .bodyS,
+                        color: .tabiOnColor
+                    )
                     .opacity(0.85)
+                } else {
+                    TabiLabel(title: Strings.Home.inKoreaBannerSubtitle, style: .bodyS, color: .tabiOnColor)
+                        .opacity(0.85)
+                }
                 Spacer()
             }
             .padding(16)
 
             HStack(spacing: 0) {
                 Spacer()
-                TabiButton(Strings.Home.moveToPlanButton, style: .glass(on: .accent)) {}
+                TabiButton(Strings.Home.moveToPlanButton, style: .glass(on: .accent)) {
+                    self.store.send(.moveToPlanButtonTapped)
+                }
             }
             .padding(16)
         }
