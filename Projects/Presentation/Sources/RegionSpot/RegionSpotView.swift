@@ -42,6 +42,15 @@ public struct RegionSpotView: View {
                     }
                     .tint(Color.getTabiColor(.tabiPrimary))
                 }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        self.store.send(.addPlanButtonTapped)
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .tint(Color.getTabiColor(.tabiPrimary))
+                }
             }
             .navigationBarBackButtonHidden(true)
             .interactivePopGestureEnabled(true)
@@ -68,10 +77,6 @@ private extension RegionSpotView {
                 VStack(alignment: .leading, spacing: 4) {
                     TabiLabel(title: self.store.region.jaTitle, style: .titleL, color: .tabiTextPrimary)
                     TabiLabel(title: self.store.region.koTitle, style: .bodyM, color: .tabiTextSecondary)
-                }
-                Spacer()
-                TabiCircleIconButton(systemName: "plus", foregroundColor: .tabiPrimary) {
-                    self.store.send(.addPlanButtonTapped)
                 }
             }
             .padding(.horizontal, 20)
