@@ -1,5 +1,5 @@
 //
-//  TravelItemsFeature.swift
+//  ToolBarFeature.swift
 //  Presentation
 //
 //  Created by 이윤수 on 8/17/26.
@@ -14,17 +14,17 @@ import Domain
 
 /// 툴박스 탭 루트 화면. Firebase에서 받아온 준비물 마스터 리스트를 보여주고, 플랜에 저장하는 시트를 연다
 @Reducer
-public struct TravelItemsFeature: Sendable {
+public struct ToolBarFeature: Sendable {
 
-    @Dependency(\.travelItemUseCase) var travelItemUseCase
+    @Dependency(\.toolBarItemUseCase) var toolBarItemUseCase
 
     @ObservableState
     public struct State: Equatable {
-        var items: [TravelItem] = []
+        var items: [ToolBarItem] = []
         var isLoading: Bool = false
         var hasLoadFailed: Bool = false
         fileprivate var hasStartedLoading: Bool = false
-        @Presents var planPickerState: TravelItemsPlanPickerFeature.State?
+        @Presents var planPickerState: ToolBarPlanPickerFeature.State?
 
         public init() {}
     }
@@ -33,9 +33,9 @@ public struct TravelItemsFeature: Sendable {
         case onAppear
         case retryButtonTapped
         case saveToPlanButtonTapped
-        case masterItemsResult([TravelItem])
+        case masterItemsResult([ToolBarItem])
         case masterItemsFailed
-        case planPicker(PresentationAction<TravelItemsPlanPickerFeature.Action>)
+        case planPicker(PresentationAction<ToolBarPlanPickerFeature.Action>)
     }
 
     public init() {}
@@ -59,7 +59,7 @@ public struct TravelItemsFeature: Sendable {
 
             case .saveToPlanButtonTapped:
                 guard state.items.isEmpty == false else { return .none }
-                state.planPickerState = TravelItemsPlanPickerFeature.State(items: state.items)
+                state.planPickerState = ToolBarPlanPickerFeature.State(items: state.items)
                 return .none
 
             case .masterItemsResult(let items):
@@ -82,7 +82,7 @@ public struct TravelItemsFeature: Sendable {
             }
         }
         .ifLet(\.$planPickerState, action: \.planPicker) {
-            TravelItemsPlanPickerFeature()
+            ToolBarPlanPickerFeature()
         }
     }
 }
@@ -95,11 +95,11 @@ private enum CancelID {
 
 // MARK: - Method
 
-private extension TravelItemsFeature {
+private extension ToolBarFeature {
     func fetchMasterItemsEffect() -> Effect<Action> {
-        .run { [travelItemUseCase = self.travelItemUseCase] send in
+        .run { [toolBarItemUseCase = self.toolBarItemUseCase] send in
             do {
-                let items = try await travelItemUseCase.fetchMasterItems()
+                let items = try await toolBarItemUseCase.fetchMasterItems()
                 await send(.masterItemsResult(items))
             } catch {
                 AppLogger.view.log(.error, "준비물 마스터 리스트 조회 실패: \(error.localizedDescription)")

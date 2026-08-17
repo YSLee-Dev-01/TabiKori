@@ -1,5 +1,5 @@
 //
-//  TravelItemRow.swift
+//  ToolBarItemRow.swift
 //  Presentation
 //
 //  Created by 이윤수 on 8/17/26.
@@ -11,8 +11,8 @@ import SwiftUI
 import DesignSystem
 import Domain
 
-struct TravelItemRow: View {
-    let item: TravelItem
+struct ToolBarItemRow: View {
+    let item: ToolBarItem
 
     var body: some View {
         TabiCard {

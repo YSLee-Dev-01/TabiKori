@@ -1,5 +1,5 @@
 //
-//  PlanTravelItemCheckRow.swift
+//  PlanToolBarItemCheckRow.swift
 //  Presentation
 //
 //  Created by 이윤수 on 8/17/26.
@@ -12,8 +12,8 @@ import DesignSystem
 import Domain
 import Resource
 
-struct PlanTravelItemCheckRow: View {
-    let item: TravelPlanItem
+struct PlanToolBarItemCheckRow: View {
+    let item: ToolBarPlanItem
     let onTap: () -> Void
 
     var body: some View {

@@ -22,7 +22,7 @@ public enum Strings {
     public enum AddCustomPlace {}
     public enum RegionSpot {}
     public enum Setting {}
-    public enum TravelItems {}
+    public enum ToolBar {}
 }
 
 public extension Strings.Common {
@@ -494,13 +494,18 @@ public extension Strings.Setting {
     }
 }
 
-public extension Strings.TravelItems {
+public extension Strings.ToolBar {
     /// 화면 타이틀 (마스터/저장된 체크리스트 공용)
     static let title = "持ち物リスト"
     /// 플랜에 저장 버튼
     static let saveToPlanButton = "旅程に保存"
     /// 마스터 리스트 로드 실패 설명
     static let loadFailedDescription = "リストを読み込めませんでした"
+
+    /// 준비물 빈 상태 제목 (마스터 리스트 0건)
+    static let itemEmptyTitle = "登録された持ち物がありません"
+    /// 준비물 빈 상태 설명 (마스터 리스트 0건)
+    static let itemEmptyDescription = "しばらくしてから再度お試しください"
 
     /// 플랜 선택 시트 타이틀
     static let planPickerTitle = "保存する旅程を選択"

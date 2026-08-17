@@ -1,5 +1,5 @@
 //
-//  TravelPlanItemModel+.swift
+//  ToolBarPlanItemModel+.swift
 //  Data
 //
 //  Created by 이윤수 on 8/17/26.
@@ -10,9 +10,9 @@ import Foundation
 
 import Domain
 
-extension TravelPlanItemModel {
-    var toDomain: TravelPlanItem {
-        TravelPlanItem(
+extension ToolBarPlanItemModel {
+    var toDomain: ToolBarPlanItem {
+        ToolBarPlanItem(
             id: self.id,
             planId: self.planId,
             order: self.order,
@@ -22,7 +22,7 @@ extension TravelPlanItemModel {
         )
     }
 
-    convenience init(item: TravelPlanItem) {
+    convenience init(item: ToolBarPlanItem) {
         self.init(
             id: item.id,
             planId: item.planId,

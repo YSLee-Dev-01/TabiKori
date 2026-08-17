@@ -1,5 +1,5 @@
 //
-//  PlanTravelItemsFeature.swift
+//  PlanToolBarFeature.swift
 //  Presentation
 //
 //  Created by 이윤수 on 8/17/26.
@@ -14,14 +14,14 @@ import Domain
 
 /// 플랜에 저장된 준비물 체크리스트 화면. 항목 체크/해제는 낙관적으로 갱신 후 실패 시 되돌린다
 @Reducer
-public struct PlanTravelItemsFeature: Sendable {
+public struct PlanToolBarFeature: Sendable {
 
-    @Dependency(\.travelItemUseCase) var travelItemUseCase
+    @Dependency(\.toolBarItemUseCase) var toolBarItemUseCase
 
     @ObservableState
     public struct State: Equatable {
         let plan: TravelPlan
-        var items: [TravelPlanItem] = []
+        var items: [ToolBarPlanItem] = []
         var isLoading: Bool = false
         fileprivate var hasStartedLoading: Bool = false
 
@@ -37,7 +37,7 @@ public struct PlanTravelItemsFeature: Sendable {
     public enum Action: Equatable {
         case onAppear
         case itemTapped(id: UUID)
-        case savedItemsResult([TravelPlanItem])
+        case savedItemsResult([ToolBarPlanItem])
         case checkUpdateFailed(id: UUID, previous: Bool)
     }
 
@@ -79,11 +79,11 @@ public struct PlanTravelItemsFeature: Sendable {
 
 // MARK: - Method
 
-private extension PlanTravelItemsFeature {
+private extension PlanToolBarFeature {
     func fetchSavedItemsEffect(planId: UUID) -> Effect<Action> {
-        .run { [travelItemUseCase = self.travelItemUseCase] send in
+        .run { [toolBarItemUseCase = self.toolBarItemUseCase] send in
             do {
-                let items = try await travelItemUseCase.fetchSavedItems(planId: planId)
+                let items = try await toolBarItemUseCase.fetchSavedItems(planId: planId)
                 await send(.savedItemsResult(items))
             } catch {
                 AppLogger.view.log(.error, "준비물 저장 목록 조회 실패 (planId: \(planId)): \(error.localizedDescription)")
@@ -93,9 +93,9 @@ private extension PlanTravelItemsFeature {
     }
 
     func updateCheckedEffect(planId: UUID, itemId: UUID, isChecked: Bool, previous: Bool) -> Effect<Action> {
-        .run { [travelItemUseCase = self.travelItemUseCase] send in
+        .run { [toolBarItemUseCase = self.toolBarItemUseCase] send in
             do {
-                try await travelItemUseCase.updateChecked(planId: planId, itemId: itemId, isChecked: isChecked)
+                try await toolBarItemUseCase.updateChecked(planId: planId, itemId: itemId, isChecked: isChecked)
             } catch {
                 AppLogger.view.log(.error, "준비물 체크 상태 변경 실패 (planId: \(planId), itemId: \(itemId)): \(error.localizedDescription)")
                 await send(.checkUpdateFailed(id: itemId, previous: previous))

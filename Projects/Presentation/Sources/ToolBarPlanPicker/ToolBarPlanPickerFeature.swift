@@ -1,5 +1,5 @@
 //
-//  TravelItemsPlanPickerFeature.swift
+//  ToolBarPlanPickerFeature.swift
 //  Presentation
 //
 //  Created by 이윤수 on 8/17/26.
@@ -16,22 +16,22 @@ import Resource
 /// 준비물 마스터 리스트를 저장할 플랜을 고르는 하단 sheet.
 /// 이미 저장된 플랜을 다시 선택하면 덮어쓰기 확인 알림을 띄운 뒤 저장한다
 @Reducer
-public struct TravelItemsPlanPickerFeature: Sendable {
+public struct ToolBarPlanPickerFeature: Sendable {
 
     @Dependency(\.travelPlanUseCase) var travelPlanUseCase
-    @Dependency(\.travelItemUseCase) var travelItemUseCase
+    @Dependency(\.toolBarItemUseCase) var toolBarItemUseCase
     @Dependency(\.dismiss) var dismiss
 
     @ObservableState
     public struct State: Equatable {
-        let items: [TravelItem]
+        let items: [ToolBarItem]
         var plans: [TravelPlan] = []
         var isLoading: Bool = false
         var isSaving: Bool = false
         fileprivate var hasStartedLoading: Bool = false
         @Presents var alert: AlertState<Action.Alert>?
 
-        public init(items: [TravelItem]) {
+        public init(items: [ToolBarItem]) {
             self.items = items
         }
     }
@@ -81,16 +81,16 @@ public struct TravelItemsPlanPickerFeature: Sendable {
                 }
                 state.isSaving = false
                 state.alert = AlertState {
-                    TextState(Strings.TravelItems.overwriteAlertTitle)
+                    TextState(Strings.ToolBar.overwriteAlertTitle)
                 } actions: {
                     ButtonState(role: .cancel) {
-                        TextState(Strings.TravelItems.overwriteAlertCancel)
+                        TextState(Strings.ToolBar.overwriteAlertCancel)
                     }
                     ButtonState(role: .destructive, action: .overwriteConfirmed(plan)) {
-                        TextState(Strings.TravelItems.overwriteAlertConfirm)
+                        TextState(Strings.ToolBar.overwriteAlertConfirm)
                     }
                 } message: {
-                    TextState(Strings.TravelItems.overwriteAlertMessage)
+                    TextState(Strings.ToolBar.overwriteAlertMessage)
                 }
                 return .none
 
@@ -104,7 +104,7 @@ public struct TravelItemsPlanPickerFeature: Sendable {
             case .saveFailed:
                 state.isSaving = false
                 state.alert = AlertState {
-                    TextState(Strings.TravelItems.saveFailedDescription)
+                    TextState(Strings.ToolBar.saveFailedDescription)
                 } actions: {
                     ButtonState {
                         TextState(Strings.Plan.alertConfirm)
@@ -122,7 +122,7 @@ public struct TravelItemsPlanPickerFeature: Sendable {
 
 // MARK: - Method
 
-private extension TravelItemsPlanPickerFeature {
+private extension ToolBarPlanPickerFeature {
     func fetchPlansEffect() -> Effect<Action> {
         .run { [travelPlanUseCase = self.travelPlanUseCase] send in
             do {
@@ -136,9 +136,9 @@ private extension TravelItemsPlanPickerFeature {
     }
 
     func checkExistingItemsEffect(plan: TravelPlan) -> Effect<Action> {
-        .run { [travelItemUseCase = self.travelItemUseCase] send in
+        .run { [toolBarItemUseCase = self.toolBarItemUseCase] send in
             do {
-                let existingItems = try await travelItemUseCase.fetchSavedItems(planId: plan.id)
+                let existingItems = try await toolBarItemUseCase.fetchSavedItems(planId: plan.id)
                 await send(.existingItemsResult(plan: plan, hasSaved: existingItems.isEmpty == false))
             } catch {
                 AppLogger.view.log(.error, "준비물 저장 여부 조회 실패 (planId: \(plan.id)): \(error.localizedDescription)")
@@ -147,10 +147,10 @@ private extension TravelItemsPlanPickerFeature {
         }
     }
 
-    func saveEffect(planId: UUID, items: [TravelItem]) -> Effect<Action> {
-        .run { [travelItemUseCase = self.travelItemUseCase] send in
+    func saveEffect(planId: UUID, items: [ToolBarItem]) -> Effect<Action> {
+        .run { [toolBarItemUseCase = self.toolBarItemUseCase] send in
             do {
-                try await travelItemUseCase.save(planId: planId, items: items)
+                try await toolBarItemUseCase.save(planId: planId, items: items)
                 await send(.savedToPlan)
             } catch {
                 AppLogger.view.log(.error, "준비물 저장 실패 (planId: \(planId)): \(error.localizedDescription)")

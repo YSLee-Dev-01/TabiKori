@@ -1,5 +1,5 @@
 //
-//  TravelItem.swift
+//  ToolBarItem.swift
 //  Domain
 //
 //  Created by 이윤수 on 8/17/26.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct TravelItem: Equatable, Sendable, Identifiable {
+public struct ToolBarItem: Equatable, Sendable, Identifiable {
     public let id: String
     public let order: Int
     public let title: String

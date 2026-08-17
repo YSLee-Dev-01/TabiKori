@@ -52,7 +52,7 @@ public struct TabBarView: View {
                     }
                     .tag(AppTab.bookmark)
 
-                TravelItemsView(store: self.store.scope(state: \.toolboxState, action: \.toolbox))
+                ToolBarView(store: self.store.scope(state: \.toolboxState, action: \.toolbox))
                     .tabItem {
                         Image(systemName: AppTab.toolbox.systemImage)
                     }
@@ -73,8 +73,8 @@ public struct TabBarView: View {
                 RegionSpotView(store: store)
             case .setting(let store):
                 SettingView(store: store)
-            case .planTravelItems(let store):
-                PlanTravelItemsView(store: store)
+            case .planToolBar(let store):
+                PlanToolBarView(store: store)
             }
         }
     }

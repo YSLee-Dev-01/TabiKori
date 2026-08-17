@@ -1,5 +1,5 @@
 //
-//  TravelItemsView.swift
+//  ToolBarView.swift
 //  Presentation
 //
 //  Created by 이윤수 on 8/17/26.
@@ -14,22 +14,22 @@ import Domain
 import Resource
 
 /// 툴박스 탭 루트 화면. 준비물 마스터 리스트를 보여주고 하단 버튼으로 플랜에 저장한다
-public struct TravelItemsView: View {
+public struct ToolBarView: View {
 
-    @Bindable private var store: StoreOf<TravelItemsFeature>
+    @Bindable private var store: StoreOf<ToolBarFeature>
 
-    public init(store: StoreOf<TravelItemsFeature>) {
+    public init(store: StoreOf<ToolBarFeature>) {
         self.store = store
     }
 
     public var body: some View {
         self.content()
             .safeAreaBar(edge: .top) {
-                TabiNavigationBar(title: Strings.TravelItems.title)
+                TabiNavigationBar(title: Strings.ToolBar.title)
             }
             .safeAreaBar(edge: .bottom) {
                 TabiButton(
-                    Strings.TravelItems.saveToPlanButton,
+                    Strings.ToolBar.saveToPlanButton,
                     style: .primary,
                     isExpanded: true
                 ) {
@@ -39,7 +39,7 @@ public struct TravelItemsView: View {
                 .padding(.horizontal, 20)
             }
             .sheet(item: self.$store.scope(state: \.planPickerState, action: \.planPicker)) { store in
-                TravelItemsPlanPickerView(store: store)
+                ToolBarPlanPickerView(store: store)
             }
             .onAppear {
                 self.store.send(.onAppear)
@@ -49,24 +49,31 @@ public struct TravelItemsView: View {
 
 // MARK: - View
 
-private extension TravelItemsView {
+private extension ToolBarView {
     @ViewBuilder
     func content() -> some View {
         if self.store.isLoading {
             ProgressView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if self.store.hasLoadFailed {
-            TabiRetryableEmptyState(description: Strings.TravelItems.loadFailedDescription) {
+            TabiRetryableEmptyState(description: Strings.ToolBar.loadFailedDescription) {
                 self.store.send(.retryButtonTapped)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             List {
-                ForEach(self.store.items) { item in
-                    TravelItemRow(item: item)
+                if self.store.items.isEmpty {
+                    ToolBarEmptyState()
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
+                        .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
+                } else {
+                    ForEach(self.store.items) { item in
+                        ToolBarItemRow(item: item)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
+                    }
                 }
             }
             .listStyle(.plain)
@@ -76,21 +83,21 @@ private extension TravelItemsView {
 }
 
 #Preview {
-    let mockUseCase: TestTravelItemUseCase = {
-        let useCase = TestTravelItemUseCase()
+    let mockUseCase: TestToolBarItemUseCase = {
+        let useCase = TestToolBarItemUseCase()
         useCase.masterItems = [
-            TravelItem(id: "passport", order: 0, title: "パスポート", note: "有効期限を確認"),
-            TravelItem(id: "charger", order: 1, title: "充電器", note: nil)
+            ToolBarItem(id: "passport", order: 0, title: "パスポート", note: "有効期限を確認"),
+            ToolBarItem(id: "charger", order: 1, title: "充電器", note: nil)
         ]
         return useCase
     }()
 
-    TravelItemsView(
+    ToolBarView(
         store: Store(
-            initialState: TravelItemsFeature.State(),
-            reducer: { TravelItemsFeature() },
+            initialState: ToolBarFeature.State(),
+            reducer: { ToolBarFeature() },
             withDependencies: { dependency in
-                dependency.travelItemUseCase = mockUseCase
+                dependency.toolBarItemUseCase = mockUseCase
             }
         )
     )

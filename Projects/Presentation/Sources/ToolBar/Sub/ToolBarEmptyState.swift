@@ -1,0 +1,24 @@
+//
+//  ToolBarEmptyState.swift
+//  Presentation
+//
+//  Created by 이윤수 on 8/17/26.
+//  Copyright © 2026 yslee. All rights reserved.
+//
+
+import SwiftUI
+
+import DesignSystem
+import Resource
+
+struct ToolBarEmptyState: View {
+
+    var body: some View {
+        TabiEmptyState(
+            systemImageName: "shippingbox",
+            title: Strings.ToolBar.itemEmptyTitle,
+            description: Strings.ToolBar.itemEmptyDescription,
+            style: .card
+        )
+    }
+}

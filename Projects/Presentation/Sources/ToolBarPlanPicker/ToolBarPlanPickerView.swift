@@ -1,5 +1,5 @@
 //
-//  TravelItemsPlanPickerView.swift
+//  ToolBarPlanPickerView.swift
 //  Presentation
 //
 //  Created by 이윤수 on 8/17/26.
@@ -13,18 +13,18 @@ import DesignSystem
 import Domain
 import Resource
 
-struct TravelItemsPlanPickerView: View {
+struct ToolBarPlanPickerView: View {
 
-    @Bindable private var store: StoreOf<TravelItemsPlanPickerFeature>
+    @Bindable private var store: StoreOf<ToolBarPlanPickerFeature>
 
-    init(store: StoreOf<TravelItemsPlanPickerFeature>) {
+    init(store: StoreOf<ToolBarPlanPickerFeature>) {
         self.store = store
     }
 
     var body: some View {
         self.content()
             .safeAreaBar(edge: .top) {
-                TabiNavigationBar(title: Strings.TravelItems.planPickerTitle) {
+                TabiNavigationBar(title: Strings.ToolBar.planPickerTitle) {
                     self.closeButton()
                 }
                 .padding(.top, 26)
@@ -47,7 +47,7 @@ struct TravelItemsPlanPickerView: View {
 
 // MARK: - View
 
-private extension TravelItemsPlanPickerView {
+private extension ToolBarPlanPickerView {
     func closeButton() -> some View {
         TabiCircleIconButton(systemName: "xmark") {
             self.store.send(.closeButtonTapped)
@@ -62,8 +62,8 @@ private extension TravelItemsPlanPickerView {
         } else if self.store.plans.isEmpty {
             TabiEmptyState(
                 systemImageName: "calendar",
-                title: Strings.TravelItems.planPickerEmptyTitle,
-                description: Strings.TravelItems.planPickerEmptyDescription
+                title: Strings.ToolBar.planPickerEmptyTitle,
+                description: Strings.ToolBar.planPickerEmptyDescription
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
@@ -89,7 +89,7 @@ private extension TravelItemsPlanPickerView {
                 TabiLabel(title: section.title, style: .bodyMBold, color: .tabiTextPrimary)
                 VStack(spacing: 12) {
                     ForEach(plans) { plan in
-                        TravelItemsPlanPickerRow(plan: plan) {
+                        ToolBarPlanPickerRow(plan: plan) {
                             self.store.send(.planRowTapped(plan))
                         }
                     }

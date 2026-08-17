@@ -1,5 +1,5 @@
 //
-//  TravelPlanItemModel.swift
+//  ToolBarPlanItemModel.swift
 //  Data
 //
 //  Created by 이윤수 on 8/17/26.
@@ -10,7 +10,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class TravelPlanItemModel {
+final class ToolBarPlanItemModel {
     @Attribute(.unique) var id: UUID
     var planId: UUID
     var order: Int

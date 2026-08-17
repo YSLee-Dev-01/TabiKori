@@ -81,8 +81,8 @@ extension DependencyValues {
         set {self[SubwayStationUseCaseDependencyKey.self] = newValue}
     }
     
-    public var travelItemUseCase: TravelItemUseCaseProtocol {
-        get {self[TravelItemUseCaseDependencyKey.self]}
-        set {self[TravelItemUseCaseDependencyKey.self] = newValue}
+    public var toolBarItemUseCase: ToolBarItemUseCaseProtocol {
+        get {self[ToolBarItemUseCaseDependencyKey.self]}
+        set {self[ToolBarItemUseCaseDependencyKey.self] = newValue}
     }
 }

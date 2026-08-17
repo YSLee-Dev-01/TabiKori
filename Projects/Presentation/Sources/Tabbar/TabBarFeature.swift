@@ -21,7 +21,7 @@ public struct TabBarFeature {
         var mapState: MapFeature.State = .init()
         var planState: PlanFeature.State = .init()
         var bookmarkState: BookmarkFeature.State = .init()
-        var toolboxState: TravelItemsFeature.State = .init()
+        var toolboxState: ToolBarFeature.State = .init()
 
         var path = StackState<StackPath.State>()
 
@@ -34,7 +34,7 @@ public struct TabBarFeature {
         case map(MapFeature.Action)
         case plan(PlanFeature.Action)
         case bookmark(BookmarkFeature.Action)
-        case toolbox(TravelItemsFeature.Action)
+        case toolbox(ToolBarFeature.Action)
         case path(StackActionOf<StackPath>)
     }
 
@@ -54,7 +54,7 @@ public struct TabBarFeature {
             PlanFeature()
         }
         Scope(state: \.toolboxState, action: \.toolbox) {
-            TravelItemsFeature()
+            ToolBarFeature()
         }
 
         Reduce { state, action in
@@ -162,9 +162,9 @@ public struct TabBarFeature {
                 )))
                 return .none
 
-            case .path(.element(id: let id, action: .planDetail(.travelItemsButtonTapped))):
+            case .path(.element(id: let id, action: .planDetail(.toolBarButtonTapped))):
                 guard case .planDetail(let planDetailState) = state.path[id: id] else { return .none }
-                state.path.append(.planTravelItems(PlanTravelItemsFeature.State(plan: planDetailState.plan)))
+                state.path.append(.planToolBar(PlanToolBarFeature.State(plan: planDetailState.plan)))
                 return .none
 
             case .path(.element(id: _, action: .festival(.festivalTapped(let festival)))):

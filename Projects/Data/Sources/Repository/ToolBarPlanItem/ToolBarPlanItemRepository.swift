@@ -1,5 +1,5 @@
 //
-//  TravelPlanItemRepository.swift
+//  ToolBarPlanItemRepository.swift
 //  Data
 //
 //  Created by 이윤수 on 8/17/26.
@@ -12,7 +12,7 @@ import SwiftData
 import Core
 import Domain
 
-public final class TravelPlanItemRepository: Sendable {
+public final class ToolBarPlanItemRepository: Sendable {
 
     // MARK: - Properties
 
@@ -25,13 +25,13 @@ public final class TravelPlanItemRepository: Sendable {
     }
 }
 
-// MARK: - TravelPlanItemRepositoryProtocol
+// MARK: - ToolBarPlanItemRepositoryProtocol
 
-extension TravelPlanItemRepository: TravelPlanItemRepositoryProtocol {
-    public func fetch(planId: UUID) async throws -> [TravelPlanItem] {
+extension ToolBarPlanItemRepository: ToolBarPlanItemRepositoryProtocol {
+    public func fetch(planId: UUID) async throws -> [ToolBarPlanItem] {
         do {
             let context = ModelContext(self.modelContainer)
-            let descriptor = FetchDescriptor<TravelPlanItemModel>(
+            let descriptor = FetchDescriptor<ToolBarPlanItemModel>(
                 predicate: #Predicate { $0.planId == planId },
                 sortBy: [SortDescriptor(\.order)]
             )
@@ -42,17 +42,17 @@ extension TravelPlanItemRepository: TravelPlanItemRepositoryProtocol {
         }
     }
 
-    public func replace(planId: UUID, items: [TravelPlanItem]) async throws {
+    public func replace(planId: UUID, items: [ToolBarPlanItem]) async throws {
         do {
             let context = ModelContext(self.modelContainer)
-            let descriptor = FetchDescriptor<TravelPlanItemModel>(
+            let descriptor = FetchDescriptor<ToolBarPlanItemModel>(
                 predicate: #Predicate { $0.planId == planId }
             )
             for model in try context.fetch(descriptor) {
                 context.delete(model)
             }
             for item in items {
-                context.insert(TravelPlanItemModel(item: item))
+                context.insert(ToolBarPlanItemModel(item: item))
             }
             try context.save()
         } catch {
@@ -64,7 +64,7 @@ extension TravelPlanItemRepository: TravelPlanItemRepositoryProtocol {
     public func updateChecked(planId: UUID, itemId: UUID, isChecked: Bool) async throws {
         do {
             let context = ModelContext(self.modelContainer)
-            let descriptor = FetchDescriptor<TravelPlanItemModel>(
+            let descriptor = FetchDescriptor<ToolBarPlanItemModel>(
                 predicate: #Predicate { $0.planId == planId && $0.id == itemId }
             )
             guard let model = try context.fetch(descriptor).first else {

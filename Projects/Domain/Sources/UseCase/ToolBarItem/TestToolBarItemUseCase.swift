@@ -1,5 +1,5 @@
 //
-//  TestTravelItemUseCase.swift
+//  TestToolBarItemUseCase.swift
 //  Domain
 //
 //  Created by 이윤수 on 8/17/26.
@@ -8,12 +8,12 @@
 
 import Foundation
 
-public final class TestTravelItemUseCase: TravelItemUseCaseProtocol, @unchecked Sendable {
+public final class TestToolBarItemUseCase: ToolBarItemUseCaseProtocol, @unchecked Sendable {
 
     // MARK: - Properties
 
-    public var masterItems: [TravelItem] = []
-    public var savedItems: [TravelPlanItem] = []
+    public var masterItems: [ToolBarItem] = []
+    public var savedItems: [ToolBarPlanItem] = []
 
     // MARK: - Init
 
@@ -21,17 +21,17 @@ public final class TestTravelItemUseCase: TravelItemUseCaseProtocol, @unchecked 
 
     // MARK: - Method
 
-    public func fetchMasterItems() async throws -> [TravelItem] {
+    public func fetchMasterItems() async throws -> [ToolBarItem] {
         return self.masterItems
     }
 
-    public func fetchSavedItems(planId: UUID) async throws -> [TravelPlanItem] {
+    public func fetchSavedItems(planId: UUID) async throws -> [ToolBarPlanItem] {
         return self.savedItems.filter { $0.planId == planId }
     }
 
-    public func save(planId: UUID, items: [TravelItem]) async throws {
+    public func save(planId: UUID, items: [ToolBarItem]) async throws {
         let planItems = items.map { item in
-            TravelPlanItem(
+            ToolBarPlanItem(
                 id: UUID(),
                 planId: planId,
                 order: item.order,

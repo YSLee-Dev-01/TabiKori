@@ -1,5 +1,5 @@
 //
-//  TravelItemsPlanPickerRow.swift
+//  ToolBarPlanPickerRow.swift
 //  Presentation
 //
 //  Created by 이윤수 on 8/17/26.
@@ -12,7 +12,7 @@ import DesignSystem
 import Domain
 
 /// 준비물을 저장할 플랜 한 건을 나타내는 행. 날짜 선택 없이 탭 1회로 선택이 끝난다
-struct TravelItemsPlanPickerRow: View {
+struct ToolBarPlanPickerRow: View {
     let plan: TravelPlan
     let onTap: () -> Void
 

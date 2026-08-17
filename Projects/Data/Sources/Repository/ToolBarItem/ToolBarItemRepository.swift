@@ -1,5 +1,5 @@
 //
-//  TravelItemRepository.swift
+//  ToolBarItemRepository.swift
 //  Data
 //
 //  Created by 이윤수 on 8/17/26.
@@ -13,17 +13,17 @@ import Domain
 
 import FirebaseDatabase
 
-public final class TravelItemRepository: Sendable {
+public final class ToolBarItemRepository: Sendable {
 
     // MARK: - Init
 
     public init() {}
 }
 
-// MARK: - TravelItemRepositoryProtocol
+// MARK: - ToolBarItemRepositoryProtocol
 
-extension TravelItemRepository: TravelItemRepositoryProtocol {
-    public func fetchMasterItems() async throws -> [TravelItem] {
+extension ToolBarItemRepository: ToolBarItemRepositoryProtocol {
+    public func fetchMasterItems() async throws -> [ToolBarItem] {
         let databaseReference = Database.database().reference(withPath: "TabiKori/travelItems")
         let snapshot = try await databaseReference.getData()
 
@@ -34,15 +34,15 @@ extension TravelItemRepository: TravelItemRepositoryProtocol {
             throw TabiError.dataNotFound
         }
 
-        let travelItems = items.compactMap { key, rawValue -> TravelItem? in
+        let toolBarItems = items.compactMap { key, rawValue -> ToolBarItem? in
             guard let itemDict = rawValue as? [String: Any],
                   let order = (itemDict["order"] as? NSNumber)?.intValue,
                   let title = itemDict["title"] as? String else {
                 return nil
             }
-            return TravelItem(id: key, order: order, title: title, note: itemDict["note"] as? String)
+            return ToolBarItem(id: key, order: order, title: title, note: itemDict["note"] as? String)
         }
 
-        return travelItems.sorted { $0.order < $1.order }
+        return toolBarItems.sorted { $0.order < $1.order }
     }
 }

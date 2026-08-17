@@ -106,7 +106,7 @@ extension TravelPlanRepository: TravelPlanRepositoryProtocol {
                 context.delete(spotModel)
             }
 
-            let itemDescriptor = FetchDescriptor<TravelPlanItemModel>(
+            let itemDescriptor = FetchDescriptor<ToolBarPlanItemModel>(
                 predicate: #Predicate { $0.planId == planId }
             )
             for itemModel in try context.fetch(itemDescriptor) {
@@ -126,7 +126,7 @@ extension TravelPlanRepository: TravelPlanRepositoryProtocol {
             try context.delete(model: TravelPlanModel.self)
             try context.delete(model: TravelPlanDetailModel.self)
             try context.delete(model: TravelPlanDetailSpotModel.self)
-            try context.delete(model: TravelPlanItemModel.self)
+            try context.delete(model: ToolBarPlanItemModel.self)
             try context.save()
         } catch {
             AppLogger.core.log(.error, "일정 전체 삭제 실패: \(error.localizedDescription)")
