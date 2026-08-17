@@ -24,7 +24,7 @@ Projects/
 |------|----------|
 | `App` | `Domain`, `Data`, `Presentation` |
 | `Presentation` | `DesignSystem`, `Core`, `Domain`, `Resource` |
-| `Data` | `Domain`, `Core` |
+| `Data` | `Domain`, `Core`, `Resource` |
 | `Domain` | `Core` |
 | `DesignSystem` | `Core`, `Resource` |
 | `Core` / `Resource` | 없음 (최하위) |
@@ -140,10 +140,12 @@ Resource/
 ├── Sources/
 │   ├── Color/TabiColor.swift
 │   ├── Image/TabiImage.swift
-│   └── Strings/Strings.swift
+│   ├── Strings/Strings.swift
+│   └── Data/                          # 로컬 번들 리소스(JSON 등)의 Bundle.module 접근자 (예: SubwayStationResource.swift)
 └── Resources/
     ├── Assets.xcassets/
-    └── Fonts/
+    ├── Fonts/
+    └── {FeatureName}/                 # 로컬 번들 리소스 원본 파일 (예: Subway/seoul_subway_station.json)
 ```
 
 | 파일 종류 | 위치 |
@@ -152,6 +154,7 @@ Resource/
 | 컬러 (코드 접근용) | `Resource/Sources/Color/TabiColor.swift` (+ `Assets.xcassets/Colors`) |
 | 이미지 (코드 접근용) | `Resource/Sources/Image/TabiImage.swift` (+ `Assets.xcassets/Images`) |
 | 폰트 파일 | `Resource/Resources/Fonts/` |
+| 로컬 번들 리소스(JSON 등) | 원본은 `Resource/Resources/{FeatureName}/`, 접근자는 `Resource/Sources/Data/{Name}Resource.swift` (`Bundle.module`로 바이트만 전달, 파싱은 Data 모듈이 담당 — `Data`가 `Resource`에 의존) |
 
 ## Core/
 
