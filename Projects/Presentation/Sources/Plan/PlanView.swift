@@ -26,7 +26,7 @@ public struct PlanView: View {
         self.planList()
             .safeAreaBar(edge: .top) {
                 TabiNavigationBar(title: Strings.Plan.title) {
-                    self.planMenuButton()
+                    self.planMenuButtons()
                 }
             }
             .sheet(item: self.$store.scope(state: \.addPlanState, action: \.addPlan)) { store in
@@ -56,16 +56,19 @@ public struct PlanView: View {
 // MARK: - View
 
 private extension PlanView {
-    func planMenuButton() -> some View {
-        Menu {
-            Button(Strings.Plan.addMenuTitle) {
+    func planMenuButtons() -> some View {
+        HStack(spacing: 10) {
+            Button {
                 self.store.send(.addButtonTapped)
+            } label: {
+                TabiGlassIconLabel(systemName: "plus", size: .ml, foregroundColor: .tabiPrimary)
             }
-            Button(Strings.Plan.importMenuTitle) {
+
+            Button {
                 self.store.send(.importButtonTapped)
+            } label: {
+                TabiGlassIconLabel(systemName: "arrow.down", size: .ml, foregroundColor: .tabiPrimary)
             }
-        } label: {
-            TabiGlassIconLabel(systemName: "ellipsis", size: .ml, foregroundColor: .tabiPrimary)
         }
     }
 
