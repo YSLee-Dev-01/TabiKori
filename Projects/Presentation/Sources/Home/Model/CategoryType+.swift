@@ -32,7 +32,7 @@ extension CategoryType {
         case .festival: .categoryFestival
         case .shopping: .categoryShopping
         case .nature: .categoryNature
-        case .subway: .tabiAccentCoral
+        case .subway: .categorySubway
         }
     }
 
