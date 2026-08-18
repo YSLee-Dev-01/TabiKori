@@ -59,6 +59,8 @@ public extension Strings.Common {
     static let delete = "削除"
     /// 지하철역 검색 시 가타카나 입력 안내 문구
     static let subwayKatakanaGuide = "カタカナで入力してください"
+    /// 지하철역명 입력 후 검색 안내 문구
+    static let subwaySearchEnterGuide = "Enterキーで検索してください"
 }
 
 public extension Strings.Home {
@@ -188,6 +190,8 @@ public extension Strings.Map {
     static let researchAtCurrentLocation = "このエリアで再検索"
     /// 검색 로딩 표시
     static let loading = "読み込み中"
+    /// 지하철역 검색 결과 노출 시 가타카나 입력 안내 문구
+    static let subwayKatakanaSearchGuide = "駅名を検索する際はカタカナのみで入力してください"
 }
 
 public extension Strings.Bookmark {
