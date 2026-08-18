@@ -24,6 +24,7 @@ public enum Strings {
     public enum Setting {}
     public enum ToolBar {}
     public enum KoreanPhrase {}
+    public enum Shopping {}
 }
 
 public extension Strings.Common {
@@ -56,6 +57,8 @@ public extension Strings.Common {
     static let contentTypeAll = "すべて"
     /// 삭제 (스와이프 액션)
     static let delete = "削除"
+    /// 지하철역 검색 시 가타카나 입력 안내 문구
+    static let subwayKatakanaGuide = "カタカナで入力してください"
 }
 
 public extension Strings.Home {
@@ -340,6 +343,8 @@ public extension Strings.Detail {
     static let infoParking = "駐車場"
     /// 주소
     static let infoAddress = "住所"
+    /// 노선 (지하철역 전용)
+    static let infoLine = "路線"
     /// 홈페이지
     static let infoHomepage = "ホームページ"
     /// 체험안내
@@ -382,6 +387,8 @@ public extension Strings.AddCustomPlace {
     static let titleLabel = "タイトル"
     /// 타이틀 입력 placeholder
     static let titlePlaceholder = "スポット名を入力"
+    /// 지하철역 모드 타이틀 입력 라벨(역명)
+    static let stationTitleLabel = "駅名"
     /// 주소 입력 라벨
     static let addressLabel = "住所"
     /// 주소 입력 placeholder
@@ -394,8 +401,6 @@ public extension Strings.AddCustomPlace {
     static let addressNotFoundAlertMessage = "住所を確認してもう一度お試しください"
     /// 커스텀 스팟 배지 타이틀
     static let customBadgeTitle = "カスタム"
-    /// 등록 타입(지하철역 모드 토글) 섹션 타이틀
-    static let subwayModeSectionTitle = "登録タイプ"
     /// 지하철역 모드 타이틀 입력 placeholder
     static let stationTitlePlaceholder = "駅名を入力"
 }
@@ -549,6 +554,13 @@ public extension Strings.ToolBar {
     static let seeAllButton = "もっと見る"
     /// 허브 화면 - 환율 섹션 타이틀
     static let exchangeRateSectionTitle = "為替レート"
+
+    /// PlanDetail 저장된 체크리스트 - 추가 버튼 (접근성 라벨)
+    static let addButtonAccessibilityLabel = "項目を追加"
+    /// PlanDetail 저장된 체크리스트 - 편집 버튼 (접근성 라벨)
+    static let editButtonAccessibilityLabel = "編集"
+    /// PlanDetail 저장된 체크리스트 - 항목 추가 입력 placeholder
+    static let addItemPlaceholder = "項目を入力"
 }
 
 public extension Strings.KoreanPhrase {
@@ -561,5 +573,16 @@ public extension Strings.KoreanPhrase {
     /// 빈 상태 제목 (문구 0건)
     static let emptyTitle = "登録されたフレーズがありません"
     /// 빈 상태 설명 (문구 0건)
+    static let emptyDescription = "しばらくしてから再度お試しください"
+}
+
+public extension Strings.Shopping {
+    /// 허브 화면 - 추천 쇼핑 리스트 섹션 타이틀
+    static let sectionTitle = "おすすめのお買い物リスト"
+    /// 추천 쇼핑 리스트 로드 실패 설명
+    static let loadFailedDescription = "リストを読み込めませんでした"
+    /// 빈 상태 제목 (추천 쇼핑 아이템 0건)
+    static let emptyTitle = "登録されたおすすめ商品がありません"
+    /// 빈 상태 설명 (추천 쇼핑 아이템 0건)
     static let emptyDescription = "しばらくしてから再度お試しください"
 }

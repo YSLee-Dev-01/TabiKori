@@ -51,6 +51,7 @@ public enum TabiColor: String {
     case categoryFestival
     case categoryShopping
     case categoryNature
+    case categorySubway
 }
 
 // MARK: - ShapeStyle
