@@ -75,7 +75,7 @@ private extension DetailInfoTabView {
             }
             DetailInfoRow(
                 systemName: "mappin",
-                label: Strings.Detail.infoAddress,
+                label: self.detail.contentType == .subway ? Strings.Detail.infoLine : Strings.Detail.infoAddress,
                 value: self.detail.address,
                 color: self.detail.contentType.color
             )
