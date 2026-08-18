@@ -90,4 +90,9 @@ extension DependencyValues {
         get {self[KoreanPhraseUseCaseDependencyKey.self]}
         set {self[KoreanPhraseUseCaseDependencyKey.self] = newValue}
     }
+
+    public var shoppingItemUseCase: ShoppingItemUseCaseProtocol {
+        get {self[ShoppingItemUseCaseDependencyKey.self]}
+        set {self[ShoppingItemUseCaseDependencyKey.self] = newValue}
+    }
 }
