@@ -217,12 +217,10 @@ private extension PlanDetailView {
         Group {
             if let dateTitle = self.selectedDayDateTitle(plan: plan) {
                 HStack(alignment: .center, spacing: 8) {
-                    PlanDetailDayHeader(
-                        dateTitle: dateTitle,
-                        spotCountTitle: self.spotCountTitle
-                    )
-                    Spacer()
+                    PlanDetailDayHeader(dateTitle: dateTitle, spotCountTitle: nil)
+                    Spacer(minLength: 8)
                     self.toolBarButtons()
+                        .layoutPriority(1)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
@@ -276,10 +274,6 @@ private extension PlanDetailView {
         return spots
             .filter { $0.dayIndex == dayIndex }
             .sorted { $0.order < $1.order }
-    }
-
-    var spotCountTitle: String {
-        Self.spotCountTitle(count: self.store.displayedSpots.count)
     }
 
     static func spotCountTitle(count: Int) -> String {
