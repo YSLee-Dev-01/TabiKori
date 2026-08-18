@@ -75,6 +75,8 @@ public struct TabBarView: View {
                 SettingView(store: store)
             case .planToolBar(let store):
                 PlanToolBarView(store: store)
+            case .planDetailFullMap(let store):
+                PlanDetailFullMapView(store: store)
             case .packingList(let store):
                 PackingListView(store: store)
             case .koreanPhraseList(let store):

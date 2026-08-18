@@ -9,6 +9,7 @@
 import Foundation
 import ComposableArchitecture
 import Domain
+import Resource
 
 @Reducer
 public struct TabBarFeature {
@@ -177,6 +178,17 @@ public struct TabBarFeature {
             case .path(.element(id: let id, action: .planDetail(.toolBarButtonTapped))):
                 guard case .planDetail(let planDetailState) = state.path[id: id] else { return .none }
                 state.path.append(.planToolBar(PlanToolBarFeature.State(plan: planDetailState.plan)))
+                return .none
+
+            case .path(.element(id: let id, action: .planDetail(.fullMapButtonTapped))):
+                guard case .planDetail(let planDetailState) = state.path[id: id] else { return .none }
+                let dayIndex = planDetailState.isFullOverview ? planDetailState.visibleDayIndex : planDetailState.selectedDayIndex
+                guard planDetailState.plan.dayDates.indices.contains(dayIndex) else { return .none }
+                state.path.append(.planDetailFullMap(PlanDetailFullMapFeature.State(
+                    dayTitle: Strings.Plan.dayChipTitle(dayIndex + 1),
+                    dateTitle: planDetailState.plan.dayDates[dayIndex].planDayHeaderTitle,
+                    spots: planDetailState.spots(forDay: dayIndex)
+                )))
                 return .none
 
             case .path(.element(id: _, action: .festival(.festivalTapped(let festival)))):

@@ -35,6 +35,7 @@ public struct PlanDetailFeature: Sendable {
         fileprivate var hasStartedLoading: Bool = false
         @Presents var addSpotState: PlanDetailAddSpotFeature.State?
         @Presents var editPlanState: PlanDetailEditFeature.State?
+        @Presents var timeEditState: PlanDetailTimeEditFeature.State?
         @Presents var alert: AlertState<Action.Alert>?
 
         public init(plan: TravelPlan, initialDayIndex: Int = 0) {
@@ -69,7 +70,10 @@ public struct PlanDetailFeature: Sendable {
         case spotDeleteButtonTapped(id: UUID)
         case addSpotButtonTapped
         case spotRowTapped(TravelPlanDetailSpot)
+        case spotEditRowTapped(TravelPlanDetailSpot)
         case toolBarButtonTapped
+        case shoppingListButtonTapped
+        case fullMapButtonTapped
         case planEditMenuButtonTapped
         case editButtonTapped
         case editCancelButtonTapped
@@ -84,6 +88,7 @@ public struct PlanDetailFeature: Sendable {
         case editSaveResult(TravelPlanDetail?)
         case addSpot(PresentationAction<PlanDetailAddSpotFeature.Action>)
         case editPlan(PresentationAction<PlanDetailEditFeature.Action>)
+        case timeEdit(PresentationAction<PlanDetailTimeEditFeature.Action>)
         case alert(PresentationAction<Alert>)
 
         public enum Alert: Equatable {}
@@ -170,7 +175,26 @@ public struct PlanDetailFeature: Sendable {
             case .spotRowTapped:
                 return .none
 
+            case .spotEditRowTapped(let spot):
+                guard state.plan.dayDates.indices.contains(state.selectedDayIndex) else { return .none }
+                state.timeEditState = PlanDetailTimeEditFeature.State(
+                    planId: state.plan.id,
+                    planTitle: state.plan.title,
+                    dayTitle: Strings.Plan.dayChipTitle(state.selectedDayIndex + 1),
+                    dateTitle: state.plan.dayDates[state.selectedDayIndex].planDayHeaderTitle,
+                    spot: spot
+                )
+                return .none
+
             case .toolBarButtonTapped:
+                return .none
+
+            case .shoppingListButtonTapped:
+                // TODO: 쇼핑 리스트 화면 연결 예정. 현재 범위는 버튼 UI 노출까지만 담당
+                return .none
+
+            case .fullMapButtonTapped:
+                // TabBarFeature가 상위(.path)에서 가로채 지도 전체화면으로 push한다 (toolBarButtonTapped와 동일 패턴)
                 return .none
 
             case .planEditMenuButtonTapped:
@@ -249,6 +273,13 @@ public struct PlanDetailFeature: Sendable {
             case .editPlan:
                 return .none
 
+            case .timeEdit(.presented(.timeSaved)):
+                state.timeEditState = nil
+                return self.fetchTravelPlanDetailEffect(id: state.plan.id)
+
+            case .timeEdit:
+                return .none
+
             case .alert:
                 return .none
             }
@@ -258,6 +289,9 @@ public struct PlanDetailFeature: Sendable {
         }
         .ifLet(\.$editPlanState, action: \.editPlan) {
             PlanDetailEditFeature()
+        }
+        .ifLet(\.$timeEditState, action: \.timeEdit) {
+            PlanDetailTimeEditFeature()
         }
         .ifLet(\.$alert, action: \.alert)
     }

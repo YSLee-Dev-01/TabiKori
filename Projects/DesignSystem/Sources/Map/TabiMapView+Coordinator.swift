@@ -27,6 +27,7 @@ extension TabiMapView {
         private var polylineOverlay: NMFPolylineOverlay?
         private var polylineMarkers: [TabiMapMarker] = []
         private var lastAppliedFitToken: Int?
+        private var lastAppliedFocusToken: Int?
         private let singleMarkerFitZoomLevel: Double = 15
         private let boundsFitPadding: CGFloat = 60
         // makeUIView 시점에는 NMFNaverMapView가 아직 SwiftUI 레이아웃을 거치지 않아 frame이 .zero일 수 있음.
@@ -83,7 +84,16 @@ extension TabiMapView.Coordinator: NMFMapViewCameraDelegate {
 // MARK: - Marker Sync
 
 extension TabiMapView.Coordinator {
-    func sync(markers: [TabiMapMarker], isClusteringEnabled: Bool, showsPolyline: Bool, boundsFitToken: Int, on mapView: NMFMapView) {
+    func sync(
+        markers: [TabiMapMarker],
+        isClusteringEnabled: Bool,
+        showsPolyline: Bool,
+        boundsFitToken: Int,
+        focusLatitude: Double?,
+        focusLongitude: Double?,
+        focusToken: Int,
+        on mapView: NMFMapView
+    ) {
         if isClusteringEnabled {
             self.clearPlainMarkers()
             self.syncClusteredMarkers(markers, on: mapView)
@@ -100,6 +110,7 @@ extension TabiMapView.Coordinator {
         }
 
         self.applyBoundsFitIfNeeded(token: boundsFitToken, markers: markers, on: mapView)
+        self.applyFocusIfNeeded(token: focusToken, latitude: focusLatitude, longitude: focusLongitude, on: mapView)
     }
 }
 
@@ -107,6 +118,7 @@ extension TabiMapView.Coordinator {
 
 private extension TabiMapView.Coordinator {
     static let markerSize: CGFloat = 30
+    static let highlightedMarkerSize: CGFloat = 40
     static let captionTextSize: CGFloat = 10
     static let polylineWidth: CGFloat = 3
 
@@ -121,7 +133,12 @@ private extension TabiMapView.Coordinator {
         }
 
         for marker in markers {
+            let size = marker.isHighlighted ? Self.highlightedMarkerSize : Self.markerSize
+
             if let existingMarker = self.markerCache[marker.id] {
+                existingMarker.width = size
+                existingMarker.height = size
+
                 let previousAppearance = self.markerAppearances[marker.id]
                 guard previousAppearance?.icon != marker.icon
                     || previousAppearance?.color != marker.color
@@ -138,8 +155,8 @@ private extension TabiMapView.Coordinator {
 
             let nmfMarker = NMFMarker()
             nmfMarker.position = NMGLatLng(lat: marker.latitude, lng: marker.longitude)
-            nmfMarker.width = Self.markerSize
-            nmfMarker.height = Self.markerSize
+            nmfMarker.width = size
+            nmfMarker.height = size
             self.markerAppearances[marker.id] = (marker.icon, marker.color, marker.index)
             MainActor.assumeIsolated {
                 nmfMarker.iconImage = TabiMapMarkerImageFactory.image(icon: marker.icon, color: marker.color, index: marker.index)
@@ -257,6 +274,24 @@ private extension TabiMapView.Coordinator {
                 let bounds = NMGLatLngBounds(latLngs: latLngs)
                 cameraUpdate = NMFCameraUpdate(fit: bounds, padding: boundsFitPadding)
             }
+            cameraUpdate.animation = .easeOut
+            cameraUpdate.animationDuration = boundsFitAnimationDuration
+            mapView.moveCamera(cameraUpdate)
+        }
+    }
+
+    /// boundsFitToken(전체 마커 기준 fit)과 독립적으로, 지정된 좌표 하나로만 카메라를 이동시킨다.
+    /// 지도 전체화면 화면 등에서 하단 카드 탭 시 선택된 스팟으로 카메라를 포커스하는 데 사용
+    func applyFocusIfNeeded(token: Int, latitude: Double?, longitude: Double?, on mapView: NMFMapView) {
+        guard token != self.lastAppliedFocusToken else { return }
+        self.lastAppliedFocusToken = token
+        guard let latitude, let longitude else { return }
+
+        let boundsFitAnimationDuration = self.boundsFitAnimationDuration
+        // NMFMapView는 UIView(→ UIResponder)를 상속해 moveCamera가 @MainActor로 격리됨.
+        // sync(...)는 UIViewRepresentable의 makeUIView/updateUIView(둘 다 메인 액터)에서만 호출되므로 안전함.
+        MainActor.assumeIsolated {
+            let cameraUpdate = NMFCameraUpdate(scrollTo: NMGLatLng(lat: latitude, lng: longitude))
             cameraUpdate.animation = .easeOut
             cameraUpdate.animationDuration = boundsFitAnimationDuration
             mapView.moveCamera(cameraUpdate)

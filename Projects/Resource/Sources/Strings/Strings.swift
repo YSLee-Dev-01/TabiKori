@@ -326,6 +326,13 @@ public extension Strings.Plan {
     static let importFailedAlertTitle = "インポートに失敗しました"
     /// 가져오기 실패 알림 메시지
     static let importFailedAlertMessage = "ファイルを確認してもう一度お試しください"
+
+    /// 쇼핑 리스트 버튼 (준비물 버튼 옆, 아직 화면 연결 없음)
+    static let shoppingListButtonTitle = "買い物リスト"
+    /// 지도 전체화면 보기 버튼 (접근성 라벨)
+    static let fullMapButtonAccessibilityLabel = "地図を全画面で見る"
+    /// 편집모드 스팟 시간 수정 바텀시트 타이틀
+    static let timeEditSheetTitle = "時間を編集"
 }
 
 public extension Strings.Detail {

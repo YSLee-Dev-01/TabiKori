@@ -17,6 +17,7 @@ public enum StackPath {
     case region(RegionSpotFeature)
     case setting(SettingFeature)
     case planToolBar(PlanToolBarFeature)
+    case planDetailFullMap(PlanDetailFullMapFeature)
     case packingList(PackingListFeature)
     case koreanPhraseList(KoreanPhraseListFeature)
 }

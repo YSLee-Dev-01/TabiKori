@@ -18,8 +18,18 @@ public struct TabiMapMarker: Identifiable, Equatable, Sendable {
     public let icon: TabiIcon
     public let color: TabiColor
     public let index: Int?
+    public let isHighlighted: Bool
 
-    public init(id: String, latitude: Double, longitude: Double, title: String, icon: TabiIcon, color: TabiColor, index: Int? = nil) {
+    public init(
+        id: String,
+        latitude: Double,
+        longitude: Double,
+        title: String,
+        icon: TabiIcon,
+        color: TabiColor,
+        index: Int? = nil,
+        isHighlighted: Bool = false
+    ) {
         self.id = id
         self.latitude = latitude
         self.longitude = longitude
@@ -27,5 +37,6 @@ public struct TabiMapMarker: Identifiable, Equatable, Sendable {
         self.icon = icon
         self.color = color
         self.index = index
+        self.isHighlighted = isHighlighted
     }
 }

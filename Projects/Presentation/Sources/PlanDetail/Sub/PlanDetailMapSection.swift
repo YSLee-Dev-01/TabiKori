@@ -15,6 +15,7 @@ import Resource
 struct PlanDetailMapSection: View {
     let markers: [TabiMapMarker]
     let fitToken: Int
+    let onFullMapTapped: () -> Void
 
     var body: some View {
         TabiMapView(
@@ -34,6 +35,13 @@ struct PlanDetailMapSection: View {
         .overlay {
             RoundedRectangle(cornerRadius: .tabiRadiusLg)
                 .stroke(TabiColor.tabiBorder.opacity(0.4), lineWidth: 1)
+        }
+        .overlay(alignment: .topTrailing) {
+            TabiGlassIconButton(systemName: "arrow.up.left.and.arrow.down.right", size: .sm) {
+                self.onFullMapTapped()
+            }
+            .accessibilityLabel(Strings.Plan.fullMapButtonAccessibilityLabel)
+            .padding(10)
         }
         .padding(.horizontal, 20)
     }

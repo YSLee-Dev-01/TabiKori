@@ -74,4 +74,29 @@ public final class TestTravelPlanDetailUseCase: TravelPlanDetailUseCaseProtocol,
             spots: otherDaySpots + updatedDaySpots
         )
     }
+
+    public func updateSpotTime(planId: UUID, spotId: UUID, startTime: Date, durationMinutes: Int) async throws {
+        guard let detailIndex = self.details.firstIndex(where: { $0.planId == planId }) else { return }
+        let detail = self.details[detailIndex]
+        guard let spotIndex = detail.spots.firstIndex(where: { $0.id == spotId }) else { return }
+        let spot = detail.spots[spotIndex]
+        var updatedSpots = detail.spots
+        updatedSpots[spotIndex] = TravelPlanDetailSpot(
+            id: spot.id,
+            dayIndex: spot.dayIndex,
+            order: spot.order,
+            category: spot.category,
+            title: spot.title,
+            subtitle: spot.subtitle,
+            startTime: startTime,
+            durationMinutes: durationMinutes,
+            contentId: spot.contentId,
+            coordinate: spot.coordinate,
+            thumbnailURLString: spot.thumbnailURLString,
+            isCustom: spot.isCustom,
+            isStation: spot.isStation,
+            address: spot.address
+        )
+        self.details[detailIndex] = TravelPlanDetail(planId: detail.planId, spots: updatedSpots)
+    }
 }

@@ -24,6 +24,9 @@ public struct TabiMapView {
     private let onMapDragged: () -> Void
     private let onCameraIdle: (Double, Double, Double) -> Void
     private let boundsFitToken: Int
+    private let focusLatitude: Double?
+    private let focusLongitude: Double?
+    private let focusToken: Int
 
     public init(
         centerLatitude: Double,
@@ -35,6 +38,9 @@ public struct TabiMapView {
         showsLocationButton: Bool = false,
         followsUserLocation: Bool = true,
         boundsFitToken: Int = 0,
+        focusLatitude: Double? = nil,
+        focusLongitude: Double? = nil,
+        focusToken: Int = 0,
         onMapTapped: @escaping (Double, Double) -> Void,
         onMarkerTapped: @escaping (String) -> Void,
         onMapDragged: @escaping () -> Void = {},
@@ -49,6 +55,9 @@ public struct TabiMapView {
         self.showsLocationButton = showsLocationButton
         self.followsUserLocation = followsUserLocation
         self.boundsFitToken = boundsFitToken
+        self.focusLatitude = focusLatitude
+        self.focusLongitude = focusLongitude
+        self.focusToken = focusToken
         self.onMapTapped = onMapTapped
         self.onMarkerTapped = onMarkerTapped
         self.onMapDragged = onMapDragged
@@ -84,6 +93,9 @@ extension TabiMapView: UIViewRepresentable {
             isClusteringEnabled: self.isClusteringEnabled,
             showsPolyline: self.showsPolyline,
             boundsFitToken: self.boundsFitToken,
+            focusLatitude: self.focusLatitude,
+            focusLongitude: self.focusLongitude,
+            focusToken: self.focusToken,
             on: naverMapView.mapView
         )
 
@@ -99,6 +111,9 @@ extension TabiMapView: UIViewRepresentable {
             isClusteringEnabled: self.isClusteringEnabled,
             showsPolyline: self.showsPolyline,
             boundsFitToken: self.boundsFitToken,
+            focusLatitude: self.focusLatitude,
+            focusLongitude: self.focusLongitude,
+            focusToken: self.focusToken,
             on: uiView.mapView
         )
     }

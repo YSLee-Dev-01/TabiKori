@@ -118,4 +118,23 @@ extension TravelPlanDetailRepository: TravelPlanDetailRepositoryProtocol {
             throw TabiError.persistenceFailed(message: error.localizedDescription)
         }
     }
+
+    public func updateSpotTime(planId: UUID, spotId: UUID, startTime: Date, durationMinutes: Int) async throws {
+        do {
+            let context = ModelContext(self.modelContainer)
+            let descriptor = FetchDescriptor<TravelPlanDetailSpotModel>(
+                predicate: #Predicate { $0.planId == planId && $0.id == spotId }
+            )
+            guard let model = try context.fetch(descriptor).first else {
+                AppLogger.core.log(.error, "일정 상세 시간 수정 실패: 대상 스팟을 찾을 수 없음 (planId: \(planId), spotId: \(spotId))")
+                return
+            }
+            model.startTime = startTime
+            model.durationMinutes = durationMinutes
+            try context.save()
+        } catch {
+            AppLogger.core.log(.error, "일정 상세 시간 수정 실패: \(error.localizedDescription)")
+            throw TabiError.persistenceFailed(message: error.localizedDescription)
+        }
+    }
 }

@@ -30,7 +30,6 @@ public struct PlanDetailView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if self.store.isFullOverview == false {
-                self.toolBarButtonRow()
                 self.dayTabScroll(plan: self.store.plan)
             }
 
@@ -49,7 +48,7 @@ public struct PlanDetailView: View {
                 // 모드 전환으로 이 가지 전체가 사라질 때는 바깥 VStack의 페이드만 적용된다
                 VStack(alignment: .leading, spacing: 10) {
                     VStack(alignment: .leading, spacing: 10) {
-                        self.dayHeader(plan: self.store.plan)
+                        self.dayHeaderRow(plan: self.store.plan)
 
                         self.mapSection()
 
@@ -122,6 +121,9 @@ public struct PlanDetailView: View {
         .sheet(item: self.$store.scope(state: \.editPlanState, action: \.editPlan)) { store in
             PlanDetailEditView(store: store)
         }
+        .sheet(item: self.$store.scope(state: \.timeEditState, action: \.timeEdit)) { store in
+            PlanDetailTimeEditView(store: store)
+        }
         .alert($store.scope(state: \.alert, action: \.alert))
         .onAppear {
             self.store.send(.onAppear)
@@ -167,31 +169,34 @@ private extension PlanDetailView {
         .disabled(self.store.isEditing)
     }
 
-    func toolBarButtonRow() -> some View {
-        HStack {
-            Spacer()
-
-            Button {
+    func toolBarButtons() -> some View {
+        HStack(spacing: 8) {
+            self.capsuleButton(systemImageName: "shippingbox", title: Strings.ToolBar.planDetailEntryTitle) {
                 self.store.send(.toolBarButtonTapped)
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "shippingbox")
-                    TabiLabel(title: Strings.ToolBar.planDetailEntryTitle, style: .captionM, color: .tabiTextSecondary)
-                }
-                .foregroundStyle(TabiColor.tabiTextSecondary)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-                .background(TabiColor.tabiSurface)
-                .clipShape(Capsule())
-                .overlay {
-                    Capsule()
-                        .stroke(TabiColor.tabiBorder, lineWidth: 1)
-                }
             }
-            .buttonStyle(.plain)
+            self.capsuleButton(systemImageName: "cart", title: Strings.Plan.shoppingListButtonTitle) {
+                self.store.send(.shoppingListButtonTapped)
+            }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 20)
+    }
+
+    func capsuleButton(systemImageName: String, title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Image(systemName: systemImageName)
+                TabiLabel(title: title, style: .captionM, color: .tabiTextSecondary)
+            }
+            .foregroundStyle(TabiColor.tabiTextSecondary)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .background(TabiColor.tabiSurface)
+            .clipShape(Capsule())
+            .overlay {
+                Capsule()
+                    .stroke(TabiColor.tabiBorder, lineWidth: 1)
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     func handleDayChipTapped(_ offset: Int) {
@@ -206,13 +211,19 @@ private extension PlanDetailView {
         }
     }
 
-    func dayHeader(plan: TravelPlan) -> some View {
+    /// 단일 일자 뷰 전용: 일자 정보(PlanDetailDayHeader)와 준비물/쇼핑리스트 버튼을 한 행에 병합해 노출한다.
+    /// 전체보기(fullOverviewList)의 Section 헤더는 날짜 정보만 유지해야 하므로 별도로 인라인 구성됨
+    func dayHeaderRow(plan: TravelPlan) -> some View {
         Group {
             if let dateTitle = self.selectedDayDateTitle(plan: plan) {
-                PlanDetailDayHeader(
-                    dateTitle: dateTitle,
-                    spotCountTitle: self.spotCountTitle
-                )
+                HStack(alignment: .center, spacing: 8) {
+                    PlanDetailDayHeader(
+                        dateTitle: dateTitle,
+                        spotCountTitle: self.spotCountTitle
+                    )
+                    Spacer()
+                    self.toolBarButtons()
+                }
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
             }
@@ -237,7 +248,9 @@ private extension PlanDetailView {
         if self.selectedDayMarkers.isEmpty {
             PlanDetailMapEmptyState()
         } else {
-            PlanDetailMapSection(markers: self.selectedDayMarkers, fitToken: self.store.dayMapFitToken)
+            PlanDetailMapSection(markers: self.selectedDayMarkers, fitToken: self.store.dayMapFitToken) {
+                self.store.send(.fullMapButtonTapped)
+            }
         }
     }
 
@@ -292,8 +305,11 @@ private extension PlanDetailView {
                     )
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        guard self.store.isEditing == false else { return }
-                        self.store.send(.spotRowTapped(spot))
+                        if self.store.isEditing {
+                            self.store.send(.spotEditRowTapped(spot))
+                        } else {
+                            self.store.send(.spotRowTapped(spot))
+                        }
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
@@ -390,7 +406,9 @@ private extension PlanDetailView {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
-        .contentMargins(.bottom, 32, for: .scrollContent)
+        // 지도 섹션 높이(200pt) + 여유 버퍼만큼 여백을 늘려, 마지막 일자의 스팟이 적어 콘텐츠가 짧을 때도
+        // 스크롤이 바닥까지 도달할 수 있게 해 isScrollAtBottom(...) 감지가 안정적으로 동작하도록 한다
+        .contentMargins(.bottom, 220, for: .scrollContent)
         .coordinateSpace(name: Self.fullOverviewScrollSpace)
         .scrollPosition(id: self.$scrolledDayIndex, anchor: .top)
         .onPreferenceChange(DayHeaderOffsetPreferenceKey.self) { offsets in
