@@ -34,7 +34,7 @@ struct PlanDetailAddSpotSearchListView: View {
             .padding(.horizontal, 20)
 
             if self.subwayResults.isEmpty == false {
-                TabiLabel(title: Strings.Common.subwayKatakanaGuide, style: .captionM, color: .tabiTextSecondary)
+                TabiLabel(title: Strings.Map.subwayKatakanaSearchGuide, style: .captionM, color: .tabiTextSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 20)
             }
