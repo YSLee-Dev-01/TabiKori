@@ -43,10 +43,12 @@ public struct PlanToolBarView: View {
                 Button {
                     self.store.send(.addButtonTapped)
                 } label: {
-                    Image(systemName: "plus")
+                    Image(systemName: self.store.isAdding ? "xmark" : "plus")
                 }
                 .tint(Color.getTabiColor(.tabiPrimary))
-                .accessibilityLabel(Strings.ToolBar.addButtonAccessibilityLabel)
+                .accessibilityLabel(
+                    self.store.isAdding ? Strings.ToolBar.closeAddButtonAccessibilityLabel : Strings.ToolBar.addButtonAccessibilityLabel
+                )
                 .disabled(self.store.isLoading)
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -94,38 +96,32 @@ private extension PlanToolBarView {
     func list() -> some View {
         List {
             Section {
-                if self.store.isEditing {
-                    ForEach(self.$store.editingItems) { $item in
-                        PlanToolBarItemEditRow(title: $item.title, note: item.note)
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
+                // 체크 행 ↔ 편집 행을 별개의 ForEach로 분기하면 List 셀 재사용 시 일부 행이
+                // 새 콘텐츠(텍스트필드)를 반영하지 못하는 문제가 있어, 하나의 ForEach/행 타입을
+                // 유지한 채 PlanToolBarItemRow 내부에서만 isEditing에 따라 표시를 바꾼다
+                ForEach(self.$store.items) { $item in
+                    PlanToolBarItemRow(item: $item, isEditing: self.store.isEditing) {
+                        self.store.send(.itemTapped(id: $item.wrappedValue.id))
                     }
-                    .onDelete { indexSet in
-                        self.store.send(.editItemDeleted(at: indexSet))
-                    }
-                } else {
-                    ForEach(self.store.items) { item in
-                        PlanToolBarItemCheckRow(item: item) {
-                            self.store.send(.itemTapped(id: item.id))
-                        }
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
-                    }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
+                }
+                .onDelete { indexSet in
+                    self.store.send(.editItemDeleted(at: indexSet))
+                }
 
-                    if self.store.isAdding {
-                        TabiTextField(
-                            placeholder: Strings.ToolBar.addItemPlaceholder,
-                            text: self.$store.newItemTitle,
-                            focus: self.$isAddFieldFocused,
-                            submitLabel: .done,
-                            onSubmit: { self.store.send(.newItemSubmitted) }
-                        )
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
-                    }
+                if self.store.isAdding {
+                    TabiTextField(
+                        placeholder: Strings.ToolBar.addItemPlaceholder,
+                        text: self.$store.newItemTitle,
+                        focus: self.$isAddFieldFocused,
+                        submitLabel: .done,
+                        onSubmit: { self.store.send(.newItemSubmitted) }
+                    )
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
                 }
             } header: {
                 TabiLabel(

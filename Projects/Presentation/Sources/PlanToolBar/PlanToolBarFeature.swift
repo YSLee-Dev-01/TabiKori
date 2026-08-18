@@ -26,7 +26,7 @@ public struct PlanToolBarFeature: Sendable {
         var isAdding: Bool = false
         var newItemTitle: String = ""
         var isEditing: Bool = false
-        var editingItems: [ToolBarPlanItem] = []
+        var editSnapshot: [ToolBarPlanItem]?
         var isSaving: Bool = false
         fileprivate var hasStartedLoading: Bool = false
 
@@ -84,7 +84,7 @@ public struct PlanToolBarFeature: Sendable {
 
             case .addButtonTapped:
                 state.isEditing = false
-                state.editingItems = []
+                state.editSnapshot = nil
                 if state.isAdding {
                     state.isAdding = false
                     state.newItemTitle = ""
@@ -97,11 +97,14 @@ public struct PlanToolBarFeature: Sendable {
                 state.isAdding = false
                 state.newItemTitle = ""
                 if state.isEditing {
+                    if let snapshot = state.editSnapshot {
+                        state.items = snapshot
+                    }
+                    state.editSnapshot = nil
                     state.isEditing = false
-                    state.editingItems = []
                 } else {
+                    state.editSnapshot = state.items
                     state.isEditing = true
-                    state.editingItems = state.items
                 }
                 return .none
 
@@ -121,19 +124,22 @@ public struct PlanToolBarFeature: Sendable {
                 return self.replaceEffect(planId: state.plan.id, items: state.items, addedItemId: newItem.id)
 
             case .editItemDeleted(let indexSet):
-                state.editingItems.remove(atOffsets: indexSet)
+                state.items.remove(atOffsets: indexSet)
                 return .none
 
             case .editCancelButtonTapped:
+                if let snapshot = state.editSnapshot {
+                    state.items = snapshot
+                }
+                state.editSnapshot = nil
                 state.isEditing = false
-                state.editingItems = []
                 state.isSaving = false
                 return .cancel(id: CancelID.saveEditedItems)
 
             case .editSaveButtonTapped:
                 guard state.isSaving == false else { return .none }
                 state.isSaving = true
-                return self.saveEditedItemsEffect(planId: state.plan.id, items: state.editingItems)
+                return self.saveEditedItemsEffect(planId: state.plan.id, items: state.items)
                     .cancellable(id: CancelID.saveEditedItems)
 
             case .savedItemsResult(let items):
@@ -154,8 +160,8 @@ public struct PlanToolBarFeature: Sendable {
                 state.isSaving = false
                 if let items {
                     state.items = items
+                    state.editSnapshot = nil
                     state.isEditing = false
-                    state.editingItems = []
                 }
                 return .none
             }

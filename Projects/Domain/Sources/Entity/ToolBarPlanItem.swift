@@ -13,7 +13,7 @@ public struct ToolBarPlanItem: Equatable, Sendable, Identifiable {
     public let planId: UUID
     public let order: Int
     public var title: String
-    public let note: String?
+    public var note: String?
     public var isChecked: Bool
 
     public init(id: UUID, planId: UUID, order: Int, title: String, note: String?, isChecked: Bool) {

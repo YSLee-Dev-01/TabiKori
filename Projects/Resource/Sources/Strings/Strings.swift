@@ -568,10 +568,16 @@ public extension Strings.ToolBar {
 
     /// PlanDetail 저장된 체크리스트 - 추가 버튼 (접근성 라벨)
     static let addButtonAccessibilityLabel = "項目を追加"
+    /// PlanDetail 저장된 체크리스트 - 추가모드 진입 시 닫기 버튼 (접근성 라벨)
+    static let closeAddButtonAccessibilityLabel = "追加をやめる"
     /// PlanDetail 저장된 체크리스트 - 편집 버튼 (접근성 라벨)
     static let editButtonAccessibilityLabel = "編集"
     /// PlanDetail 저장된 체크리스트 - 항목 추가 입력 placeholder
     static let addItemPlaceholder = "項目を入力"
+    /// PlanDetail 저장된 체크리스트 - 편집모드 서브타이틀(메모) 필드 라벨
+    static let noteFieldLabel = "メモ"
+    /// PlanDetail 저장된 체크리스트 - 편집모드 서브타이틀(메모) 입력 placeholder
+    static let noteFieldPlaceholder = "メモを入力"
 }
 
 public extension Strings.KoreanPhrase {
