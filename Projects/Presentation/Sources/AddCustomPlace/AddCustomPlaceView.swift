@@ -29,22 +29,12 @@ public struct AddCustomPlaceView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                self.subwayModeSection()
-                if self.store.isSubwayMode == false {
-                    self.categorySection()
-                }
+                self.categorySection()
                 self.titleField()
-                if self.store.isSubwayMode {
-                    if self.store.matchedStation != nil {
-                        self.mapPreviewSection()
-                    } else {
-                        self.subwayResultsSection()
-                    }
-                } else {
-                    self.addressField()
-                }
+                self.bottomSection()
             }
             .padding(20)
+            .animation(.tabiStandard, value: self.store.isSubwayMode)
         }
         .scrollDismissesKeyboard(.immediately)
         .safeAreaBar(edge: .top) {
@@ -81,19 +71,14 @@ private extension AddCustomPlaceView {
         }
     }
 
-    func subwayModeSection() -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            TabiLabel(title: Strings.AddCustomPlace.subwayModeSectionTitle, style: .bodyMBold, color: .tabiTextPrimary)
-            TabiChip(Strings.Common.categorySubway, isSelected: self.store.isSubwayMode) {
-                self.store.isSubwayMode.toggle()
-            }
-        }
-    }
-
     func categorySection() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             TabiLabel(title: Strings.Common.categoryTitle, style: .bodyMBold, color: .tabiTextPrimary)
-            BookmarkCategoryFilterBar(selectedCategory: self.store.selectedCategory, includesAllChip: false) { category in
+            BookmarkCategoryFilterBar(
+                selectedCategory: self.store.isSubwayMode ? .subway : self.store.selectedCategory,
+                includesAllChip: false,
+                includesSubwayChip: true
+            ) { category in
                 guard let category else { return }
                 self.store.send(.categorySelected(category))
             }
@@ -102,7 +87,11 @@ private extension AddCustomPlaceView {
 
     func titleField() -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            TabiLabel(title: Strings.AddCustomPlace.titleLabel, style: .bodyMBold, color: .tabiTextPrimary)
+            TabiLabel(
+                title: self.store.isSubwayMode ? Strings.AddCustomPlace.stationTitleLabel : Strings.AddCustomPlace.titleLabel,
+                style: .bodyMBold,
+                color: .tabiTextPrimary
+            )
             TabiTextField(
                 placeholder: self.store.isSubwayMode ? Strings.AddCustomPlace.stationTitlePlaceholder : Strings.AddCustomPlace.titlePlaceholder,
                 text: self.$store.title,
@@ -112,10 +101,29 @@ private extension AddCustomPlaceView {
                 guard self.store.isSubwayMode else { return }
                 self.store.send(.stationNameSubmitted)
             }
+            if self.store.isSubwayMode {
+                TabiLabel(title: Strings.Common.subwayKatakanaGuide, style: .captionM, color: .tabiTextSecondary)
+            }
             if self.store.isSubwayMode, self.store.isSubwaySearching {
                 ProgressView()
                     .frame(maxWidth: .infinity)
             }
+        }
+    }
+
+    @ViewBuilder
+    func bottomSection() -> some View {
+        if self.store.isSubwayMode {
+            if self.store.matchedStation != nil {
+                self.mapPreviewSection()
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            } else {
+                self.subwayResultsSection()
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        } else {
+            self.addressField()
+                .transition(.opacity.combined(with: .move(edge: .top)))
         }
     }
 

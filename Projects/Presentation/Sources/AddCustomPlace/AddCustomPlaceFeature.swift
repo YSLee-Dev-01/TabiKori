@@ -94,12 +94,6 @@ public struct AddCustomPlaceFeature: Sendable {
                 state.isSubwaySearching = false
                 return .cancel(id: CancelID.stationSearch)
 
-            case .binding(\.isSubwayMode):
-                state.matchedStation = nil
-                state.previewCoordinate = nil
-                state.subwayResults = []
-                return .none
-
             case .binding:
                 return .none
 
@@ -107,7 +101,17 @@ public struct AddCustomPlaceFeature: Sendable {
                 return .run { [dismiss = self.dismiss] _ in await dismiss() }
 
             case .categorySelected(let category):
-                state.selectedCategory = category
+                if category == .subway {
+                    guard state.isSubwayMode == false else { return .none }
+                    state.isSubwayMode = true
+                } else {
+                    state.selectedCategory = category
+                    guard state.isSubwayMode else { return .none }
+                    state.isSubwayMode = false
+                }
+                state.matchedStation = nil
+                state.previewCoordinate = nil
+                state.subwayResults = []
                 return .none
 
             case .confirmTapped:
