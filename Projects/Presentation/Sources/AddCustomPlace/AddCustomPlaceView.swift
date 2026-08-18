@@ -35,6 +35,8 @@ public struct AddCustomPlaceView: View {
             }
             .padding(20)
             .animation(.tabiStandard, value: self.store.isSubwayMode)
+            .animation(.tabiStandard, value: self.store.subwayResults)
+            .animation(.tabiStandard, value: self.store.matchedStation)
         }
         .scrollDismissesKeyboard(.immediately)
         .safeAreaBar(edge: .top) {
@@ -102,7 +104,11 @@ private extension AddCustomPlaceView {
                 self.store.send(.stationNameSubmitted)
             }
             if self.store.isSubwayMode {
-                TabiLabel(title: Strings.Common.subwayKatakanaGuide, style: .captionM, color: .tabiTextSecondary)
+                TabiLabel(
+                    title: self.store.trimmedTitle.isEmpty ? Strings.Common.subwayKatakanaGuide : Strings.Common.subwaySearchEnterGuide,
+                    style: .captionM,
+                    color: .tabiTextSecondary
+                )
             }
             if self.store.isSubwayMode, self.store.isSubwaySearching {
                 ProgressView()
