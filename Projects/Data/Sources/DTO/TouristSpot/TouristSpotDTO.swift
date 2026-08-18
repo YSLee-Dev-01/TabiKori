@@ -56,6 +56,8 @@ struct TouristSpotItemDTO: Decodable {
     let dist: String?
     let mapx: String?
     let mapy: String?
+    let addr1: String?
+    let addr2: String?
 }
 
 // MARK: - Mapping
@@ -86,13 +88,17 @@ private extension TouristSpotItemDTO {
             AppLogger.network.log(.error, "⚠️ 좌표 파싱 실패 (contentid: \(self.contentid)): mapx=\(self.mapx ?? "nil"), mapy=\(self.mapy ?? "nil")")
         }
 
+        let addressParts = [self.addr1, self.addr2].compactMap { $0?.isEmpty == false ? $0 : nil }
+        let address = addressParts.joined(separator: " ").replacingBRWithNewline
+
         return TouristSpot(
             id: self.contentid,
             title: self.title,
             thumbnailURLString: self.firstimage,
             distanceMeters: self.dist?.toDouble(),
             contentType: contentType,
-            coordinate: Coordinate(latitude: latitude ?? Coordinate.zero.latitude, longitude: longitude ?? Coordinate.zero.longitude)
+            coordinate: Coordinate(latitude: latitude ?? Coordinate.zero.latitude, longitude: longitude ?? Coordinate.zero.longitude),
+            address: address.isEmpty == false ? address : nil
         )
     }
 }
