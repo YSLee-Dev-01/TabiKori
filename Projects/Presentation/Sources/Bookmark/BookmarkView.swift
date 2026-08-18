@@ -89,7 +89,8 @@ private extension BookmarkView {
                 } header: {
                     VStack(alignment: .leading, spacing: 8) {
                         BookmarkCategoryFilterBar(
-                            selectedCategory: self.store.selectedCategory
+                            selectedCategory: self.store.selectedCategory,
+                            includesSubwayChip: true
                         ) { category in
                             self.store.send(.categoryFilterTapped(category), animation: .tabiStandard)
                         }

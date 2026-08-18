@@ -16,6 +16,7 @@ struct BookmarkCategoryFilterBar: View {
 
     var selectedCategory: CategoryType?
     var includesAllChip: Bool = true
+    var includesSubwayChip: Bool = false
     var onSelect: (CategoryType?) -> Void
 
     var body: some View {
@@ -27,6 +28,15 @@ struct BookmarkCategoryFilterBar: View {
                         isSelected: self.selectedCategory == nil
                     ) {
                         self.onSelect(nil)
+                    }
+                }
+
+                if self.includesSubwayChip {
+                    TabiChip(
+                        CategoryType.subway.label,
+                        isSelected: self.selectedCategory == .subway
+                    ) {
+                        self.onSelect(.subway)
                     }
                 }
 
