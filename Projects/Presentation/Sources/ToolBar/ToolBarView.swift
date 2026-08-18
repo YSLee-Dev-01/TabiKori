@@ -28,6 +28,7 @@ public struct ToolBarView: View {
                 self.packingSection()
                 self.exchangeRateSection()
                 self.koreanPhraseSection()
+                self.shoppingSection()
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 15)
@@ -186,6 +187,61 @@ private extension ToolBarView {
     }
 }
 
+// MARK: - Shopping Section
+
+private extension ToolBarView {
+    @ViewBuilder
+    func shoppingSection() -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            TabiLabel(title: Strings.Shopping.sectionTitle, style: .titleM, color: .tabiTextPrimary)
+
+            if self.store.isLoadingShopping {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 24)
+            } else if self.store.hasShoppingLoadFailed {
+                TabiRetryableEmptyState(description: Strings.Shopping.loadFailedDescription) {
+                    self.store.send(.shoppingRetryButtonTapped)
+                }
+            } else if self.store.shoppingItems.isEmpty {
+                TabiEmptyState(
+                    systemImageName: "bag",
+                    title: Strings.Shopping.emptyTitle,
+                    description: Strings.Shopping.emptyDescription,
+                    style: .card
+                )
+            } else {
+                TabiCard {
+                    LazyVStack(spacing: 0) {
+                        ForEach(Array(self.store.shoppingPreviewItems.enumerated()), id: \.element.id) { index, item in
+                            if index > 0 {
+                                Divider()
+                                    .padding(.horizontal, 16)
+                            }
+                            self.shoppingPreviewRow(item)
+                        }
+                    }
+                }
+            }
+
+            self.sectionMoreButton {
+                self.store.send(.shoppingListButtonTapped)
+            }
+        }
+    }
+
+    func shoppingPreviewRow(_ item: ShoppingItem) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            TabiLabel(title: item.title, style: .bodyMBold, color: .tabiTextPrimary)
+            if let note = item.note, note.isEmpty == false {
+                TabiLabel(title: note, style: .captionM, color: .tabiTextSecondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+    }
+}
+
 #Preview {
     let mockToolBarItemUseCase: TestToolBarItemUseCase = {
         let useCase = TestToolBarItemUseCase()
@@ -204,6 +260,15 @@ private extension ToolBarView {
         return useCase
     }()
 
+    let mockShoppingItemUseCase: TestShoppingItemUseCase = {
+        let useCase = TestShoppingItemUseCase()
+        useCase.recommendedItems = [
+            ShoppingItem(id: "ginseng", order: 0, title: "高麗人参", note: "お土産の定番"),
+            ShoppingItem(id: "cosmetics", order: 1, title: "韓国コスメ", note: nil)
+        ]
+        return useCase
+    }()
+
     ToolBarView(
         store: Store(
             initialState: ToolBarFeature.State(),
@@ -211,6 +276,7 @@ private extension ToolBarView {
             withDependencies: { dependency in
                 dependency.toolBarItemUseCase = mockToolBarItemUseCase
                 dependency.koreanPhraseUseCase = mockKoreanPhraseUseCase
+                dependency.shoppingItemUseCase = mockShoppingItemUseCase
             }
         )
     )

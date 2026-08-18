@@ -19,6 +19,7 @@ public struct ToolBarFeature: Sendable {
 
     @Dependency(\.toolBarItemUseCase) var toolBarItemUseCase
     @Dependency(\.koreanPhraseUseCase) var koreanPhraseUseCase
+    @Dependency(\.shoppingItemUseCase) var shoppingItemUseCase
 
     @ObservableState
     public struct State: Equatable {
@@ -34,6 +35,11 @@ public struct ToolBarFeature: Sendable {
         var hasPhraseLoadFailed: Bool = false
         fileprivate var hasStartedLoadingPhrases: Bool = false
 
+        var shoppingItems: [ShoppingItem] = []
+        var isLoadingShopping: Bool = false
+        var hasShoppingLoadFailed: Bool = false
+        fileprivate var hasStartedLoadingShopping: Bool = false
+
         public init() {}
     }
 
@@ -41,12 +47,16 @@ public struct ToolBarFeature: Sendable {
         case onAppear
         case packingRetryButtonTapped
         case phraseRetryButtonTapped
+        case shoppingRetryButtonTapped
         case packingListButtonTapped
         case koreanPhraseListButtonTapped
+        case shoppingListButtonTapped
         case packingItemsResult([ToolBarItem])
         case packingItemsFailed
         case phrasesResult([KoreanPhrase])
         case phrasesFailed
+        case shoppingItemsResult([ShoppingItem])
+        case shoppingItemsFailed
         case exchangeRateCalculator(ExchangeRateCalculatorFeature.Action)
     }
 
@@ -75,6 +85,13 @@ public struct ToolBarFeature: Sendable {
                     effects.append(self.fetchPhrasesEffect())
                 }
 
+                if state.hasStartedLoadingShopping == false {
+                    state.hasStartedLoadingShopping = true
+                    state.isLoadingShopping = true
+                    state.hasShoppingLoadFailed = false
+                    effects.append(self.fetchShoppingItemsEffect())
+                }
+
                 return .merge(effects)
 
             case .packingRetryButtonTapped:
@@ -87,7 +104,12 @@ public struct ToolBarFeature: Sendable {
                 state.hasPhraseLoadFailed = false
                 return self.fetchPhrasesEffect()
 
-            case .packingListButtonTapped, .koreanPhraseListButtonTapped:
+            case .shoppingRetryButtonTapped:
+                state.isLoadingShopping = true
+                state.hasShoppingLoadFailed = false
+                return self.fetchShoppingItemsEffect()
+
+            case .packingListButtonTapped, .koreanPhraseListButtonTapped, .shoppingListButtonTapped:
                 return .none
 
             case .packingItemsResult(let items):
@@ -112,6 +134,17 @@ public struct ToolBarFeature: Sendable {
                 state.hasPhraseLoadFailed = true
                 return .none
 
+            case .shoppingItemsResult(let items):
+                state.shoppingItems = items
+                state.isLoadingShopping = false
+                state.hasShoppingLoadFailed = false
+                return .none
+
+            case .shoppingItemsFailed:
+                state.isLoadingShopping = false
+                state.hasShoppingLoadFailed = true
+                return .none
+
             case .exchangeRateCalculator:
                 return .none
             }
@@ -128,6 +161,10 @@ public extension ToolBarFeature.State {
 
     var phrasePreviewItems: [KoreanPhrase] {
         Array(self.phrases.prefix(3))
+    }
+
+    var shoppingPreviewItems: [ShoppingItem] {
+        Array(self.shoppingItems.prefix(3))
     }
 }
 
@@ -154,6 +191,18 @@ private extension ToolBarFeature {
             } catch {
                 AppLogger.view.log(.error, "한국어 문구 리스트 조회 실패: \(error.localizedDescription)")
                 await send(.phrasesFailed)
+            }
+        }
+    }
+
+    func fetchShoppingItemsEffect() -> Effect<Action> {
+        .run { [shoppingItemUseCase = self.shoppingItemUseCase] send in
+            do {
+                let items = try await shoppingItemUseCase.fetchRecommendedItems()
+                await send(.shoppingItemsResult(items))
+            } catch {
+                AppLogger.view.log(.error, "추천 쇼핑 리스트 조회 실패: \(error.localizedDescription)")
+                await send(.shoppingItemsFailed)
             }
         }
     }
