@@ -33,6 +33,12 @@ struct PlanDetailAddSpotSearchListView: View {
             )
             .padding(.horizontal, 20)
 
+            if self.subwayResults.isEmpty == false {
+                TabiLabel(title: Strings.Common.subwayKatakanaGuide, style: .captionM, color: .tabiTextSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+            }
+
             ScrollView {
                 LazyVStack(spacing: 0) {
                     self.content()
@@ -65,6 +71,7 @@ private extension PlanDetailAddSpotSearchListView {
                 description: Strings.Map.searchEmptyDescription
             )
             .padding(.horizontal, 20)
+            .padding(.top, 20)
             .transition(.opacity)
         } else if self.subwayResults.isEmpty && self.results.isEmpty {
             TabiEmptyState(
@@ -73,6 +80,7 @@ private extension PlanDetailAddSpotSearchListView {
                 description: Strings.Map.searchResultEmptyDescription
             )
             .padding(.horizontal, 20)
+            .padding(.top, 20)
             .transition(.opacity)
         } else {
             ForEach(Array(self.subwayResults.enumerated()), id: \.element.stationCode) { index, station in
