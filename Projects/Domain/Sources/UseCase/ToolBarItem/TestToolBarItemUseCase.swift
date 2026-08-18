@@ -48,4 +48,9 @@ public final class TestToolBarItemUseCase: ToolBarItemUseCaseProtocol, @unchecke
         guard let index = self.savedItems.firstIndex(where: { $0.planId == planId && $0.id == itemId }) else { return }
         self.savedItems[index].isChecked = isChecked
     }
+
+    public func replace(planId: UUID, items: [ToolBarPlanItem]) async throws {
+        self.savedItems.removeAll { $0.planId == planId }
+        self.savedItems.append(contentsOf: items)
+    }
 }

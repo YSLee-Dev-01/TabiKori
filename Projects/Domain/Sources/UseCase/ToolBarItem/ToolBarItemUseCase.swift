@@ -52,4 +52,8 @@ public final class ToolBarItemUseCase: ToolBarItemUseCaseProtocol {
     public func updateChecked(planId: UUID, itemId: UUID, isChecked: Bool) async throws {
         try await self.toolBarPlanItemRepository.updateChecked(planId: planId, itemId: itemId, isChecked: isChecked)
     }
+
+    public func replace(planId: UUID, items: [ToolBarPlanItem]) async throws {
+        try await self.toolBarPlanItemRepository.replace(planId: planId, items: items)
+    }
 }

@@ -12,7 +12,7 @@ public struct ToolBarPlanItem: Equatable, Sendable, Identifiable {
     public let id: UUID
     public let planId: UUID
     public let order: Int
-    public let title: String
+    public var title: String
     public let note: String?
     public var isChecked: Bool
 

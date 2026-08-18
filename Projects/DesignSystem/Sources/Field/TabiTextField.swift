@@ -18,6 +18,8 @@ public struct TabiTextField: View {
     private let text: Binding<String>
     private let maxLength: Int?
     private let focus: FocusState<Bool>.Binding?
+    private let submitLabel: SubmitLabel
+    private let onSubmit: (() -> Void)?
 
     // MARK: - Init
 
@@ -25,12 +27,16 @@ public struct TabiTextField: View {
         placeholder: String,
         text: Binding<String>,
         maxLength: Int? = nil,
-        focus: FocusState<Bool>.Binding? = nil
+        focus: FocusState<Bool>.Binding? = nil,
+        submitLabel: SubmitLabel = .done,
+        onSubmit: (() -> Void)? = nil
     ) {
         self.placeholder = placeholder
         self.text = text
         self.maxLength = maxLength
         self.focus = focus
+        self.submitLabel = submitLabel
+        self.onSubmit = onSubmit
     }
 
     // MARK: - View
@@ -39,6 +45,8 @@ public struct TabiTextField: View {
         let field = TextField(self.placeholder, text: self.text)
             .font(.pretendard(TypographyStyle.bodyM.weight, size: TypographyStyle.bodyM.size))
             .foregroundStyle(TabiColor.tabiTextPrimary)
+            .submitLabel(self.submitLabel)
+            .onSubmit { self.onSubmit?() }
             .onChange(of: self.text.wrappedValue) { _, newValue in
                 if let maxLength = self.maxLength, newValue.count > maxLength {
                     self.text.wrappedValue = String(newValue.prefix(maxLength))

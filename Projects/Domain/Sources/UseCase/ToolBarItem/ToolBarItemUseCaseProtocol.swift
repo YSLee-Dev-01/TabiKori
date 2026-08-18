@@ -13,4 +13,5 @@ public protocol ToolBarItemUseCaseProtocol: Sendable {
     func fetchSavedItems(planId: UUID) async throws -> [ToolBarPlanItem]
     func save(planId: UUID, items: [ToolBarItem]) async throws
     func updateChecked(planId: UUID, itemId: UUID, isChecked: Bool) async throws
+    func replace(planId: UUID, items: [ToolBarPlanItem]) async throws
 }
