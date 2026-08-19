@@ -18,6 +18,7 @@ public struct TabiMapView {
     private let isClusteringEnabled: Bool
     private let showsPolyline: Bool
     private let showsLocationButton: Bool
+    private let showsZoomControls: Bool
     private let followsUserLocation: Bool
     private let onMapTapped: (Double, Double) -> Void
     private let onMarkerTapped: (String) -> Void
@@ -36,6 +37,7 @@ public struct TabiMapView {
         isClusteringEnabled: Bool = false,
         showsPolyline: Bool = false,
         showsLocationButton: Bool = false,
+        showsZoomControls: Bool = true,
         followsUserLocation: Bool = true,
         boundsFitToken: Int = 0,
         focusLatitude: Double? = nil,
@@ -53,6 +55,7 @@ public struct TabiMapView {
         self.isClusteringEnabled = isClusteringEnabled
         self.showsPolyline = showsPolyline
         self.showsLocationButton = showsLocationButton
+        self.showsZoomControls = showsZoomControls
         self.followsUserLocation = followsUserLocation
         self.boundsFitToken = boundsFitToken
         self.focusLatitude = focusLatitude
@@ -104,6 +107,7 @@ extension TabiMapView: UIViewRepresentable {
 
     public func updateUIView(_ uiView: NMFNaverMapView, context: Context) {
         uiView.showLocationButton = self.showsLocationButton
+        uiView.showZoomControls = self.showsZoomControls
         uiView.mapView.positionMode = self.showsLocationButton ? (self.followsUserLocation ? .direction : .normal) : .disabled
 
         context.coordinator.sync(
