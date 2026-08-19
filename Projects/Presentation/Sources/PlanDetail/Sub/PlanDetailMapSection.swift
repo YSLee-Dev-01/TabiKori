@@ -25,6 +25,7 @@ struct PlanDetailMapSection: View {
             isClusteringEnabled: false,
             showsPolyline: true,
             showsLocationButton: false,
+            showsZoomControls: false,
             followsUserLocation: false,
             boundsFitToken: self.fitToken,
             onMapTapped: { _, _ in },

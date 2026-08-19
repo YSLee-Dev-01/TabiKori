@@ -327,8 +327,8 @@ public extension Strings.Plan {
     /// 가져오기 실패 알림 메시지
     static let importFailedAlertMessage = "ファイルを確認してもう一度お試しください"
 
-    /// 쇼핑 리스트 버튼 (준비물 버튼 옆, 아직 화면 연결 없음)
-    static let shoppingListButtonTitle = "買い物リスト"
+    /// 쇼핑 리스트 버튼 (준비물 버튼 옆)
+    static let shoppingListButtonTitle = "買い物"
     /// 지도 전체화면 보기 버튼 (접근성 라벨)
     static let fullMapButtonAccessibilityLabel = "地図を全画面で見る"
     /// 편집모드 스팟 시간 수정 바텀시트 타이틀
@@ -559,7 +559,7 @@ public extension Strings.ToolBar {
     static let saveFailedDescription = "保存に失敗しました。もう一度お試しください"
 
     /// PlanDetail 진입 버튼 (접근성 라벨)
-    static let planDetailEntryTitle = "持ち物リスト"
+    static let planDetailEntryTitle = "持ち物"
 
     /// 저장된 체크리스트 빈 상태 제목 (아직 저장 안 됨)
     static let savedEmptyTitle = "持ち物リストがまだありません"

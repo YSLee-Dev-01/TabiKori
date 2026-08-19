@@ -30,6 +30,10 @@ public struct PlanDetailView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if self.store.isFullOverview == false {
+                self.dayHeaderRow(plan: self.store.plan)
+                    .id(self.store.selectedDayIndex)
+                    .transition(self.dayTransition)
+
                 self.dayTabScroll(plan: self.store.plan)
             }
 
@@ -48,8 +52,6 @@ public struct PlanDetailView: View {
                 // 모드 전환으로 이 가지 전체가 사라질 때는 바깥 VStack의 페이드만 적용된다
                 VStack(alignment: .leading, spacing: 10) {
                     VStack(alignment: .leading, spacing: 10) {
-                        self.dayHeaderRow(plan: self.store.plan)
-
                         self.mapSection()
 
                         self.spotList()
@@ -218,9 +220,10 @@ private extension PlanDetailView {
             if let dateTitle = self.selectedDayDateTitle(plan: plan) {
                 HStack(alignment: .center, spacing: 8) {
                     PlanDetailDayHeader(dateTitle: dateTitle, spotCountTitle: nil)
-                    Spacer(minLength: 8)
-                    self.toolBarButtons()
                         .layoutPriority(1)
+                    Spacer(minLength: 4)
+                    self.toolBarButtons()
+                        .fixedSize()
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
@@ -308,12 +311,12 @@ private extension PlanDetailView {
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    .swipeActions(edge: .trailing) {
                         if self.store.isEditing == false {
                             Button(role: .destructive) {
                                 self.store.send(.spotDeleteButtonTapped(id: spot.id))
                             } label: {
-                                Text(Strings.Common.delete)
+                                Label(Strings.Common.delete, systemImage: "trash")
                             }
                         }
                     }
