@@ -18,6 +18,8 @@ import Resource
 struct PlanToolBarItemRow: View {
     @Binding var item: ToolBarPlanItem
     let isEditing: Bool
+    /// true인 동안(추가모드)은 체크박스를 숨기고 탭 인터랙션도 비활성화한다
+    let isAdding: Bool
     let onTap: () -> Void
 
     var body: some View {
@@ -38,9 +40,11 @@ private extension PlanToolBarItemRow {
     func checkContent() -> some View {
         Button(action: self.onTap) {
             HStack(spacing: 12) {
-                Image(systemName: self.item.isChecked ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(self.item.isChecked ? TabiColor.tabiPrimary : TabiColor.tabiTextTertiary)
-                    .font(.system(size: 20))
+                if self.isAdding == false {
+                    Image(systemName: self.item.isChecked ? "checkmark.circle.fill" : "circle")
+                        .foregroundStyle(self.item.isChecked ? TabiColor.tabiPrimary : TabiColor.tabiTextTertiary)
+                        .font(.system(size: 20))
+                }
 
                 VStack(alignment: .leading, spacing: 4) {
                     TabiLabel(
@@ -58,6 +62,7 @@ private extension PlanToolBarItemRow {
             .animation(.tabiFast, value: self.item.isChecked)
         }
         .buttonStyle(TabiPressStyle())
+        .disabled(self.isAdding)
     }
 
     func editContent() -> some View {

@@ -25,6 +25,7 @@ public struct PlanToolBarFeature: Sendable {
         var isLoading: Bool = false
         var isAdding: Bool = false
         var newItemTitle: String = ""
+        var newItemNote: String = ""
         var isEditing: Bool = false
         var editSnapshot: [ToolBarPlanItem]?
         var isSaving: Bool = false
@@ -88,6 +89,7 @@ public struct PlanToolBarFeature: Sendable {
                 if state.isAdding {
                     state.isAdding = false
                     state.newItemTitle = ""
+                    state.newItemNote = ""
                 } else {
                     state.isAdding = true
                 }
@@ -96,6 +98,7 @@ public struct PlanToolBarFeature: Sendable {
             case .editButtonTapped:
                 state.isAdding = false
                 state.newItemTitle = ""
+                state.newItemNote = ""
                 if state.isEditing {
                     if let snapshot = state.editSnapshot {
                         state.items = snapshot
@@ -111,16 +114,18 @@ public struct PlanToolBarFeature: Sendable {
             case .newItemSubmitted:
                 let title = state.newItemTitle.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard title.isEmpty == false else { return .none }
+                let note = state.newItemNote.trimmingCharacters(in: .whitespacesAndNewlines)
                 let newItem = ToolBarPlanItem(
                     id: UUID(),
                     planId: state.plan.id,
                     order: state.items.count,
                     title: title,
-                    note: nil,
+                    note: note.isEmpty ? nil : note,
                     isChecked: false
                 )
                 state.items.append(newItem)
                 state.newItemTitle = ""
+                state.newItemNote = ""
                 return self.replaceEffect(planId: state.plan.id, items: state.items, addedItemId: newItem.id)
 
             case .editItemDeleted(let indexSet):

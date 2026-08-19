@@ -20,6 +20,7 @@ public struct PlanToolBarView: View {
     @Bindable private var store: StoreOf<PlanToolBarFeature>
 
     @FocusState private var isAddFieldFocused: Bool
+    @FocusState private var isAddNoteFieldFocused: Bool
 
     public init(store: StoreOf<PlanToolBarFeature>) {
         self.store = store
@@ -51,19 +52,24 @@ public struct PlanToolBarView: View {
                 )
                 .disabled(self.store.isLoading)
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    self.store.send(.editButtonTapped)
-                } label: {
-                    Image(systemName: "pencil")
+            if self.store.isAdding == false {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        self.store.send(.editButtonTapped)
+                    } label: {
+                        Image(systemName: "pencil")
+                    }
+                    .tint(Color.getTabiColor(.tabiPrimary))
+                    .accessibilityLabel(Strings.ToolBar.editButtonAccessibilityLabel)
+                    .disabled(self.store.isLoading || self.store.items.isEmpty)
                 }
-                .tint(Color.getTabiColor(.tabiPrimary))
-                .accessibilityLabel(Strings.ToolBar.editButtonAccessibilityLabel)
-                .disabled(self.store.isLoading || self.store.items.isEmpty)
             }
         }
         .onChange(of: self.store.isAdding) { _, isAdding in
             self.isAddFieldFocused = isAdding
+            if isAdding == false {
+                self.isAddNoteFieldFocused = false
+            }
         }
         .onAppear {
             self.store.send(.onAppear)
@@ -100,15 +106,19 @@ private extension PlanToolBarView {
                 // 새 콘텐츠(텍스트필드)를 반영하지 못하는 문제가 있어, 하나의 ForEach/행 타입을
                 // 유지한 채 PlanToolBarItemRow 내부에서만 isEditing에 따라 표시를 바꾼다
                 ForEach(self.$store.items) { $item in
-                    PlanToolBarItemRow(item: $item, isEditing: self.store.isEditing) {
+                    PlanToolBarItemRow(item: $item, isEditing: self.store.isEditing, isAdding: self.store.isAdding) {
                         self.store.send(.itemTapped(id: $item.wrappedValue.id))
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
-                }
-                .onDelete { indexSet in
-                    self.store.send(.editItemDeleted(at: indexSet))
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            self.deleteItem(id: $item.wrappedValue.id)
+                        } label: {
+                            Label(Strings.Common.delete, systemImage: "trash")
+                        }
+                    }
                 }
 
                 if self.store.isAdding {
@@ -116,6 +126,17 @@ private extension PlanToolBarView {
                         placeholder: Strings.ToolBar.addItemPlaceholder,
                         text: self.$store.newItemTitle,
                         focus: self.$isAddFieldFocused,
+                        submitLabel: .next,
+                        onSubmit: { self.isAddNoteFieldFocused = true }
+                    )
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
+
+                    TabiTextField(
+                        placeholder: Strings.ToolBar.noteFieldPlaceholder,
+                        text: self.$store.newItemNote,
+                        focus: self.$isAddNoteFieldFocused,
                         submitLabel: .done,
                         onSubmit: { self.store.send(.newItemSubmitted) }
                     )
@@ -153,6 +174,11 @@ private extension PlanToolBarView {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
+    }
+
+    func deleteItem(id: UUID) {
+        guard let index = self.store.items.firstIndex(where: { $0.id == id }) else { return }
+        self.store.send(.editItemDeleted(at: IndexSet(integer: index)))
     }
 }
 
