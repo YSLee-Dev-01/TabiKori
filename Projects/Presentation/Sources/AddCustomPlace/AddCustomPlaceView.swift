@@ -21,6 +21,7 @@ public struct AddCustomPlaceView: View {
     @State private var selectedDetent: PresentationDetent = .medium
     @FocusState private var isTitleFocused: Bool
     @FocusState private var isAddressFocused: Bool
+    @FocusState private var isSearchFieldFocused: Bool
 
     public init(store: StoreOf<AddCustomPlaceFeature>) {
         self.store = store
@@ -29,14 +30,21 @@ public struct AddCustomPlaceView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                self.categorySection()
-                self.titleField()
-                self.bottomSection()
+                self.tabBar()
+
+                if self.store.selectedTab == .custom {
+                    self.categorySection()
+                    self.titleField()
+                    self.bottomSection()
+                } else {
+                    self.searchTabContent()
+                }
             }
             .padding(20)
             .animation(.tabiStandard, value: self.store.isSubwayMode)
             .animation(.tabiStandard, value: self.store.subwayResults)
             .animation(.tabiStandard, value: self.store.matchedStation)
+            .animation(.tabiStandard, value: self.store.selectedTab)
         }
         .scrollDismissesKeyboard(.immediately)
         .safeAreaBar(edge: .top) {
@@ -46,8 +54,16 @@ public struct AddCustomPlaceView: View {
             .padding(.top, 20)
         }
         .safeAreaBar(edge: .bottom) {
-            AddCustomPlaceBottomCTAView(isEnabled: self.store.isConfirmEnabled, isLoading: self.store.isSaving) {
-                self.store.send(.confirmTapped)
+            if self.store.selectedTab == .custom {
+                AddCustomPlaceBottomCTAView(isEnabled: self.store.isConfirmEnabled, isLoading: self.store.isSaving) {
+                    self.store.send(.confirmTapped)
+                }
+            }
+        }
+        .disabled(self.store.selectedTab == .search && self.store.isSaving)
+        .overlay {
+            if self.store.selectedTab == .search, self.store.isSaving {
+                ProgressView()
             }
         }
         .presentationDetents([.medium, .large], selection: self.$selectedDetent)
@@ -61,6 +77,10 @@ public struct AddCustomPlaceView: View {
             guard isFocused else { return }
             self.selectedDetent = .large
         }
+        .onChange(of: self.isSearchFieldFocused) { _, isFocused in
+            guard isFocused else { return }
+            self.selectedDetent = .large
+        }
     }
 }
 
@@ -70,6 +90,12 @@ private extension AddCustomPlaceView {
     func closeButton() -> some View {
         TabiCircleIconButton(systemName: "xmark") {
             self.store.send(.closeTapped)
+        }
+    }
+
+    func tabBar() -> some View {
+        AddCustomPlaceTabBar(selectedTab: self.store.selectedTab) { tab in
+            self.store.send(.tabSelected(tab))
         }
     }
 
@@ -144,6 +170,11 @@ private extension AddCustomPlaceView {
             .onSubmit {
                 self.store.send(.addressSubmitted)
             }
+            TabiLabel(
+                title: Strings.AddCustomPlace.addressKoreanSearchGuide,
+                style: .captionM,
+                color: .tabiTextSecondary
+            )
             self.mapPreviewSection()
         }
     }
@@ -207,6 +238,91 @@ private extension AddCustomPlaceView {
         .overlay {
             RoundedRectangle(cornerRadius: .tabiRadiusLg)
                 .stroke(TabiColor.tabiBorder.opacity(0.4), lineWidth: 1)
+        }
+    }
+}
+
+// MARK: - Search Tab
+
+private extension AddCustomPlaceView {
+    func searchTabContent() -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            self.searchField()
+            self.searchResultsSection()
+        }
+    }
+
+    func searchField() -> some View {
+        TabiTextField(
+            placeholder: Strings.Map.searchPlaceholder,
+            text: self.$store.searchQuery,
+            focus: self.$isSearchFieldFocused
+        )
+        .onSubmit {
+            self.store.send(.searchSubmitted)
+        }
+    }
+
+    @ViewBuilder
+    func searchResultsSection() -> some View {
+        if self.store.trimmedSearchQuery.isEmpty {
+            TabiEmptyState(
+                systemImageName: "magnifyingglass",
+                description: Strings.Map.searchEmptyDescription
+            )
+            .frame(maxWidth: .infinity)
+        } else if self.store.isSearchLoading {
+            ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 24)
+        } else if self.store.searchStationResults.isEmpty, self.store.searchResults.isEmpty {
+            TabiEmptyState(
+                systemImageName: "mappin.slash",
+                title: Strings.Map.searchResultEmptyTitle,
+                description: Strings.Map.searchResultEmptyDescription
+            )
+            .frame(maxWidth: .infinity)
+        } else {
+            LazyVStack(spacing: 0) {
+                ForEach(Array(self.store.searchStationResults.enumerated()), id: \.element.stationCode) { index, station in
+                    if index > 0 {
+                        Divider()
+                            .padding(.horizontal, 16)
+                    }
+                    MapSubwayStationRowView(station: station) {
+                        self.store.send(.searchStationTapped(station))
+                    }
+                }
+
+                if self.store.searchStationResults.isEmpty == false, self.store.searchResults.isEmpty == false {
+                    Divider()
+                        .padding(.horizontal, 16)
+                }
+
+                ForEach(Array(self.store.searchResults.enumerated()), id: \.element.id) { index, spot in
+                    if index > 0 {
+                        Divider()
+                            .padding(.horizontal, 16)
+                    }
+                    MapSearchResultRowView(spot: spot) {
+                        self.store.send(.searchSpotTapped(spot))
+                    }
+                    .onAppear {
+                        guard spot.id == self.store.searchResults.last?.id else { return }
+                        self.store.send(.searchNextPageTriggered)
+                    }
+                }
+
+                if self.store.isSearchNextPageLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 20)
+                }
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: .tabiRadiusLg)
+                    .stroke(TabiColor.tabiBorder.opacity(0.4), lineWidth: 1)
+            }
         }
     }
 }

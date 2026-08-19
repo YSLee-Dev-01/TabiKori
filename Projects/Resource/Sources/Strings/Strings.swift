@@ -391,9 +391,15 @@ public extension Strings.AddToItinerary {
 
 public extension Strings.AddCustomPlace {
     /// 화면 타이틀
-    static let screenTitle = "カスタムスポットを追加"
+    static let screenTitle = "スポットを追加"
     /// Bookmark 화면 진입 버튼
     static let entryButtonTitle = "カスタムスポット"
+    /// 검색 탭 라벨
+    static let searchTabLabel = "検索"
+    /// 커스텀 탭 라벨
+    static let customTabLabel = "カスタム"
+    /// 주소 입력 하단 안내 문구 (한국어 검색 권장)
+    static let addressKoreanSearchGuide = "住所は韓国語で検索すると、より正確に見つかります"
     /// 타이틀 입력 라벨
     static let titleLabel = "タイトル"
     /// 타이틀 입력 placeholder

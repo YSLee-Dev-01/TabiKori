@@ -20,11 +20,16 @@ public struct AddCustomPlaceFeature: Sendable {
 
     @Dependency(\.naverGeocodingUseCase) var naverGeocodingUseCase
     @Dependency(\.subwayStationUseCase) var subwayStationUseCase
+    @Dependency(\.touristSpotUseCase) var touristSpotUseCase
     @Dependency(\.bookmarkUseCase) var bookmarkUseCase
     @Dependency(\.dismiss) var dismiss
 
+    private let searchPageSize = 50
+
     @ObservableState
     public struct State: Equatable {
+        var selectedTab: AddCustomPlaceTab = .custom
+
         var title: String = ""
         var address: String = ""
         var selectedCategory: CategoryType?
@@ -35,9 +40,23 @@ public struct AddCustomPlaceFeature: Sendable {
         var isSubwaySearching: Bool = false
         var subwayResults: [SubwayStation] = []
         var matchedStation: TouristSpot?
+
+        // 검색 탭 전용 상태
+        var searchQuery: String = ""
+        var searchResults: [TouristSpot] = []
+        var searchStationResults: [SubwayStation] = []
+        var isSearchLoading: Bool = false
+        var isSearchNextPageLoading: Bool = false
+        fileprivate var searchPage: Int = 1
+        fileprivate var hasMoreSearchResults: Bool = true
+
         @Presents var alert: AlertState<Action.Alert>?
 
         public init() {}
+
+        var trimmedSearchQuery: String {
+            self.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
 
         var trimmedTitle: String {
             self.title.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -61,6 +80,7 @@ public struct AddCustomPlaceFeature: Sendable {
     public enum Action: BindableAction, Equatable {
         case binding(BindingAction<State>)
         case closeTapped
+        case tabSelected(AddCustomPlaceTab)
         case categorySelected(CategoryType)
         case confirmTapped
         case addressSubmitted
@@ -72,6 +92,15 @@ public struct AddCustomPlaceFeature: Sendable {
         case subwayStationTapped(SubwayStation)
         case stationResolveResult(TouristSpot?)
         case alert(PresentationAction<Alert>)
+
+        // 검색 탭
+        case searchSubmitted
+        case searchNextPageTriggered
+        case searchSpotTapped(TouristSpot)
+        case searchStationTapped(SubwayStation)
+        case searchResultsResult([TouristSpot])
+        case searchStationResultsResult([SubwayStation])
+        case searchNextPageResultsResult([TouristSpot])
 
         public enum Alert: Equatable {}
     }
@@ -100,6 +129,10 @@ public struct AddCustomPlaceFeature: Sendable {
             case .closeTapped:
                 return .run { [dismiss = self.dismiss] _ in await dismiss() }
 
+            case .tabSelected(let tab):
+                state.selectedTab = tab
+                return .none
+
             case .categorySelected(let category):
                 if category == .subway {
                     guard state.isSubwayMode == false else { return .none }
@@ -120,7 +153,7 @@ public struct AddCustomPlaceFeature: Sendable {
                 if state.isSubwayMode {
                     guard let station = state.matchedStation else { return .none }
                     state.isSaving = true
-                    return self.saveStationEffect(station: station)
+                    return self.saveSpotEffect(spot: station)
                 }
 
                 guard let category = state.selectedCategory else { return .none }
@@ -193,6 +226,52 @@ public struct AddCustomPlaceFeature: Sendable {
 
             case .alert:
                 return .none
+
+            case .searchSubmitted:
+                guard state.trimmedSearchQuery.isEmpty == false else { return .none }
+                let keyword = state.trimmedSearchQuery
+                state.searchResults = []
+                state.searchStationResults = []
+                state.isSearchLoading = true
+                state.searchPage = 1
+                state.hasMoreSearchResults = true
+                return .merge(
+                    self.searchSpotsEffect(keyword: keyword, pageNo: 1),
+                    self.searchStationsEffect(keyword: keyword)
+                )
+
+            case .searchNextPageTriggered:
+                guard state.isSearchNextPageLoading == false, state.hasMoreSearchResults else { return .none }
+                guard state.trimmedSearchQuery.isEmpty == false else { return .none }
+                state.isSearchNextPageLoading = true
+                state.searchPage += 1
+                return self.searchSpotsNextPageEffect(keyword: state.trimmedSearchQuery, pageNo: state.searchPage)
+
+            case .searchSpotTapped(let spot):
+                guard state.isSaving == false else { return .none }
+                state.isSaving = true
+                return self.saveSpotEffect(spot: spot)
+
+            case .searchStationTapped(let station):
+                guard state.isSaving == false else { return .none }
+                state.isSaving = true
+                return self.searchSaveStationEffect(station: station)
+
+            case .searchResultsResult(let spots):
+                state.searchResults = spots
+                state.isSearchLoading = false
+                state.hasMoreSearchResults = spots.count >= self.searchPageSize
+                return .none
+
+            case .searchStationResultsResult(let stations):
+                state.searchStationResults = stations
+                return .none
+
+            case .searchNextPageResultsResult(let spots):
+                state.searchResults.append(contentsOf: spots)
+                state.isSearchNextPageLoading = false
+                state.hasMoreSearchResults = spots.count >= self.searchPageSize
+                return .none
             }
         }
         .ifLet(\.$alert, action: \.alert)
@@ -206,6 +285,8 @@ private enum CancelID {
     case preview
     case stationSearch
     case resolveStation
+    case searchSpots
+    case searchStations
 }
 
 // MARK: - Method
@@ -239,13 +320,14 @@ private extension AddCustomPlaceFeature {
         .cancellable(id: CancelID.save, cancelInFlight: true)
     }
 
-    func saveStationEffect(station: TouristSpot) -> Effect<Action> {
+    /// 확정된 TouristSpot을 북마크에 저장한다. 커스텀 탭의 지하철역 확인 저장, 검색 탭의 스팟 즉시 저장에서 공용으로 사용
+    func saveSpotEffect(spot: TouristSpot) -> Effect<Action> {
         .run { [bookmarkUseCase = self.bookmarkUseCase] send in
             do {
-                try await bookmarkUseCase.add(station)
+                try await bookmarkUseCase.add(spot)
                 await send(.saveResult(true))
             } catch {
-                AppLogger.view.log(.error, "지하철역 북마크 저장 실패: \(error.localizedDescription)")
+                AppLogger.view.log(.error, "스팟 북마크 저장 실패: \(error.localizedDescription)")
                 await send(.saveResult(false))
             }
         }
@@ -287,5 +369,56 @@ private extension AddCustomPlaceFeature {
             }
         }
         .cancellable(id: CancelID.preview, cancelInFlight: true)
+    }
+
+    func searchSpotsEffect(keyword: String, pageNo: Int) -> Effect<Action> {
+        .run { [touristSpotUseCase = self.touristSpotUseCase] send in
+            do {
+                let results = try await touristSpotUseCase.searchByKeyword(keyword: keyword, pageNo: pageNo)
+                await send(.searchResultsResult(results))
+            } catch {
+                guard !Task.isCancelled else { return }
+                AppLogger.view.log(.error, "스팟 검색 실패: \(error.localizedDescription)")
+                await send(.searchResultsResult([]))
+            }
+        }
+        .cancellable(id: CancelID.searchSpots, cancelInFlight: true)
+    }
+
+    func searchSpotsNextPageEffect(keyword: String, pageNo: Int) -> Effect<Action> {
+        .run { [touristSpotUseCase = self.touristSpotUseCase] send in
+            do {
+                let results = try await touristSpotUseCase.searchByKeyword(keyword: keyword, pageNo: pageNo)
+                await send(.searchNextPageResultsResult(results))
+            } catch {
+                guard !Task.isCancelled else { return }
+                AppLogger.view.log(.error, "스팟 검색 다음 페이지 조회 실패: \(error.localizedDescription)")
+                await send(.searchNextPageResultsResult([]))
+            }
+        }
+        .cancellable(id: CancelID.searchSpots, cancelInFlight: true)
+    }
+
+    func searchStationsEffect(keyword: String) -> Effect<Action> {
+        .run { [subwayStationUseCase = self.subwayStationUseCase] send in
+            let results = await subwayStationUseCase.search(keyword: keyword)
+            guard !Task.isCancelled else { return }
+            await send(.searchStationResultsResult(results))
+        }
+        .cancellable(id: CancelID.searchStations, cancelInFlight: true)
+    }
+
+    func searchSaveStationEffect(station: SubwayStation) -> Effect<Action> {
+        .run { [subwayStationUseCase = self.subwayStationUseCase, bookmarkUseCase = self.bookmarkUseCase] send in
+            do {
+                let spot = try await subwayStationUseCase.selectStation(station)
+                try await bookmarkUseCase.add(spot)
+                await send(.saveResult(true))
+            } catch {
+                AppLogger.view.log(.error, "검색 지하철역 저장 실패: \(station.koreanName) - \(error.localizedDescription)")
+                await send(.saveResult(false))
+            }
+        }
+        .cancellable(id: CancelID.save, cancelInFlight: true)
     }
 }
