@@ -30,7 +30,8 @@ public struct PackingListView: View {
                 TabiButton(
                     Strings.ToolBar.saveToPlanButton,
                     style: .primary,
-                    isExpanded: true
+                    isExpanded: true,
+                    cornerRadius: .tabiRadiusFull
                 ) {
                     self.store.send(.saveToPlanButtonTapped)
                 }
@@ -67,11 +68,22 @@ private extension PackingListView {
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
                 } else {
+                    TabiLabel(
+                        title: Strings.ToolBar.individualAddGuideDescription,
+                        style: .captionM,
+                        color: .tabiTextSecondary
+                    )
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 0, trailing: 20))
+
                     ForEach(self.store.items) { item in
-                        PackingListItemRow(item: item)
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
+                        PackingListItemRow(item: item) {
+                            self.store.send(.itemRowTapped(item))
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
                     }
                 }
             }

@@ -13,17 +13,21 @@ import Domain
 
 struct PackingListItemRow: View {
     let item: ToolBarItem
+    let onTap: () -> Void
 
     var body: some View {
-        TabiCard {
-            VStack(alignment: .leading, spacing: 4) {
-                TabiLabel(title: self.item.title, style: .bodyMBold, color: .tabiTextPrimary)
-                if let note = self.item.note, note.isEmpty == false {
-                    TabiLabel(title: note, style: .captionM, color: .tabiTextSecondary)
+        Button(action: self.onTap) {
+            TabiCard {
+                VStack(alignment: .leading, spacing: 4) {
+                    TabiLabel(title: self.item.title, style: .bodyMBold, color: .tabiTextPrimary)
+                    if let note = self.item.note, note.isEmpty == false {
+                        TabiLabel(title: note, style: .captionM, color: .tabiTextSecondary)
+                    }
                 }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .buttonStyle(TabiPressStyle())
     }
 }

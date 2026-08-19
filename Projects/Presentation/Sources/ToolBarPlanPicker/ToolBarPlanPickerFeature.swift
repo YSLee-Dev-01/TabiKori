@@ -25,14 +25,18 @@ public struct ToolBarPlanPickerFeature: Sendable {
     @ObservableState
     public struct State: Equatable {
         let items: [ToolBarItem]
+        /// true면 기존 저장 항목이 있어도 알럿 없이 항상 하단에 추가한다 (준비물 개별 셀 추가 진입 시 사용)
+        let alwaysAppend: Bool
         var plans: [TravelPlan] = []
         var isLoading: Bool = false
         var isSaving: Bool = false
         fileprivate var hasStartedLoading: Bool = false
+        fileprivate var pendingExistingItems: [ToolBarPlanItem] = []
         @Presents var alert: AlertState<Action.Alert>?
 
-        public init(items: [ToolBarItem]) {
+        public init(items: [ToolBarItem], alwaysAppend: Bool = false) {
             self.items = items
+            self.alwaysAppend = alwaysAppend
         }
     }
 
@@ -41,13 +45,14 @@ public struct ToolBarPlanPickerFeature: Sendable {
         case closeButtonTapped
         case planRowTapped(TravelPlan)
         case plansResult([TravelPlan])
-        case existingItemsResult(plan: TravelPlan, hasSaved: Bool)
+        case existingItemsResult(plan: TravelPlan, existingItems: [ToolBarPlanItem])
         case saveFailed
         case savedToPlan
         case alert(PresentationAction<Alert>)
 
         public enum Alert: Equatable {
             case overwriteConfirmed(TravelPlan)
+            case appendConfirmed(TravelPlan)
         }
     }
 
@@ -75,16 +80,26 @@ public struct ToolBarPlanPickerFeature: Sendable {
                 state.isLoading = false
                 return .none
 
-            case .existingItemsResult(let plan, let hasSaved):
-                guard hasSaved else {
+            case .existingItemsResult(let plan, let existingItems):
+                guard existingItems.isEmpty == false else {
                     return self.saveEffect(planId: plan.id, items: state.items)
                 }
+
+                if state.alwaysAppend {
+                    state.isSaving = true
+                    return self.appendEffect(planId: plan.id, existingItems: existingItems, newItems: state.items)
+                }
+
                 state.isSaving = false
+                state.pendingExistingItems = existingItems
                 state.alert = AlertState {
                     TextState(Strings.ToolBar.overwriteAlertTitle)
                 } actions: {
                     ButtonState(role: .cancel) {
                         TextState(Strings.ToolBar.overwriteAlertCancel)
+                    }
+                    ButtonState(action: .appendConfirmed(plan)) {
+                        TextState(Strings.ToolBar.appendAlertConfirm)
                     }
                     ButtonState(role: .destructive, action: .overwriteConfirmed(plan)) {
                         TextState(Strings.ToolBar.overwriteAlertConfirm)
@@ -97,6 +112,10 @@ public struct ToolBarPlanPickerFeature: Sendable {
             case .alert(.presented(.overwriteConfirmed(let plan))):
                 state.isSaving = true
                 return self.saveEffect(planId: plan.id, items: state.items)
+
+            case .alert(.presented(.appendConfirmed(let plan))):
+                state.isSaving = true
+                return self.appendEffect(planId: plan.id, existingItems: state.pendingExistingItems, newItems: state.items)
 
             case .alert:
                 return .none
@@ -139,7 +158,7 @@ private extension ToolBarPlanPickerFeature {
         .run { [toolBarItemUseCase = self.toolBarItemUseCase] send in
             do {
                 let existingItems = try await toolBarItemUseCase.fetchSavedItems(planId: plan.id)
-                await send(.existingItemsResult(plan: plan, hasSaved: existingItems.isEmpty == false))
+                await send(.existingItemsResult(plan: plan, existingItems: existingItems))
             } catch {
                 AppLogger.view.log(.error, "준비물 저장 여부 조회 실패 (planId: \(plan.id)): \(error.localizedDescription)")
                 await send(.saveFailed)
@@ -154,6 +173,32 @@ private extension ToolBarPlanPickerFeature {
                 await send(.savedToPlan)
             } catch {
                 AppLogger.view.log(.error, "준비물 저장 실패 (planId: \(planId)): \(error.localizedDescription)")
+                await send(.saveFailed)
+            }
+        }
+    }
+
+    /// 기존 저장 항목(existingItems) 뒤에 신규 항목(newItems)을 이어붙여 order를 재계산한 뒤 전체 교체 저장한다
+    func appendEffect(planId: UUID, existingItems: [ToolBarPlanItem], newItems: [ToolBarItem]) -> Effect<Action> {
+        let baseOrder = existingItems.count
+        let appendedItems = newItems.enumerated().map { index, item in
+            ToolBarPlanItem(
+                id: UUID(),
+                planId: planId,
+                order: baseOrder + index,
+                title: item.title,
+                note: item.note,
+                isChecked: false
+            )
+        }
+        let combinedItems = existingItems + appendedItems
+
+        return .run { [toolBarItemUseCase = self.toolBarItemUseCase] send in
+            do {
+                try await toolBarItemUseCase.replace(planId: planId, items: combinedItems)
+                await send(.savedToPlan)
+            } catch {
+                AppLogger.view.log(.error, "준비물 추가 저장 실패 (planId: \(planId)): \(error.localizedDescription)")
                 await send(.saveFailed)
             }
         }

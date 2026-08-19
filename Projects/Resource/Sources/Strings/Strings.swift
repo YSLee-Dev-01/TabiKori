@@ -518,10 +518,13 @@ public extension Strings.ToolBar {
     static let hubTitle = "ツールボックス"
     /// 화면 타이틀 (마스터/저장된 체크리스트 공용)
     static let title = "持ち物リスト"
-    /// 플랜에 저장 버튼
-    static let saveToPlanButton = "旅程に保存"
+    /// 플랜에 전체 추가 버튼
+    static let saveToPlanButton = "すべて旅程に追加"
     /// 마스터 리스트 로드 실패 설명
     static let loadFailedDescription = "リストを読み込めませんでした"
+
+    /// 개별 추가 안내 문구 (리스트 상단)
+    static let individualAddGuideDescription = "アイテムをタップすると、その項目だけ旅程に追加できます"
 
     /// 준비물 빈 상태 제목 (마스터 리스트 0건)
     static let itemEmptyTitle = "登録された持ち物がありません"
@@ -543,6 +546,8 @@ public extension Strings.ToolBar {
     static let overwriteAlertConfirm = "上書きする"
     /// 덮어쓰기 알림 취소 버튼
     static let overwriteAlertCancel = "キャンセル"
+    /// 덮어쓰기 알림 - 기존 리스트 아래에 추가 버튼
+    static let appendAlertConfirm = "下に追加する"
 
     /// 저장 실패 설명
     static let saveFailedDescription = "保存に失敗しました。もう一度お試しください"

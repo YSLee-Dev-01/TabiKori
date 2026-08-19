@@ -33,6 +33,7 @@ public struct PackingListFeature: Sendable {
         case onAppear
         case retryButtonTapped
         case saveToPlanButtonTapped
+        case itemRowTapped(ToolBarItem)
         case masterItemsResult([ToolBarItem])
         case masterItemsFailed
         case planPicker(PresentationAction<ToolBarPlanPickerFeature.Action>)
@@ -60,6 +61,10 @@ public struct PackingListFeature: Sendable {
             case .saveToPlanButtonTapped:
                 guard state.items.isEmpty == false else { return .none }
                 state.planPickerState = ToolBarPlanPickerFeature.State(items: state.items)
+                return .none
+
+            case .itemRowTapped(let item):
+                state.planPickerState = ToolBarPlanPickerFeature.State(items: [item], alwaysAppend: true)
                 return .none
 
             case .masterItemsResult(let items):
