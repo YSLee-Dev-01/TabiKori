@@ -102,8 +102,10 @@ private extension ToolBarView {
                 }
             }
 
-            self.sectionMoreButton {
-                self.store.send(.packingListButtonTapped)
+            if self.store.hasPackingLoadFailed == false {
+                self.sectionMoreButton {
+                    self.store.send(.packingListButtonTapped)
+                }
             }
         }
     }
@@ -171,8 +173,10 @@ private extension ToolBarView {
                 }
             }
 
-            self.sectionMoreButton {
-                self.store.send(.koreanPhraseListButtonTapped)
+            if self.store.hasPhraseLoadFailed == false {
+                self.sectionMoreButton {
+                    self.store.send(.koreanPhraseListButtonTapped)
+                }
             }
         }
     }
@@ -224,8 +228,10 @@ private extension ToolBarView {
                 }
             }
 
-            self.sectionMoreButton {
-                self.store.send(.shoppingListButtonTapped)
+            if self.store.hasShoppingLoadFailed == false {
+                self.sectionMoreButton {
+                    self.store.send(.shoppingListButtonTapped)
+                }
             }
         }
     }
