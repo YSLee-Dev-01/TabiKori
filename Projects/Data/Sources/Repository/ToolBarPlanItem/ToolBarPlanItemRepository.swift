@@ -64,9 +64,10 @@ extension ToolBarPlanItemRepository: ToolBarPlanItemRepositoryProtocol {
     public func updateChecked(planId: UUID, itemId: UUID, isChecked: Bool) async throws {
         do {
             let context = ModelContext(self.modelContainer)
-            let descriptor = FetchDescriptor<ToolBarPlanItemModel>(
+            var descriptor = FetchDescriptor<ToolBarPlanItemModel>(
                 predicate: #Predicate { $0.planId == planId && $0.id == itemId }
             )
+            descriptor.fetchLimit = 1
             guard let model = try context.fetch(descriptor).first else {
                 AppLogger.core.log(.error, "준비물 체크 상태 변경 실패: 대상 항목을 찾을 수 없음 (planId: \(planId), itemId: \(itemId))")
                 return

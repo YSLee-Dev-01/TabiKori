@@ -57,9 +57,10 @@ extension TravelPlanRepository: TravelPlanRepositoryProtocol {
         do {
             let context = ModelContext(self.modelContainer)
             let planId = plan.id
-            let descriptor = FetchDescriptor<TravelPlanModel>(
+            var descriptor = FetchDescriptor<TravelPlanModel>(
                 predicate: #Predicate { $0.id == planId }
             )
+            descriptor.fetchLimit = 1
             guard let model = try context.fetch(descriptor).first else {
                 AppLogger.core.log(.error, "일정 수정 실패: 대상 플랜을 찾을 수 없음 (planId: \(planId))")
                 throw TabiError.persistenceFailed(message: "대상 플랜을 찾을 수 없습니다")
@@ -85,16 +86,18 @@ extension TravelPlanRepository: TravelPlanRepositoryProtocol {
         do {
             let context = ModelContext(self.modelContainer)
 
-            let planDescriptor = FetchDescriptor<TravelPlanModel>(
+            var planDescriptor = FetchDescriptor<TravelPlanModel>(
                 predicate: #Predicate { $0.id == planId }
             )
+            planDescriptor.fetchLimit = 1
             if let planModel = try context.fetch(planDescriptor).first {
                 context.delete(planModel)
             }
 
-            let detailDescriptor = FetchDescriptor<TravelPlanDetailModel>(
+            var detailDescriptor = FetchDescriptor<TravelPlanDetailModel>(
                 predicate: #Predicate { $0.planId == planId }
             )
+            detailDescriptor.fetchLimit = 1
             if let detailModel = try context.fetch(detailDescriptor).first {
                 context.delete(detailModel)
             }

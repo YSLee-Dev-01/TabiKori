@@ -25,7 +25,7 @@ public final class ExchangeRateUseCase: ExchangeRateUseCaseProtocol {
     public func fetchKRWToJPYRate() async throws -> KRWToJPYRate {
         let rates = try await self.repository.fetchExchangeRates()
 
-        guard let jpy = rates.first(where: { $0.currencyCode == "JPY" }) else {
+        guard let jpy = rates.first(where: { $0.currencyCode == ExchangeRate.jpyCurrencyCode }) else {
             throw TabiError.dataNotFound
         }
 

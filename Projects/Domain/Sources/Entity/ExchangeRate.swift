@@ -23,3 +23,7 @@ public struct ExchangeRate: Equatable, Sendable, Codable {
         self.updatedAt = updatedAt
     }
 }
+
+public extension ExchangeRate {
+    static let jpyCurrencyCode = "JPY"
+}

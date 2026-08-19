@@ -8,6 +8,7 @@
 
 import Foundation
 
+import Core
 import Domain
 
 import FirebaseDatabase
@@ -27,9 +28,10 @@ public final class ExchangeRateRepository: ExchangeRateRepositoryProtocol {
         guard let value = snapshot.value as? [String: Any],
               let updatedAtMillis = (value["updatedAt"] as? NSNumber)?.doubleValue,
               let rates = value["rates"] as? [String: Any],
-              let jpy = rates["JPY"] as? [String: Any],
+              let jpy = rates[ExchangeRate.jpyCurrencyCode] as? [String: Any],
               let baseRate = (jpy["baseRate"] as? NSNumber)?.doubleValue,
               let unitScale = (jpy["unitScale"] as? NSNumber)?.intValue else {
+            AppLogger.network.log(.error, "환율 정보 조회 실패: TabiKori/exchangeRates 데이터 없음")
             throw TabiError.dataNotFound
         }
 
@@ -37,7 +39,7 @@ public final class ExchangeRateRepository: ExchangeRateRepositoryProtocol {
 
         return [
             ExchangeRate(
-                currencyCode: "JPY",
+                currencyCode: ExchangeRate.jpyCurrencyCode,
                 currencyName: "일본 옌",
                 unitScale: unitScale,
                 baseRate: baseRate,

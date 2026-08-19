@@ -27,7 +27,6 @@ public final class BookmarkUseCase: BookmarkUseCaseProtocol {
     }
 
     public func add(_ spot: TouristSpot) async throws {
-        guard try await self.repository.isBookmarked(contentId: spot.id) == false else { return }
         try await self.repository.add(spot)
     }
 

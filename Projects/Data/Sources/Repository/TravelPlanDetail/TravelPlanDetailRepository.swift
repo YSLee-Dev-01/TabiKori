@@ -66,9 +66,10 @@ extension TravelPlanDetailRepository: TravelPlanDetailRepositoryProtocol {
     public func removeSpot(planId: UUID, spotId: UUID) async throws {
         do {
             let context = ModelContext(self.modelContainer)
-            let descriptor = FetchDescriptor<TravelPlanDetailSpotModel>(
+            var descriptor = FetchDescriptor<TravelPlanDetailSpotModel>(
                 predicate: #Predicate { $0.planId == planId && $0.id == spotId }
             )
+            descriptor.fetchLimit = 1
             guard let model = try context.fetch(descriptor).first else { return }
             context.delete(model)
             try context.save()
@@ -122,9 +123,10 @@ extension TravelPlanDetailRepository: TravelPlanDetailRepositoryProtocol {
     public func updateSpotTime(planId: UUID, spotId: UUID, startTime: Date, durationMinutes: Int) async throws {
         do {
             let context = ModelContext(self.modelContainer)
-            let descriptor = FetchDescriptor<TravelPlanDetailSpotModel>(
+            var descriptor = FetchDescriptor<TravelPlanDetailSpotModel>(
                 predicate: #Predicate { $0.planId == planId && $0.id == spotId }
             )
+            descriptor.fetchLimit = 1
             guard let model = try context.fetch(descriptor).first else {
                 AppLogger.core.log(.error, "일정 상세 시간 수정 실패: 대상 스팟을 찾을 수 없음 (planId: \(planId), spotId: \(spotId))")
                 return

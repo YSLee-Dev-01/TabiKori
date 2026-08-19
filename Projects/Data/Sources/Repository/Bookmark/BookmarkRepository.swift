@@ -44,6 +44,7 @@ extension BookmarkRepository: BookmarkRepositoryProtocol {
     public func add(_ spot: TouristSpot) async throws {
         do {
             let context = ModelContext(self.modelContainer)
+            guard try self.fetchModel(contentId: spot.id, in: context) == nil else { return }
             let model = BookmarkModel(spot: spot, savedAt: Date())
             context.insert(model)
             try context.save()
@@ -91,9 +92,10 @@ extension BookmarkRepository: BookmarkRepositoryProtocol {
 
 private extension BookmarkRepository {
     func fetchModel(contentId: String, in context: ModelContext) throws -> BookmarkModel? {
-        let descriptor = FetchDescriptor<BookmarkModel>(
+        var descriptor = FetchDescriptor<BookmarkModel>(
             predicate: #Predicate { $0.contentId == contentId }
         )
+        descriptor.fetchLimit = 1
         return try context.fetch(descriptor).first
     }
 }
