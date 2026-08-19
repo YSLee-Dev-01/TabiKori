@@ -25,6 +25,9 @@ public struct KoreanPhraseListView: View {
         self.content()
             .navigationTitle(Strings.KoreanPhrase.listTitle)
             .navigationBarTitleDisplayMode(.inline)
+            .fullScreenCover(item: self.$store.scope(state: \.phraseDetailState, action: \.phraseDetail)) { store in
+                KoreanPhraseDetailView(store: store)
+            }
             .onAppear {
                 self.store.send(.onAppear)
             }
@@ -56,10 +59,12 @@ private extension KoreanPhraseListView {
         } else {
             List {
                 ForEach(self.store.phrases) { phrase in
-                    KoreanPhraseRow(phrase: phrase)
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
+                    KoreanPhraseRow(phrase: phrase) {
+                        self.store.send(.phraseRowTapped(phrase))
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
                 }
             }
             .listStyle(.plain)

@@ -9,6 +9,7 @@
 import SwiftUI
 
 import ComposableArchitecture
+import Core
 import Presentation
 import FirebaseCore
 
@@ -17,8 +18,13 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
         FirebaseApp.configure()
-        
+
         return true
+    }
+
+    /// 앱 전역은 portrait로 고정하되, OrientationLock에 등록된 값이 있으면(가로모드가 필요한 화면 진입 시) 그 값을 따른다
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        return OrientationLock.shared.mask
     }
 }
 

@@ -24,6 +24,7 @@ public struct KoreanPhraseListFeature: Sendable {
         var isLoading: Bool = false
         var hasLoadFailed: Bool = false
         fileprivate var hasStartedLoading: Bool = false
+        @Presents var phraseDetailState: KoreanPhraseDetailFeature.State?
 
         public init() {}
     }
@@ -31,8 +32,10 @@ public struct KoreanPhraseListFeature: Sendable {
     public enum Action: Equatable {
         case onAppear
         case retryButtonTapped
+        case phraseRowTapped(KoreanPhrase)
         case phrasesResult([KoreanPhrase])
         case phrasesFailed
+        case phraseDetail(PresentationAction<KoreanPhraseDetailFeature.Action>)
     }
 
     public init() {}
@@ -64,7 +67,17 @@ public struct KoreanPhraseListFeature: Sendable {
                 state.isLoading = false
                 state.hasLoadFailed = true
                 return .none
+
+            case .phraseRowTapped(let phrase):
+                state.phraseDetailState = KoreanPhraseDetailFeature.State(phrase: phrase)
+                return .none
+
+            case .phraseDetail:
+                return .none
             }
+        }
+        .ifLet(\.$phraseDetailState, action: \.phraseDetail) {
+            KoreanPhraseDetailFeature()
         }
     }
 }

@@ -13,18 +13,22 @@ import Domain
 
 struct KoreanPhraseRow: View {
     let phrase: KoreanPhrase
+    let onTap: () -> Void
 
     var body: some View {
-        TabiCard {
-            VStack(alignment: .leading, spacing: 4) {
-                TabiLabel(title: self.phrase.korean, style: .bodyMBold, color: .tabiTextPrimary)
-                TabiLabel(title: self.phrase.japanese, style: .bodyS, color: .tabiTextSecondary)
-                if let pronunciation = self.phrase.pronunciation, pronunciation.isEmpty == false {
-                    TabiLabel(title: pronunciation, style: .captionM, color: .tabiTextTertiary)
+        Button(action: self.onTap) {
+            TabiCard {
+                VStack(alignment: .leading, spacing: 4) {
+                    TabiLabel(title: self.phrase.korean, style: .bodyMBold, color: .tabiTextPrimary)
+                    TabiLabel(title: self.phrase.japanese, style: .bodyS, color: .tabiTextSecondary)
+                    if let pronunciation = self.phrase.pronunciation, pronunciation.isEmpty == false {
+                        TabiLabel(title: pronunciation, style: .captionM, color: .tabiTextTertiary)
+                    }
                 }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .buttonStyle(TabiPressStyle())
     }
 }
