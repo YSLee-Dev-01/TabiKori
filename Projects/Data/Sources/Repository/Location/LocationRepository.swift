@@ -57,8 +57,8 @@ public final class LocationRepository: NSObject, LocationRepositoryProtocol, @un
                 self.coordinateContinuation = continuation
                 self.locationManager.startUpdatingLocation()
             }
-        } onCancel: { [locationManager] in
-            locationManager.stopUpdatingLocation()
+        } onCancel: { [weak self] in
+            self?.locationManager.stopUpdatingLocation()
         }
         #endif
     }
