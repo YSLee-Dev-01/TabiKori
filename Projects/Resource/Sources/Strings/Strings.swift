@@ -255,6 +255,8 @@ public extension Strings.Plan {
     static let spotAddButtonTitle = "スポットを追加"
     /// 스팟 추가 시트 - 관광지 검색 탭
     static let spotAddSearchTabTitle = "観光地検索"
+    /// 스팟 추가 시트 - 주소로 추가 탭
+    static let spotAddAddressTabTitle = "住所で追加"
 
     /// 추가 화면 타이틀
     static let addScreenTitle = "新しい日程を作成"

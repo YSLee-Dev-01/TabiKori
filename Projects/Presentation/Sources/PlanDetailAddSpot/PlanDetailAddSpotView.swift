@@ -19,6 +19,8 @@ struct PlanDetailAddSpotView: View {
 
     @State private var selectedDetent: PresentationDetent = .medium
     @FocusState private var isSearchFocused: Bool
+    @FocusState private var isAddressTitleFocused: Bool
+    @FocusState private var isAddressFieldFocused: Bool
 
     init(store: StoreOf<PlanDetailAddSpotFeature>) {
         self.store = store
@@ -32,7 +34,16 @@ struct PlanDetailAddSpotView: View {
         }
         .presentationDetents([.medium, .large], selection: self.$selectedDetent)
         .presentationDragIndicator(.visible)
+        .alert($store.scope(state: \.alert, action: \.alert))
         .onChange(of: self.isSearchFocused) { _, isFocused in
+            guard isFocused else { return }
+            self.selectedDetent = .large
+        }
+        .onChange(of: self.isAddressTitleFocused) { _, isFocused in
+            guard isFocused else { return }
+            self.selectedDetent = .large
+        }
+        .onChange(of: self.isAddressFieldFocused) { _, isFocused in
             guard isFocused else { return }
             self.selectedDetent = .large
         }
@@ -112,6 +123,22 @@ private extension PlanDetailAddSpotView {
                     onSubmit: { self.store.send(.searchSubmitted) },
                     onSpotTapped: { self.store.send(.spotRowTapped($0)) },
                     onSubwayStationTapped: { self.store.send(.subwayStationTapped($0)) }
+                )
+
+            case .address:
+                PlanDetailAddSpotAddressView(
+                    title: self.$store.addressTitle,
+                    address: self.$store.addressInput,
+                    selectedCategory: self.store.addressSelectedCategory,
+                    previewCoordinate: self.store.addressPreviewCoordinate,
+                    previewFitToken: self.store.addressPreviewFitToken,
+                    isGeocoding: self.store.isAddressGeocoding,
+                    isConfirmEnabled: self.store.isAddressConfirmEnabled,
+                    titleFocus: self.$isAddressTitleFocused,
+                    addressFocus: self.$isAddressFieldFocused,
+                    onAddressSubmit: { self.store.send(.addressSubmitted) },
+                    onCategorySelected: { self.store.send(.addressCategorySelected($0)) },
+                    onConfirmTapped: { self.store.send(.addressConfirmTapped) }
                 )
 
             case .bookmark:

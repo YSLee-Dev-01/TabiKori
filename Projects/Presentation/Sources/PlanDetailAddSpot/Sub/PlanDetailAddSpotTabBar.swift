@@ -20,6 +20,9 @@ struct PlanDetailAddSpotTabBar: View {
             TabiChip(Strings.Plan.spotAddSearchTabTitle, isSelected: self.selectedTab == .search) {
                 self.onTabSelected(.search)
             }
+            TabiChip(Strings.Plan.spotAddAddressTabTitle, isSelected: self.selectedTab == .address) {
+                self.onTabSelected(.address)
+            }
             TabiChip(Strings.Bookmark.title, isSelected: self.selectedTab == .bookmark) {
                 self.onTabSelected(.bookmark)
             }
