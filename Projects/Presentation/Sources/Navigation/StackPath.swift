@@ -20,6 +20,7 @@ public enum StackPath {
     case planDetailFullMap(PlanDetailFullMapFeature)
     case packingList(PackingListFeature)
     case koreanPhraseList(KoreanPhraseListFeature)
+    case shoppingPlanList(ShoppingPlanListFeature)
 }
 
 extension StackPath.State: Equatable {}

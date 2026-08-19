@@ -190,7 +190,7 @@ public struct PlanDetailFeature: Sendable {
                 return .none
 
             case .shoppingListButtonTapped:
-                // TODO: 쇼핑 리스트 화면 연결 예정. 현재 범위는 버튼 UI 노출까지만 담당
+                // TabBarFeature가 상위(.path)에서 가로채 쇼핑 리스트 화면으로 push한다 (toolBarButtonTapped와 동일 패턴)
                 return .none
 
             case .fullMapButtonTapped:

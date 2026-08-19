@@ -180,6 +180,11 @@ public struct TabBarFeature {
                 state.path.append(.planToolBar(PlanToolBarFeature.State(plan: planDetailState.plan)))
                 return .none
 
+            case .path(.element(id: let id, action: .planDetail(.shoppingListButtonTapped))):
+                guard case .planDetail(let planDetailState) = state.path[id: id] else { return .none }
+                state.path.append(.shoppingPlanList(ShoppingPlanListFeature.State(plan: planDetailState.plan)))
+                return .none
+
             case .path(.element(id: let id, action: .planDetail(.fullMapButtonTapped))):
                 guard case .planDetail(let planDetailState) = state.path[id: id] else { return .none }
                 let dayIndex = planDetailState.isFullOverview ? planDetailState.visibleDayIndex : planDetailState.selectedDayIndex

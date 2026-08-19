@@ -613,4 +613,27 @@ public extension Strings.Shopping {
     static let emptyTitle = "登録されたおすすめ商品がありません"
     /// 빈 상태 설명 (추천 쇼핑 아이템 0건)
     static let emptyDescription = "しばらくしてから再度お試しください"
+
+    /// PlanDetail 연동 쇼핑 리스트 화면 타이틀
+    static let planListTitle = "お買い物リスト"
+    /// PlanDetail 연동 쇼핑 리스트 - 저장된 목록 빈 상태 제목 (아직 저장 안 됨)
+    static let planListSavedEmptyTitle = "お買い物リストがまだありません"
+    /// PlanDetail 연동 쇼핑 리스트 - 저장된 목록 빈 상태 설명 (아직 저장 안 됨)
+    static let planListSavedEmptyDescription = "右上の＋ボタンから、買いたいものを追加しましょう"
+    /// PlanDetail 연동 쇼핑 리스트 - 완료 개수 표시 (%d: 완료 개수, %d: 전체 개수)
+    nonisolated(unsafe) static let planListCheckedCountTitle: ((Int, Int) -> String) = { checked, total in
+        "\(checked)/\(total) 完了"
+    }
+    /// PlanDetail 연동 쇼핑 리스트 - 추가 버튼 (접근성 라벨)
+    static let planListAddButtonAccessibilityLabel = "項目を追加"
+    /// PlanDetail 연동 쇼핑 리스트 - 추가모드 진입 시 닫기 버튼 (접근성 라벨)
+    static let planListCloseAddButtonAccessibilityLabel = "追加をやめる"
+    /// PlanDetail 연동 쇼핑 리스트 - 편집 버튼 (접근성 라벨)
+    static let planListEditButtonAccessibilityLabel = "編集"
+    /// PlanDetail 연동 쇼핑 리스트 - 항목 추가 입력 placeholder
+    static let planListAddItemPlaceholder = "項目を入力"
+    /// PlanDetail 연동 쇼핑 리스트 - 편집모드 서브타이틀(메모) 필드 라벨
+    static let planListNoteFieldLabel = "メモ"
+    /// PlanDetail 연동 쇼핑 리스트 - 편집모드 서브타이틀(메모) 입력 placeholder
+    static let planListNoteFieldPlaceholder = "メモを入力"
 }
