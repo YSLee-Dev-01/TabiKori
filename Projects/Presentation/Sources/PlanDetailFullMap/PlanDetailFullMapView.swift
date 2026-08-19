@@ -13,20 +13,34 @@ import DesignSystem
 import Domain
 import Resource
 
-/// PlanDetail 지도 섹션 "전체화면 보기"로 push되는 화면. 상단 전체화면 지도 + 하단 가로 스크롤 카드로 구성된다
+/// PlanDetail 지도 섹션 "전체화면 보기"로 push되는 화면. 배경 전체화면 지도 위에 좌측 세로 스팟 리스트를 겹쳐 보여준다
 struct PlanDetailFullMapView: View {
+    private static let listWidthRatio: CGFloat = 0.4
+
     @Bindable private var store: StoreOf<PlanDetailFullMapFeature>
 
     @Environment(\.dismiss) private var dismiss
+
+    /// 좌측 리스트의 스크롤 스냅 정착 위치. 뷰포트 상단에 걸린 스팟을 추적해 지도 포커스와 동기화한다
+    @State private var scrolledSpotID: UUID?
 
     init(store: StoreOf<PlanDetailFullMapFeature>) {
         self.store = store
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            self.mapSection()
-            self.cardScroll()
+        GeometryReader { geometry in
+            ZStack(alignment: .topLeading) {
+                self.mapSection()
+                    .ignoresSafeArea(edges: .top)
+
+                HStack(alignment: .top, spacing: 0) {
+                    self.spotList()
+                        .frame(width: geometry.size.width * Self.listWidthRatio)
+                    Spacer(minLength: 0)
+                }
+                .frame(maxHeight: .infinity, alignment: .topLeading)
+            }
         }
         .navigationTitle("\(self.store.dayTitle) · \(self.store.dateTitle)")
         .navigationBarTitleDisplayMode(.inline)
@@ -40,8 +54,16 @@ struct PlanDetailFullMapView: View {
                 .tint(Color.getTabiColor(.tabiPrimary))
             }
         }
+        .toolbarBackground(.hidden, for: .navigationBar)
         .navigationBarBackButtonHidden(true)
         .interactivePopGestureEnabled(true)
+        .onAppear {
+            self.scrolledSpotID = self.store.selectedSpotId
+        }
+        .onChange(of: self.store.selectedSpotId) { _, newValue in
+            guard self.scrolledSpotID != newValue else { return }
+            self.scrolledSpotID = newValue
+        }
     }
 }
 
@@ -76,6 +98,7 @@ private extension PlanDetailFullMapView {
             isClusteringEnabled: false,
             showsPolyline: true,
             showsLocationButton: false,
+            showsZoomControls: false,
             followsUserLocation: false,
             focusLatitude: self.focusedSpot?.coordinate.latitude,
             focusLongitude: self.focusedSpot?.coordinate.longitude,
@@ -83,29 +106,37 @@ private extension PlanDetailFullMapView {
             onMapTapped: { _, _ in },
             onMarkerTapped: { markerID in
                 guard let spotId = UUID(uuidString: markerID) else { return }
-                self.store.send(.cardTapped(spotId))
+                self.store.send(.spotSelected(spotId))
             }
         )
         .frame(maxWidth: .infinity)
         .frame(maxHeight: .infinity)
     }
 
-    func cardScroll() -> some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 12) {
+    func spotList() -> some View {
+        ScrollView(.vertical) {
+            LazyVStack(spacing: 12) {
                 ForEach(self.store.spots) { spot in
-                    PlanDetailFullMapSpotCard(
+                    PlanDetailFullMapSpotRow(
                         spot: spot,
                         isSelected: spot.id == self.store.selectedSpotId
                     ) {
-                        self.store.send(.cardTapped(spot.id))
+                        self.store.send(.spotSelected(spot.id))
                     }
+                    .id(spot.id)
                 }
             }
-            .padding(.horizontal, 20)
+            .scrollTargetLayout()
+            .padding(.horizontal, 12)
             .padding(.vertical, 16)
         }
         .scrollIndicators(.hidden)
+        .scrollPosition(id: self.$scrolledSpotID, anchor: .top)
+        .scrollTargetBehavior(.viewAligned)
+        .onChange(of: self.scrolledSpotID) { _, newValue in
+            guard let newValue, newValue != self.store.selectedSpotId else { return }
+            self.store.send(.spotSelected(newValue))
+        }
     }
 }
 

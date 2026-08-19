@@ -1,5 +1,5 @@
 //
-//  PlanDetailFullMapSpotCard.swift
+//  PlanDetailFullMapSpotRow.swift
 //  Presentation
 //
 //  Created by 이윤수 on 8/18/26.
@@ -12,8 +12,8 @@ import DesignSystem
 import Domain
 import Resource
 
-/// 지도 전체화면 하단 가로 스크롤 카드. 탭하면 지도 카메라가 해당 스팟으로 포커스된다
-struct PlanDetailFullMapSpotCard: View {
+/// 지도 전체화면 좌측 세로 리스트 행. 탭하거나 스크롤 스냅으로 뷰포트에 정착하면 지도 카메라가 해당 스팟으로 포커스된다
+struct PlanDetailFullMapSpotRow: View {
     let spot: TravelPlanDetailSpot
     let isSelected: Bool
     let action: () -> Void
@@ -33,7 +33,7 @@ struct PlanDetailFullMapSpotCard: View {
                     }
                 }
                 .padding(12)
-                .frame(width: 200, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .overlay {
                 RoundedRectangle(cornerRadius: .tabiRadiusLg)
