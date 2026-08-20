@@ -35,6 +35,7 @@ struct DetailMapTabView: View {
                         color: self.contentType.color
                     )
                 ],
+                showsZoomControls: false,
                 onMapTapped: { _, _ in },
                 onMarkerTapped: { _ in }
             )
@@ -48,7 +49,7 @@ struct DetailMapTabView: View {
                 Spacer()
                 TabiButton(
                     Strings.Detail.viewInMap,
-                    style: .secondary,
+                    style: .ghost,
                     icon: Image(systemName: "arrow.up.right.square")
                 ) {
                     self.onViewInMapTapped()
