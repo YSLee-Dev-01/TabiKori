@@ -25,17 +25,23 @@ struct MapRecentSearchListView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 8)
 
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    ForEach(Array(self.histories.enumerated()), id: \.element.keyword) { index, history in
-                        if index > 0 {
-                            Divider()
-                                .padding(.horizontal, 20)
+            List {
+                ForEach(Array(self.histories.enumerated()), id: \.element.keyword) { index, history in
+                    self.row(history, index: index)
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                self.onDeleteTapped(history)
+                            } label: {
+                                Label(Strings.Common.delete, systemImage: "trash")
+                            }
                         }
-                        self.row(history)
-                    }
                 }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
         }
     }
 }
@@ -43,34 +49,30 @@ struct MapRecentSearchListView: View {
 // MARK: - View
 
 private extension MapRecentSearchListView {
-    func row(_ history: SearchHistory) -> some View {
-        HStack(spacing: 8) {
+    func row(_ history: SearchHistory, index: Int) -> some View {
+        VStack (alignment: .center, spacing: 0) {
+            if index > 0 {
+                Divider()
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+            }
+            
             Button {
                 self.onTapped(history)
             } label: {
                 HStack(spacing: 8) {
                     TabiLabel(title: history.keyword, style: .bodyLBold, color: .tabiTextPrimary, lineLimit: 1)
-
+                    
                     Spacer()
-
+                    
                     TabiLabel(title: history.searchedAt.recentSearchDateTitle, style: .captionM, color: .tabiTextTertiary)
                 }
                 .contentShape(Rectangle())
             }
             .buttonStyle(TabiPressStyle())
-
-            Button {
-                self.onDeleteTapped(history)
-            } label: {
-                Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(TabiColor.tabiTextTertiary)
-                    .frame(width: 24, height: 24)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(TabiPressStyle())
+            .padding(.vertical, 16)
         }
-        .padding(.vertical, 16)
         .padding(.horizontal, 20)
     }
 }
