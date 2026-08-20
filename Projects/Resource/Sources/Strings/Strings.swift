@@ -298,6 +298,10 @@ public extension Strings.Plan {
     static let spotDeleteFailedAlertTitle = "削除に失敗しました"
     /// 스팟 삭제 실패 알림 메시지
     static let spotDeleteFailedAlertMessage = "もう一度お試しください"
+    /// 일정 삭제 확인 알림 타이틀
+    static let planDeleteAlertTitle = "この日程を削除しますか？"
+    /// 일정 삭제 확인 알림 메시지
+    static let planDeleteAlertMessage = "削除すると元に戻せません"
     /// 플랜 자체 편집 메뉴 타이틀
     static let planEditMenuTitle = "予定を編集"
     /// 플랜 편집 화면 타이틀

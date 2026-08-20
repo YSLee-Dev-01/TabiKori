@@ -29,7 +29,9 @@ public struct PlanFeature: Sendable {
         var isLoading: Bool = false
         var isImporterPresented: Bool = false
         var isImporting: Bool = false
+        var isEditing: Bool = false
         @Presents var addPlanState: AddTravelPlanFeature.State?
+        @Presents var editPlanState: PlanDetailEditFeature.State?
         @Presents var alert: AlertState<Action.Alert>?
 
         public init() {}
@@ -44,7 +46,9 @@ public struct PlanFeature: Sendable {
         case addButtonTapped
         case importButtonTapped
         case importerPresentationChanged(Bool)
+        case editModeToggleTapped
         case planTapped(plan: TravelPlan)
+        case planEditCellTapped(plan: TravelPlan)
         case planDeleteButtonTapped(id: UUID)
         case plansResult([TravelPlan])
         case spotCountsResult([UUID: Int])
@@ -52,9 +56,12 @@ public struct PlanFeature: Sendable {
         case importFileSelected(URL?)
         case importResult(Bool)
         case addPlan(PresentationAction<AddTravelPlanFeature.Action>)
+        case editPlan(PresentationAction<PlanDetailEditFeature.Action>)
         case alert(PresentationAction<Alert>)
 
-        public enum Alert: Equatable {}
+        public enum Alert: Equatable {
+            case deleteConfirmed(id: UUID)
+        }
     }
 
     public init() {}
@@ -78,11 +85,31 @@ public struct PlanFeature: Sendable {
                 state.isImporterPresented = isPresented
                 return .none
 
+            case .editModeToggleTapped:
+                state.isEditing.toggle()
+                return .none
+
             case .planTapped:
                 return .none
 
+            case .planEditCellTapped(let plan):
+                state.editPlanState = PlanDetailEditFeature.State(plan: plan)
+                return .none
+
             case .planDeleteButtonTapped(let id):
-                return self.removePlanEffect(planId: id)
+                state.alert = AlertState {
+                    TextState(Strings.Plan.planDeleteAlertTitle)
+                } actions: {
+                    ButtonState(role: .destructive, action: .deleteConfirmed(id: id)) {
+                        TextState(Strings.Plan.alertConfirm)
+                    }
+                    ButtonState(role: .cancel) {
+                        TextState(Strings.Plan.alertCancel)
+                    }
+                } message: {
+                    TextState(Strings.Plan.planDeleteAlertMessage)
+                }
+                return .none
 
             case .plansResult(let plans):
                 state.plans = plans
@@ -137,12 +164,28 @@ public struct PlanFeature: Sendable {
             case .addPlan:
                 return .none
 
+            case .editPlan(.presented(.planUpdated(let plan))):
+                if let index = state.plans.firstIndex(where: { $0.id == plan.id }) {
+                    state.plans[index] = plan
+                }
+                state.editPlanState = nil
+                return .none
+
+            case .editPlan:
+                return .none
+
+            case .alert(.presented(.deleteConfirmed(let id))):
+                return self.removePlanEffect(planId: id)
+
             case .alert:
                 return .none
             }
         }
         .ifLet(\.$addPlanState, action: \.addPlan) {
             AddTravelPlanFeature()
+        }
+        .ifLet(\.$editPlanState, action: \.editPlan) {
+            PlanDetailEditFeature()
         }
         .ifLet(\.$alert, action: \.alert)
     }

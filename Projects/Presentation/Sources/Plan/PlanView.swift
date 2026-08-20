@@ -32,6 +32,9 @@ public struct PlanView: View {
             .sheet(item: self.$store.scope(state: \.addPlanState, action: \.addPlan)) { store in
                 AddTravelPlanView(store: store)
             }
+            .sheet(item: self.$store.scope(state: \.editPlanState, action: \.editPlan)) { store in
+                PlanDetailEditView(store: store)
+            }
             .fileImporter(
                 isPresented: Binding(
                     get: { self.store.isImporterPresented },
@@ -59,15 +62,27 @@ private extension PlanView {
     func planMenuButtons() -> some View {
         HStack(spacing: 10) {
             Button {
-                self.store.send(.addButtonTapped)
+                self.store.send(.editModeToggleTapped)
             } label: {
-                TabiGlassIconLabel(systemName: "plus", size: .ml, foregroundColor: .tabiPrimary)
+                TabiGlassIconLabel(
+                    systemName: self.store.isEditing ? "checkmark" : "pencil",
+                    size: .ml,
+                    foregroundColor: .tabiPrimary
+                )
             }
 
-            Button {
-                self.store.send(.importButtonTapped)
-            } label: {
-                TabiGlassIconLabel(systemName: "arrow.down", size: .ml, foregroundColor: .tabiPrimary)
+            if self.store.isEditing == false {
+                Button {
+                    self.store.send(.addButtonTapped)
+                } label: {
+                    TabiGlassIconLabel(systemName: "plus", size: .ml, foregroundColor: .tabiPrimary)
+                }
+
+                Button {
+                    self.store.send(.importButtonTapped)
+                } label: {
+                    TabiGlassIconLabel(systemName: "arrow.down", size: .ml, foregroundColor: .tabiPrimary)
+                }
             }
         }
     }
@@ -94,6 +109,7 @@ private extension PlanView {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+            .environment(\.editMode, .constant(self.store.isEditing ? .active : .inactive))
         }
     }
 
@@ -105,16 +121,29 @@ private extension PlanView {
                     PlanCardView(
                         plan: plan,
                         spotCount: self.store.spotCounts[plan.id] ?? 0,
-                        onTapped: { self.store.send(.planTapped(plan: plan)) }
+                        onTapped: {
+                            if self.store.isEditing {
+                                self.store.send(.planEditCellTapped(plan: plan))
+                            } else {
+                                self.store.send(.planTapped(plan: plan))
+                            }
+                        }
                     )
                     .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
                     .listRowSeparator(.hidden)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button(role: .destructive) {
-                            self.store.send(.planDeleteButtonTapped(id: plan.id))
-                        } label: {
-                            Text(Strings.Common.delete)
+                        if self.store.isEditing == false {
+                            Button(role: .destructive) {
+                                self.store.send(.planDeleteButtonTapped(id: plan.id))
+                            } label: {
+                                Text(Strings.Common.delete)
+                            }
                         }
+                    }
+                }
+                .onDelete { indexSet in
+                    for index in indexSet {
+                        self.store.send(.planDeleteButtonTapped(id: plans[index].id))
                     }
                 }
             } header: {
