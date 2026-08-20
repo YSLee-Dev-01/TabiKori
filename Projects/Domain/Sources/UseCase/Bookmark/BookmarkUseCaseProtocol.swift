@@ -11,6 +11,7 @@ import Foundation
 public protocol BookmarkUseCaseProtocol: Sendable {
     func fetch() async throws -> [Bookmark]
     func add(_ spot: TouristSpot) async throws
+    func update(_ spot: TouristSpot) async throws
     func remove(contentId: String) async throws
     func isBookmarked(contentId: String) async throws -> Bool
 }

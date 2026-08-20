@@ -29,6 +29,11 @@ public final class TestBookmarkUseCase: BookmarkUseCaseProtocol, @unchecked Send
         self.bookmarks.append(Bookmark(touristSpot: spot, savedAt: Date()))
     }
 
+    public func update(_ spot: TouristSpot) async throws {
+        guard let index = self.bookmarks.firstIndex(where: { $0.id == spot.id }) else { return }
+        self.bookmarks[index] = Bookmark(touristSpot: spot, savedAt: self.bookmarks[index].savedAt)
+    }
+
     public func remove(contentId: String) async throws {
         self.bookmarks.removeAll { $0.id == contentId }
     }

@@ -54,6 +54,30 @@ extension BookmarkRepository: BookmarkRepositoryProtocol {
         }
     }
 
+    public func update(_ spot: TouristSpot) async throws {
+        do {
+            let context = ModelContext(self.modelContainer)
+            guard let model = try self.fetchModel(contentId: spot.id, in: context) else {
+                AppLogger.core.log(.error, "북마크 수정 실패: 대상 없음 (\(spot.id))")
+                throw TabiError.dataNotFound
+            }
+            model.title = spot.title
+            model.thumbnailURLString = spot.thumbnailURLString
+            model.contentTypeRaw = spot.contentType.rawValue
+            model.latitude = spot.coordinate.latitude
+            model.longitude = spot.coordinate.longitude
+            model.isCustom = spot.isCustom
+            model.isStation = spot.isStation
+            model.address = spot.address
+            try context.save()
+        } catch let error as TabiError {
+            throw error
+        } catch {
+            AppLogger.core.log(.error, "북마크 수정 실패: \(error.localizedDescription)")
+            throw TabiError.persistenceFailed(message: error.localizedDescription)
+        }
+    }
+
     public func remove(contentId: String) async throws {
         do {
             let context = ModelContext(self.modelContainer)

@@ -26,7 +26,7 @@ public struct BookmarkView: View {
         self.bookmarkList()
             .safeAreaBar(edge: .top) {
                 TabiNavigationBar(title: Strings.Bookmark.title) {
-                    self.addCustomPlaceButton()
+                    self.bookmarkMenuButtons()
                 }
             }
             .sheet(item: self.$store.scope(state: \.addCustomPlaceState, action: \.addCustomPlace)) { store in
@@ -41,6 +41,24 @@ public struct BookmarkView: View {
 // MARK: - View
 
 private extension BookmarkView {
+    func bookmarkMenuButtons() -> some View {
+        HStack(spacing: 10) {
+            Button {
+                self.store.send(.editModeToggleTapped)
+            } label: {
+                TabiGlassIconLabel(
+                    systemName: self.store.isEditing ? "checkmark" : "pencil",
+                    size: .ml,
+                    foregroundColor: .tabiPrimary
+                )
+            }
+
+            if self.store.isEditing == false {
+                self.addCustomPlaceButton()
+            }
+        }
+    }
+
     func addCustomPlaceButton() -> some View {
         TabiGlassIconButton(systemName: "plus", size: .ml, foregroundColor: .tabiPrimary) {
             self.store.send(.addCustomPlaceButtonTapped)
@@ -73,16 +91,29 @@ private extension BookmarkView {
                                 tagColor: bookmark.touristSpot.contentType.color,
                                 isCustom: bookmark.touristSpot.isCustom,
                                 distance: nil,
-                                onTap: { self.store.send(.spotTapped(bookmark.touristSpot)) }
+                                onTap: {
+                                    if self.store.isEditing {
+                                        self.store.send(.editCellTapped(bookmark.touristSpot))
+                                    } else {
+                                        self.store.send(.spotTapped(bookmark.touristSpot))
+                                    }
+                                }
                             )
                             .listRowInsets(EdgeInsets())
                             .listRowSeparator(.hidden)
                             .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    self.store.send(.deleteSwiped(contentId: bookmark.id))
-                                } label: {
-                                    Label(Strings.Common.delete, systemImage: "trash")
+                                if self.store.isEditing == false {
+                                    Button(role: .destructive) {
+                                        self.store.send(.deleteSwiped(contentId: bookmark.id))
+                                    } label: {
+                                        Label(Strings.Common.delete, systemImage: "trash")
+                                    }
                                 }
+                            }
+                        }
+                        .onDelete { indexSet in
+                            for index in indexSet {
+                                self.store.send(.deleteSwiped(contentId: self.store.filteredBookmarks[index].id))
                             }
                         }
                     }
@@ -112,6 +143,7 @@ private extension BookmarkView {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .contentMargins(.top, 0, for: .scrollContent)
+            .environment(\.editMode, .constant(self.store.isEditing ? .active : .inactive))
         }
     }
 }

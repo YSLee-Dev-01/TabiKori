@@ -30,6 +30,10 @@ public final class BookmarkUseCase: BookmarkUseCaseProtocol {
         try await self.repository.add(spot)
     }
 
+    public func update(_ spot: TouristSpot) async throws {
+        try await self.repository.update(spot)
+    }
+
     public func remove(contentId: String) async throws {
         try await self.repository.remove(contentId: contentId)
     }

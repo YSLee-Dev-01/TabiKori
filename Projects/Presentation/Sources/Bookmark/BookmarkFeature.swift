@@ -22,6 +22,7 @@ public struct BookmarkFeature: Sendable {
         var bookmarks: [Bookmark] = []
         var selectedCategory: CategoryType?
         var isLoading: Bool = false
+        var isEditing: Bool = false
         @Presents var addCustomPlaceState: AddCustomPlaceFeature.State?
 
         public init() {}
@@ -34,8 +35,10 @@ public struct BookmarkFeature: Sendable {
 
     public enum Action: Equatable {
         case onAppear
+        case editModeToggleTapped
         case categoryFilterTapped(CategoryType?)
         case spotTapped(TouristSpot)
+        case editCellTapped(TouristSpot)
         case deleteSwiped(contentId: String)
         case bookmarksResult([Bookmark])
         case addCustomPlaceButtonTapped
@@ -51,11 +54,27 @@ public struct BookmarkFeature: Sendable {
                 state.isLoading = true
                 return self.fetchBookmarksEffect()
 
+            case .editModeToggleTapped:
+                state.isEditing.toggle()
+                return .none
+
             case .categoryFilterTapped(let category):
                 state.selectedCategory = state.selectedCategory == category ? nil : category
                 return .none
 
             case .spotTapped:
+                return .none
+
+            case .editCellTapped(let spot):
+                guard spot.isCustom else { return .none }
+                var editState = AddCustomPlaceFeature.State()
+                editState.selectedTab = .custom
+                editState.editingContentId = spot.id
+                editState.title = spot.title
+                editState.address = spot.address ?? ""
+                editState.selectedCategory = spot.contentType
+                editState.previewCoordinate = spot.coordinate
+                state.addCustomPlaceState = editState
                 return .none
 
             case .deleteSwiped(let contentId):

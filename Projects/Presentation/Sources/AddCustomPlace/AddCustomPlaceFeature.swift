@@ -28,7 +28,8 @@ public struct AddCustomPlaceFeature: Sendable {
 
     @ObservableState
     public struct State: Equatable {
-        var selectedTab: AddCustomPlaceTab = .custom
+        var selectedTab: AddCustomPlaceTab = .search
+        var editingContentId: String?
 
         var title: String = ""
         var address: String = ""
@@ -162,7 +163,8 @@ public struct AddCustomPlaceFeature: Sendable {
                 return self.saveEffect(
                     category: category,
                     title: state.trimmedTitle,
-                    address: state.trimmedAddress
+                    address: state.trimmedAddress,
+                    editingContentId: state.editingContentId
                 )
 
             case .addressSubmitted:
@@ -305,26 +307,38 @@ private enum CancelID {
 // MARK: - Method
 
 private extension AddCustomPlaceFeature {
-    func saveEffect(category: CategoryType, title: String, address: String) -> Effect<Action> {
+    func saveEffect(category: CategoryType, title: String, address: String, editingContentId: String?) -> Effect<Action> {
         .run { [naverGeocodingUseCase = self.naverGeocodingUseCase, bookmarkUseCase = self.bookmarkUseCase] send in
+            let geocoded: GeocodedAddress
             do {
-                let geocoded = try await naverGeocodingUseCase.geocode(address: address)
-                await send(.addressPreviewResult(geocoded.coordinate))
-                let spot = TouristSpot(
-                    id: "custom_" + UUID().uuidString,
-                    title: title,
-                    thumbnailURLString: nil,
-                    distanceMeters: nil,
-                    contentType: category,
-                    coordinate: geocoded.coordinate,
-                    isCustom: true,
-                    address: geocoded.formattedAddress.isEmpty ? address : geocoded.formattedAddress
-                )
-                try await bookmarkUseCase.add(spot)
-                await send(.saveResult(true))
+                geocoded = try await naverGeocodingUseCase.geocode(address: address)
             } catch TabiError.dataNotFound {
                 AppLogger.view.log(.error, "커스텀 장소 주소 변환 실패: 주소를 찾을 수 없음")
                 await send(.addressNotFound)
+                return
+            } catch {
+                AppLogger.view.log(.error, "커스텀 장소 주소 변환 실패: \(error.localizedDescription)")
+                await send(.saveResult(false))
+                return
+            }
+            await send(.addressPreviewResult(geocoded.coordinate))
+            let spot = TouristSpot(
+                id: editingContentId ?? "custom_" + UUID().uuidString,
+                title: title,
+                thumbnailURLString: nil,
+                distanceMeters: nil,
+                contentType: category,
+                coordinate: geocoded.coordinate,
+                isCustom: true,
+                address: geocoded.formattedAddress.isEmpty ? address : geocoded.formattedAddress
+            )
+            do {
+                if let editingContentId {
+                    try await bookmarkUseCase.update(spot)
+                } else {
+                    try await bookmarkUseCase.add(spot)
+                }
+                await send(.saveResult(true))
             } catch {
                 AppLogger.view.log(.error, "커스텀 장소 저장 실패: \(error.localizedDescription)")
                 await send(.saveResult(false))
