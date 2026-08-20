@@ -98,7 +98,7 @@ public struct TabBarFeature {
 
             case .home(.moveToToolBoxButtonTapped):
                 state.selectedTab = .toolbox
-                return .none
+                return .send(.toolbox(.scrollToTopRequested))
 
             case .home(.moveToPlanButtonTapped):
                 state.selectedTab = .plan
