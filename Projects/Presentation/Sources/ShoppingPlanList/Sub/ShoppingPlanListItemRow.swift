@@ -71,8 +71,8 @@ private extension ShoppingPlanListItemRow {
 
             if self.item.note != nil {
                 HStack(spacing: 8) {
-                    TabiLabel(title: Strings.Shopping.planListNoteFieldLabel, style: .captionMBold, color: .tabiTextTertiary)
-                        .frame(width: 44, alignment: .leading)
+                    Color.clear
+                        .frame(width: 44)
                     TabiTextField(placeholder: Strings.Shopping.planListNoteFieldPlaceholder, text: self.noteBinding)
                 }
                 .padding(.leading, 14)

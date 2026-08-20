@@ -71,8 +71,8 @@ private extension PlanToolBarItemRow {
 
             if self.item.note != nil {
                 HStack(spacing: 8) {
-                    TabiLabel(title: Strings.ToolBar.noteFieldLabel, style: .captionMBold, color: .tabiTextTertiary)
-                        .frame(width: 44, alignment: .leading)
+                    Color.clear
+                        .frame(width: 44)
                     TabiTextField(placeholder: Strings.ToolBar.noteFieldPlaceholder, text: self.noteBinding)
                 }
                 .padding(.leading, 14)

@@ -118,6 +118,7 @@ private extension ShoppingPlanListView {
                         } label: {
                             Label(Strings.Common.delete, systemImage: "trash")
                         }
+                        .tint(Color.getTabiColor(.tabiPrimary))
                     }
                 }
 
