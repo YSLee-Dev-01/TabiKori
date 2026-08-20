@@ -190,7 +190,7 @@ private extension AddCustomPlaceView {
                     }
                     TabiSpotRow(
                         thumbnailURL: nil,
-                        japaneseTitle: station.japaneseName,
+                        japaneseTitle: station.displayJapaneseName,
                         koreanTitle: station.koreanName,
                         address: station.lineNumbers.joined(separator: "・"),
                         tagTitle: CategoryType.subway.label,

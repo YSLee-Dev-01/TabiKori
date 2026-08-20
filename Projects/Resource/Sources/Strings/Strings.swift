@@ -422,6 +422,10 @@ public extension Strings.AddCustomPlace {
     static let customBadgeTitle = "カスタム"
     /// 지하철역 모드 타이틀 입력 placeholder
     static let stationTitlePlaceholder = "駅名を入力"
+    /// 지하철역 좌표 조회 실패 알림 타이틀
+    static let stationResolveFailedAlertTitle = "駅の位置情報を取得できませんでした"
+    /// 지하철역 좌표 조회 실패 알림 메시지
+    static let stationResolveFailedAlertMessage = "もう一度お試しください"
 }
 
 public extension Strings.RegionSpot {

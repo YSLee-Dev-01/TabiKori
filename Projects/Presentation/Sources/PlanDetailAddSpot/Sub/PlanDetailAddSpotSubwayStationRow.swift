@@ -18,7 +18,7 @@ struct PlanDetailAddSpotSubwayStationRow: View {
     var body: some View {
         TabiSpotRow(
             thumbnailURL: nil,
-            japaneseTitle: self.station.japaneseName,
+            japaneseTitle: self.station.displayJapaneseName,
             koreanTitle: self.station.koreanName,
             address: self.station.lineNumbers.joined(separator: "・"),
             tagTitle: CategoryType.subway.label,

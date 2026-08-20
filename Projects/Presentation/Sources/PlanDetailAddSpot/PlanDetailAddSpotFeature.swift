@@ -113,6 +113,7 @@ public struct PlanDetailAddSpotFeature: Sendable {
         case bookmarksResult([Bookmark])
         case addressPreviewResult(Coordinate)
         case addressNotFound
+        case stationResolveFailed
         case saveFailed
         case spotAdded
         case alert(PresentationAction<Alert>)
@@ -272,6 +273,18 @@ public struct PlanDetailAddSpotFeature: Sendable {
                 }
                 return .none
 
+            case .stationResolveFailed:
+                state.alert = AlertState {
+                    TextState(Strings.AddCustomPlace.stationResolveFailedAlertTitle)
+                } actions: {
+                    ButtonState {
+                        TextState(Strings.Plan.alertConfirm)
+                    }
+                } message: {
+                    TextState(Strings.AddCustomPlace.stationResolveFailedAlertMessage)
+                }
+                return .none
+
             case .saveFailed:
                 state.isSaving = false
                 return .none
@@ -329,6 +342,7 @@ private extension PlanDetailAddSpotFeature {
             } catch {
                 guard !Task.isCancelled else { return }
                 AppLogger.network.log(.error, "지하철역 좌표 조회 실패: \(station.koreanName) - \(error.localizedDescription)")
+                await send(.stationResolveFailed)
             }
         }
         .cancellable(id: CancelID.resolveStation, cancelInFlight: true)

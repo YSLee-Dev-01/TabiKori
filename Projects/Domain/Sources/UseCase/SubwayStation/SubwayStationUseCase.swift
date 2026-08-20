@@ -32,7 +32,7 @@ public final class SubwayStationUseCase: SubwayStationUseCaseProtocol {
         let lineText = station.lineNumbers.joined(separator: "・")
         return TouristSpot(
             id: "subway_\(station.stationCode)",
-            title: "\(station.japaneseName.strippingParentheticalSuffix)（\(station.koreanName)）",
+            title: "\(station.displayJapaneseName)（\(station.koreanName)）",
             thumbnailURLString: nil,
             distanceMeters: nil,
             contentType: .subway,
@@ -48,13 +48,4 @@ public final class SubwayStationUseCase: SubwayStationUseCaseProtocol {
 
 private extension SubwayStationUseCase {
     static let maxResultCount = 5
-}
-
-private extension String {
-    /// 일부 역의 station_nm_jpn에 반각 괄호로 된 부가 표기(예: "(DDP)", "(新村)")가 섞여 있어
-    /// TouristSpot.title의 전각 괄호 파싱 규칙(japaneseTitle/koreanTitle)과 충돌한다 — 제거 후 사용
-    var strippingParentheticalSuffix: String {
-        guard let openRange = self.range(of: "(") else { return self }
-        return String(self[self.startIndex ..< openRange.lowerBound]).trimmingCharacters(in: .whitespaces)
-    }
 }

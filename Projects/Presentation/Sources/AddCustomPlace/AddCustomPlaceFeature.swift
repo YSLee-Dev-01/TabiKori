@@ -91,6 +91,7 @@ public struct AddCustomPlaceFeature: Sendable {
         case stationSearchResult([SubwayStation])
         case subwayStationTapped(SubwayStation)
         case stationResolveResult(TouristSpot?)
+        case stationResolveFailed
         case alert(PresentationAction<Alert>)
 
         // 검색 탭
@@ -224,6 +225,18 @@ public struct AddCustomPlaceFeature: Sendable {
                 state.subwayResults = []
                 return .none
 
+            case .stationResolveFailed:
+                state.alert = AlertState {
+                    TextState(Strings.AddCustomPlace.stationResolveFailedAlertTitle)
+                } actions: {
+                    ButtonState {
+                        TextState(Strings.Plan.alertConfirm)
+                    }
+                } message: {
+                    TextState(Strings.AddCustomPlace.stationResolveFailedAlertMessage)
+                }
+                return .none
+
             case .alert:
                 return .none
 
@@ -351,6 +364,7 @@ private extension AddCustomPlaceFeature {
             } catch {
                 guard !Task.isCancelled else { return }
                 AppLogger.network.log(.error, "지하철역 좌표 조회 실패: \(station.koreanName) - \(error.localizedDescription)")
+                await send(.stationResolveFailed)
             }
         }
         .cancellable(id: CancelID.resolveStation, cancelInFlight: true)
