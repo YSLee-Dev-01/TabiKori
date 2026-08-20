@@ -40,17 +40,23 @@ public struct ToolBarFeature: Sendable {
         var hasShoppingLoadFailed: Bool = false
         fileprivate var hasStartedLoadingShopping: Bool = false
 
+        var scrollToTopTrigger: Int = 0
+
+        @Presents var phraseDetailState: KoreanPhraseDetailFeature.State?
+
         public init() {}
     }
 
     public enum Action: Equatable {
         case onAppear
+        case scrollToTopRequested
         case packingRetryButtonTapped
         case phraseRetryButtonTapped
         case shoppingRetryButtonTapped
         case packingListButtonTapped
         case koreanPhraseListButtonTapped
         case shoppingListButtonTapped
+        case phrasePreviewRowTapped(KoreanPhrase)
         case packingItemsResult([ToolBarItem])
         case packingItemsFailed
         case phrasesResult([KoreanPhrase])
@@ -58,6 +64,7 @@ public struct ToolBarFeature: Sendable {
         case shoppingItemsResult([ShoppingItem])
         case shoppingItemsFailed
         case exchangeRateCalculator(ExchangeRateCalculatorFeature.Action)
+        case phraseDetail(PresentationAction<KoreanPhraseDetailFeature.Action>)
     }
 
     public init() {}
@@ -94,6 +101,10 @@ public struct ToolBarFeature: Sendable {
 
                 return .merge(effects)
 
+            case .scrollToTopRequested:
+                state.scrollToTopTrigger += 1
+                return .none
+
             case .packingRetryButtonTapped:
                 state.isLoadingPacking = true
                 state.hasPackingLoadFailed = false
@@ -110,6 +121,11 @@ public struct ToolBarFeature: Sendable {
                 return self.fetchShoppingItemsEffect()
 
             case .packingListButtonTapped, .koreanPhraseListButtonTapped, .shoppingListButtonTapped:
+                return .none
+
+            case .phrasePreviewRowTapped(let phrase):
+                OrientationLock.shared.setMask(.landscape)
+                state.phraseDetailState = KoreanPhraseDetailFeature.State(phrase: phrase)
                 return .none
 
             case .packingItemsResult(let items):
@@ -147,7 +163,13 @@ public struct ToolBarFeature: Sendable {
 
             case .exchangeRateCalculator:
                 return .none
+
+            case .phraseDetail:
+                return .none
             }
+        }
+        .ifLet(\.$phraseDetailState, action: \.phraseDetail) {
+            KoreanPhraseDetailFeature()
         }
     }
 }
@@ -156,15 +178,15 @@ public struct ToolBarFeature: Sendable {
 
 public extension ToolBarFeature.State {
     var packingPreviewItems: [ToolBarItem] {
-        Array(self.packingItems.prefix(3))
+        Array(self.packingItems.prefix(5))
     }
 
     var phrasePreviewItems: [KoreanPhrase] {
-        Array(self.phrases.prefix(3))
+        Array(self.phrases.prefix(5))
     }
 
     var shoppingPreviewItems: [ShoppingItem] {
-        Array(self.shoppingItems.prefix(3))
+        Array(self.shoppingItems.prefix(5))
     }
 }
 

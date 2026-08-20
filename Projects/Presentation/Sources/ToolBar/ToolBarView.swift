@@ -16,6 +16,8 @@ import Resource
 /// 툴박스 탭 루트 화면(허브). 준비물/환율/한국어 3개 섹션을 스크롤로 순서대로 보여준다
 public struct ToolBarView: View {
 
+    private static let topAnchorID = "toolBarTop"
+
     @Bindable private var store: StoreOf<ToolBarFeature>
 
     public init(store: StoreOf<ToolBarFeature>) {
@@ -23,19 +25,31 @@ public struct ToolBarView: View {
     }
 
     public var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                self.packingSection()
-                self.exchangeRateSection()
-                self.koreanPhraseSection()
-                self.shoppingSection()
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 24) {
+                    Color.clear
+                        .frame(height: 0)
+                        .id(Self.topAnchorID)
+
+                    self.packingSection()
+                    self.exchangeRateSection()
+                    self.koreanPhraseSection()
+                    self.shoppingSection()
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 15)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 15)
+            .onChange(of: self.store.scrollToTopTrigger) { _, _ in
+                proxy.scrollTo(Self.topAnchorID, anchor: .top)
+            }
         }
         .scrollDismissesKeyboard(.immediately)
         .safeAreaBar(edge: .top) {
             TabiNavigationBar(title: Strings.ToolBar.hubTitle)
+        }
+        .fullScreenCover(item: self.$store.scope(state: \.phraseDetailState, action: \.phraseDetail)) { store in
+            KoreanPhraseDetailView(store: store)
         }
         .onAppear {
             self.store.send(.onAppear)
@@ -167,7 +181,12 @@ private extension ToolBarView {
                                 Divider()
                                     .padding(.horizontal, 16)
                             }
-                            self.phrasePreviewRow(phrase)
+                            Button {
+                                self.store.send(.phrasePreviewRowTapped(phrase))
+                            } label: {
+                                self.phrasePreviewRow(phrase)
+                            }
+                            .buttonStyle(TabiPressStyle())
                         }
                     }
                 }
