@@ -26,7 +26,7 @@ public struct BookmarkView: View {
         self.bookmarkList()
             .safeAreaBar(edge: .top) {
                 TabiNavigationBar(title: Strings.Bookmark.title) {
-                    self.bookmarkMenuButtons()
+                    self.addCustomPlaceButton()
                 }
             }
             .sheet(item: self.$store.scope(state: \.addCustomPlaceState, action: \.addCustomPlace)) { store in
@@ -41,24 +41,6 @@ public struct BookmarkView: View {
 // MARK: - View
 
 private extension BookmarkView {
-    func bookmarkMenuButtons() -> some View {
-        HStack(spacing: 10) {
-            Button {
-                self.store.send(.editModeToggleTapped)
-            } label: {
-                TabiGlassIconLabel(
-                    systemName: self.store.isEditing ? "checkmark" : "pencil",
-                    size: .ml,
-                    foregroundColor: .tabiPrimary
-                )
-            }
-
-            if self.store.isEditing == false {
-                self.addCustomPlaceButton()
-            }
-        }
-    }
-
     func addCustomPlaceButton() -> some View {
         TabiGlassIconButton(systemName: "plus", size: .ml, foregroundColor: .tabiPrimary) {
             self.store.send(.addCustomPlaceButtonTapped)
