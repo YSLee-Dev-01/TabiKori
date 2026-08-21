@@ -41,6 +41,7 @@ public struct AddCustomPlaceFeature: Sendable {
         var isSubwaySearching: Bool = false
         var subwayResults: [SubwayStation] = []
         var matchedStation: TouristSpot?
+        var isAddressPreviewLoading: Bool = false
 
         // 검색 탭 전용 상태
         var searchQuery: String = ""
@@ -89,6 +90,7 @@ public struct AddCustomPlaceFeature: Sendable {
         case saveResult(Bool)
         case addressNotFound
         case addressPreviewResult(Coordinate)
+        case addressPreviewFailed
         case stationSearchResult([SubwayStation])
         case subwayStationTapped(SubwayStation)
         case stationResolveResult(TouristSpot?)
@@ -169,6 +171,7 @@ public struct AddCustomPlaceFeature: Sendable {
 
             case .addressSubmitted:
                 guard state.trimmedAddress.isEmpty == false else { return .none }
+                state.isAddressPreviewLoading = true
                 return self.addressPreviewEffect(address: state.trimmedAddress)
 
             case .stationNameSubmitted:
@@ -195,6 +198,7 @@ public struct AddCustomPlaceFeature: Sendable {
 
             case .addressNotFound:
                 state.isSaving = false
+                state.isAddressPreviewLoading = false
                 state.alert = AlertState {
                     TextState(Strings.AddCustomPlace.addressNotFoundAlertTitle)
                 } actions: {
@@ -207,8 +211,13 @@ public struct AddCustomPlaceFeature: Sendable {
                 return .none
 
             case .addressPreviewResult(let coordinate):
+                state.isAddressPreviewLoading = false
                 state.previewCoordinate = coordinate
                 state.previewFitToken += 1
+                return .none
+
+            case .addressPreviewFailed:
+                state.isAddressPreviewLoading = false
                 return .none
 
             case .stationSearchResult(let stations):
@@ -390,10 +399,13 @@ private extension AddCustomPlaceFeature {
                 let geocoded = try await naverGeocodingUseCase.geocode(address: address)
                 await send(.addressPreviewResult(geocoded.coordinate))
             } catch TabiError.dataNotFound {
+                guard !Task.isCancelled else { return }
                 AppLogger.view.log(.error, "커스텀 장소 주소 미리보기 실패: 주소를 찾을 수 없음")
                 await send(.addressNotFound)
             } catch {
+                guard !Task.isCancelled else { return }
                 AppLogger.view.log(.error, "커스텀 장소 주소 미리보기 실패: \(error.localizedDescription)")
+                await send(.addressPreviewFailed)
             }
         }
         .cancellable(id: CancelID.preview, cancelInFlight: true)

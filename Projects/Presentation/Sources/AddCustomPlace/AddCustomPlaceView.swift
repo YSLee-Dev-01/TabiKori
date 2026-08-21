@@ -81,6 +81,11 @@ public struct AddCustomPlaceView: View {
             guard isFocused else { return }
             self.selectedDetent = .large
         }
+        .onChange(of: self.store.selectedTab) { _, _ in
+            self.isTitleFocused = false
+            self.isAddressFocused = false
+            self.isSearchFieldFocused = false
+        }
     }
 }
 
@@ -175,6 +180,10 @@ private extension AddCustomPlaceView {
                 style: .captionM,
                 color: .tabiTextSecondary
             )
+            if self.store.isAddressPreviewLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+            }
             self.mapPreviewSection()
         }
     }
