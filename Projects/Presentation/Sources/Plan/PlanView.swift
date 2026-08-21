@@ -62,24 +62,28 @@ public struct PlanView: View {
 private extension PlanView {
     func planMenuButtons() -> some View {
         HStack(spacing: 10) {
-            Menu {
-                Button(self.store.isEditing ? Strings.Plan.editCancelButton : Strings.Plan.editMenuTitle) {
+            if self.store.isEditing {
+                Button {
                     self.store.send(.editModeToggleTapped)
+                } label: {
+                    TabiGlassIconLabel(systemName: "xmark", size: .ml, foregroundColor: .tabiPrimary)
                 }
-                if self.store.isEditing == false {
-                    Button(Strings.Plan.importMenuTitle) {
-                        self.store.send(.importButtonTapped)
-                    }
-                }
-            } label: {
-                TabiGlassIconLabel(systemName: "ellipsis", size: .ml, foregroundColor: .tabiPrimary)
-            }
-
-            if self.store.isEditing == false {
+            } else {
                 Button {
                     self.store.send(.addButtonTapped)
                 } label: {
                     TabiGlassIconLabel(systemName: "plus", size: .ml, foregroundColor: .tabiPrimary)
+                }
+
+                Menu {
+                    Button(Strings.Plan.editMenuTitle) {
+                        self.store.send(.editModeToggleTapped)
+                    }
+                    Button(Strings.Plan.importMenuTitle) {
+                        self.store.send(.importButtonTapped)
+                    }
+                } label: {
+                    TabiGlassIconLabel(systemName: "ellipsis", size: .ml, foregroundColor: .tabiPrimary)
                 }
             }
         }
@@ -108,9 +112,6 @@ private extension PlanView {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .environment(\.editMode, .constant(self.store.isEditing ? .active : .inactive))
-            // 편집모드(.onDelete 기반 네이티브 삭제 컨트롤)의 색상을 앱 포인트 컬러로 맞추기 위해 tint 지정.
-            // 네이티브 삭제 버튼의 텍스트는 시스템 로케일에 따라 결정되어 앱 문자열로 강제할 수 없음
-            .tint(Color.getTabiColor(.tabiPrimary))
         }
     }
 
@@ -132,15 +133,16 @@ private extension PlanView {
                     )
                     .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
                     .listRowSeparator(.hidden)
+                    // 브라우징 중에는 항상 동일한 커스텀 스와이프 삭제("削除" + tabiPrimary tint)를 노출한다.
+                    // 편집모드(.onDelete 기반 네이티브 좌측 "-" 버튼)가 활성화되면 List가 자체적으로
+                    // 이 swipeActions 대신 네이티브 편집 컨트롤을 보여주므로 별도 조건 분기가 필요 없다
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        if self.store.isEditing == false {
-                            Button(role: .destructive) {
-                                self.store.send(.planDeleteButtonTapped(id: plan.id))
-                            } label: {
-                                Text(Strings.Common.delete)
-                            }
-                            .tint(Color.getTabiColor(.tabiPrimary))
+                        Button(role: .destructive) {
+                            self.store.send(.planDeleteButtonTapped(id: plan.id))
+                        } label: {
+                            Text(Strings.Common.delete)
                         }
+                        .tint(Color.getTabiColor(.tabiPrimary))
                     }
                 }
                 .onDelete { indexSet in
