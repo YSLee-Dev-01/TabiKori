@@ -378,6 +378,15 @@ private extension MapView {
             }
             .padding(.horizontal, 20)
 
+            if self.store.mode == .typing {
+                TabiLabel(
+                    title: Strings.Map.searchLanguageGuide,
+                    style: .captionM,
+                    color: .tabiTextSecondary
+                )
+                .padding(.horizontal, 20)
+            }
+
             if self.store.mode == .map {
                 self.categoryChips()
             }

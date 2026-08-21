@@ -90,40 +90,61 @@ struct MapSearchPanelView<Content: View>: View {
     // MARK: - View
 
     var body: some View {
-        VStack(spacing: 0) {
-            self.dragHandle()
-            self.content
-                // content 영역을 fullHeight 기준으로 고정하면 Spacer로 중앙 정렬하는 하위 뷰
-                // (emptyView 등)가 항상 fullHeight 기준으로 중앙을 계산해, half/collapsed처럼
-                // 실제로 더 작게 보이는 단계에서는 그 중앙 지점이 화면 밖으로 밀려 보이지 않는다.
-                // 컨텐츠에는 현재 단계의 실제 표시 높이(currentHeight)를 별도로 전달해 그
-                // 값 기준으로 중앙 정렬되도록 한다
-                .frame(height: max(0, self.currentHeight - self.dragHandleTotalHeight), alignment: .top)
-        }
-        .frame(maxWidth: .infinity)
-        // 바깥 컨테이너는 fullHeight로 고정하고 offset(hiddenOffset)으로만 reveal한다.
-        // 컨테이너 높이 자체를 currentHeight로 재계산하면 등장 시 부모의
-        // .transition(.move(edge: .bottom))이 계산하는 삽입 지오메트리와 경합해
-        // 슬라이드업 애니메이션이 보이지 않게 된다
-        .frame(height: self.fullHeight, alignment: .top)
-        .background {
-            UnevenRoundedRectangle(topLeadingRadius: .tabiRadiusXl, topTrailingRadius: .tabiRadiusXl)
-                .fill(TabiColor.tabiSurface)
-                .ignoresSafeArea(.container, edges: .bottom)
-        }
-        .offset(y: self.hiddenOffset)
-        .animation(.tabiSpring, value: self.displayedStage)
-        .onChange(of: self.isDragActive) { _, newValue in
-            if newValue {
-                self.onDragStarted()
-            } else {
-                self.onDragEnded()
+        GeometryReader { proxy in
+            let panelShape = UnevenRoundedRectangle(topLeadingRadius: .tabiRadiusXl, topTrailingRadius: .tabiRadiusXl)
+            let panelContent = VStack(spacing: 0) {
+                self.dragHandle()
+                self.content
+                    // content 영역을 fullHeight 기준으로 고정하면 Spacer로 중앙 정렬하는 하위 뷰
+                    // (emptyView 등)가 항상 fullHeight 기준으로 중앙을 계산해, half/collapsed처럼
+                    // 실제로 더 작게 보이는 단계에서는 그 중앙 지점이 화면 밖으로 밀려 보이지 않는다.
+                    // 컨텐츠에는 현재 단계의 실제 표시 높이(currentHeight)를 별도로 전달해 그
+                    // 값 기준으로 중앙 정렬되도록 한다
+                    .frame(height: max(0, self.currentHeight - self.dragHandleTotalHeight), alignment: .top)
+            }
+            // 폭은 단계(displayedStage)별 비율로 좁아지고, 아래 .frame(maxWidth: .infinity)가
+            // GeometryReader 컨테이너 폭 기준으로 좌우 중앙 정렬한다. UIScreen을 직접 참조하지 않고
+            // 항상 실제 부모 컨테이너 폭(proxy.size.width)에서 비율을 계산해 Stage Manager/멀티윈도우에서도 정확하다
+            .frame(width: proxy.size.width * self.displayedStage.widthFraction, alignment: .top)
+            // 바깥 컨테이너는 fullHeight로 고정하고 offset(hiddenOffset)으로만 reveal한다.
+            // 컨테이너 높이 자체를 currentHeight로 재계산하면 등장 시 부모의
+            // .transition(.move(edge: .bottom))이 계산하는 삽입 지오메트리와 경합해
+            // 슬라이드업 애니메이션이 보이지 않게 된다
+            .frame(height: self.fullHeight, alignment: .top)
+
+            // full/half 단계는 리퀴드 글래스, collapsed는 기존 불투명 배경 유지
+            Group {
+                if self.displayedStage == .collapsed {
+                    panelContent
+                        .background {
+                            panelShape.fill(TabiColor.tabiSurface)
+                        }
+                } else {
+                    panelContent
+                        .glassEffect(.regular, in: panelShape)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .top)
+            // 하단 여백을 단계별 bottomInsetFraction만큼 세이프에어리어(탭바 높이) 대비 비율로 계산한다.
+            // fraction 0(full)일 때 -inset만큼 음수 패딩을 줘 세이프에어리어를 완전히 뚫고 화면 하단까지 채우고(기존
+            // ignoresSafeArea와 동일 효과), fraction 1(collapsed)일 때는 패딩 0이라 자연스럽게 세이프에어리어
+            // 경계(탭바 상단)에 맞닿는다. 이 하나의 수식으로 3단계 모두를 연속적으로 표현한다
+            .padding(.bottom, -(proxy.safeAreaInsets.bottom * (1 - self.displayedStage.bottomInsetFraction)))
+            .offset(y: self.hiddenOffset)
+            .animation(.tabiSpring, value: self.displayedStage)
+            .onChange(of: self.isDragActive) { _, newValue in
+                if newValue {
+                    self.onDragStarted()
+                } else {
+                    self.onDragEnded()
+                }
+            }
+            .onChange(of: self.stage) { _, newValue in
+                guard self.isDragActive == false, newValue != self.displayedStage else { return }
+                self.displayedStage = newValue
             }
         }
-        .onChange(of: self.stage) { _, newValue in
-            guard self.isDragActive == false, newValue != self.displayedStage else { return }
-            self.displayedStage = newValue
-        }
+        .frame(height: self.fullHeight, alignment: .top)
     }
 }
 

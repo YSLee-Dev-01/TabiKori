@@ -192,6 +192,8 @@ public extension Strings.Map {
     static let loading = "読み込み中"
     /// 지하철역 검색 결과 노출 시 가타카나 입력 안내 문구
     static let subwayKatakanaSearchGuide = "駅名を検索する際はカタカナのみで入力してください"
+    /// 검색 시 한국어/영어 입력 안내 문구
+    static let searchLanguageGuide = "韓国語・英語で検索すると、より正確な結果が得られます"
 }
 
 public extension Strings.Bookmark {
