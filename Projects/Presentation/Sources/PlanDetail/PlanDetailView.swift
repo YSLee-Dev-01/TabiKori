@@ -79,11 +79,15 @@ public struct PlanDetailView: View {
                     .id(self.store.selectedDayIndex)
                     // List(spotList)는 스크롤 배경이 투명(scrollContentBackground(.hidden))이라,
                     // 전환 중 옛 일자 콘텐츠와 새 일자 콘텐츠가 겹쳐 비치는 잔상이 생긴다.
-                    // 불투명 배경으로 새로 들어오는 콘텐츠가 나가는 콘텐츠를 가리도록 하고,
-                    // clipped()로 슬라이드 도중 프레임 밖으로 삐져나온 부분을 잘라낸다
+                    // 불투명 배경으로 새로 들어오는 콘텐츠가 나가는 콘텐츠를 가리고,
+                    // compositingGroup()으로 List(UIKit 호스팅 뷰) 포함 하위 트리를 하나의 레이어로
+                    // 미리 합성해야 move 트랜지션의 이동/클리핑이 매끈하게 적용된다(합성 없이는
+                    // List 내부 레이어가 상위 트랜지션의 변환·클리핑을 온전히 따라가지 못해 잔상이 남는다).
+                    // clipped()는 그 합성된 레이어를 슬라이드 도중 프레임 밖으로 삐져나오지 않게 잘라낸다
                     .background(TabiColor.tabiBackground)
-                    .transition(self.dayTransition)
+                    .compositingGroup()
                     .clipped()
+                    .transition(self.dayTransition)
                 }
                 .transition(.opacity)
             }
@@ -189,6 +193,15 @@ private struct DayHeaderOffsetPreferenceKey: PreferenceKey {
     static func reduce(value: inout [Int: CGFloat], nextValue: () -> [Int: CGFloat]) {
         value.merge(nextValue(), uniquingKeysWith: { _, new in new })
     }
+}
+
+// MARK: - SpotListScrollGeometry
+
+/// spotList 스크롤 오프셋과 함께, 콘텐츠가 뷰포트보다 짧아 애초에 스크롤이 불가능한지 여부를 담아
+/// 헤더 숨김 판정이 실제 스크롤 가능 여부를 함께 고려하도록 한다
+private struct SpotListScrollGeometry: Equatable {
+    let offsetY: CGFloat
+    let canScroll: Bool
 }
 
 // MARK: - View
@@ -422,10 +435,13 @@ private extension PlanDetailView {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .environment(\.editMode, .constant(self.store.isEditing ? .active : .inactive))
-        .onScrollGeometryChange(for: CGFloat.self) { geometry in
-            geometry.contentOffset.y
-        } action: { oldOffsetY, newOffsetY in
-            self.handleSpotListScrollChanged(oldOffsetY: oldOffsetY, newOffsetY: newOffsetY)
+        .onScrollGeometryChange(for: SpotListScrollGeometry.self) { geometry in
+            SpotListScrollGeometry(
+                offsetY: geometry.contentOffset.y,
+                canScroll: self.isScrollable(geometry)
+            )
+        } action: { oldGeometry, newGeometry in
+            self.handleSpotListScrollChanged(oldGeometry: oldGeometry, newGeometry: newGeometry)
         }
     }
 
@@ -531,16 +547,27 @@ private extension PlanDetailView {
         return geometry.contentOffset.y >= maxOffsetY - Self.dayHeaderVisibilityThreshold
     }
 
+    /// 콘텐츠가 뷰포트보다 짧아 애초에 스크롤이 불가능한 경우(예: 스팟이 적은 일자)는 제외해,
+    /// 헤더가 실제 스크롤 없이도 숨겨지는 것을 방지한다. fullOverviewList의 isScrollAtBottom과 동일한 계산 방식
+    func isScrollable(_ geometry: ScrollGeometry) -> Bool {
+        let maxOffsetY = geometry.contentSize.height + geometry.contentInsets.bottom - geometry.containerSize.height
+        return maxOffsetY > Self.dayHeaderVisibilityThreshold
+    }
+
     /// 단일 일자 상세(spotList) 스크롤 방향에 따라 상단 날짜 헤더 영역의 숨김/표시를 전환한다.
     /// 콘텐츠가 위로 올라가면(오프셋 증가) 숨기고, 아래로 내려가면(오프셋 감소) 다시 표시한다.
     /// 최상단 부근(오버스크롤 포함)에서는 임계값과 무관하게 항상 표시해, 스크롤을 끝까지 올렸을 때
-    /// 헤더가 숨겨진 채로 남아있지 않도록 한다
-    func handleSpotListScrollChanged(oldOffsetY: CGFloat, newOffsetY: CGFloat) {
-        guard newOffsetY > Self.dayHeaderScrollThreshold else {
+    /// 헤더가 숨겨진 채로 남아있지 않도록 한다. 실제로 스크롤 가능한 콘텐츠가 없으면 숨김 로직 자체를 건너뛴다
+    func handleSpotListScrollChanged(oldGeometry: SpotListScrollGeometry, newGeometry: SpotListScrollGeometry) {
+        guard newGeometry.canScroll else {
             self.isDayHeaderHidden = false
             return
         }
-        let delta = newOffsetY - oldOffsetY
+        guard newGeometry.offsetY > Self.dayHeaderScrollThreshold else {
+            self.isDayHeaderHidden = false
+            return
+        }
+        let delta = newGeometry.offsetY - oldGeometry.offsetY
         guard abs(delta) > Self.dayHeaderScrollThreshold else { return }
         self.isDayHeaderHidden = delta > 0
     }
