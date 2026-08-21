@@ -134,13 +134,18 @@ private extension ShoppingPlanListView {
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
 
-                    TabiTextField(
-                        placeholder: Strings.Shopping.planListNoteFieldPlaceholder,
-                        text: self.$store.newItemNote,
-                        focus: self.$isAddNoteFieldFocused,
-                        submitLabel: .done,
-                        onSubmit: { self.store.send(.newItemSubmitted) }
-                    )
+                    HStack(spacing: 8) {
+                        Color.clear
+                            .frame(width: 44)
+                        TabiTextField(
+                            placeholder: Strings.Shopping.planListNoteFieldPlaceholder,
+                            text: self.$store.newItemNote,
+                            focus: self.$isAddNoteFieldFocused,
+                            submitLabel: .done,
+                            onSubmit: { self.store.send(.newItemSubmitted) }
+                        )
+                    }
+                    .padding(.leading, 14)
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
