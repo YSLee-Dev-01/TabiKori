@@ -50,6 +50,7 @@ public struct PlanView: View {
                 }
             }
             .alert($store.scope(state: \.alert, action: \.alert))
+            .animation(.tabiStandard, value: self.store.isEditing)
             .onAppear {
                 self.store.send(.onAppear)
             }
@@ -61,14 +62,17 @@ public struct PlanView: View {
 private extension PlanView {
     func planMenuButtons() -> some View {
         HStack(spacing: 10) {
-            Button {
-                self.store.send(.editModeToggleTapped)
+            Menu {
+                Button(self.store.isEditing ? Strings.Plan.editCancelButton : Strings.Plan.editMenuTitle) {
+                    self.store.send(.editModeToggleTapped)
+                }
+                if self.store.isEditing == false {
+                    Button(Strings.Plan.importMenuTitle) {
+                        self.store.send(.importButtonTapped)
+                    }
+                }
             } label: {
-                TabiGlassIconLabel(
-                    systemName: self.store.isEditing ? "checkmark" : "pencil",
-                    size: .ml,
-                    foregroundColor: .tabiPrimary
-                )
+                TabiGlassIconLabel(systemName: "ellipsis", size: .ml, foregroundColor: .tabiPrimary)
             }
 
             if self.store.isEditing == false {
@@ -76,12 +80,6 @@ private extension PlanView {
                     self.store.send(.addButtonTapped)
                 } label: {
                     TabiGlassIconLabel(systemName: "plus", size: .ml, foregroundColor: .tabiPrimary)
-                }
-
-                Button {
-                    self.store.send(.importButtonTapped)
-                } label: {
-                    TabiGlassIconLabel(systemName: "arrow.down", size: .ml, foregroundColor: .tabiPrimary)
                 }
             }
         }
@@ -110,6 +108,9 @@ private extension PlanView {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .environment(\.editMode, .constant(self.store.isEditing ? .active : .inactive))
+            // 편집모드(.onDelete 기반 네이티브 삭제 컨트롤)의 색상을 앱 포인트 컬러로 맞추기 위해 tint 지정.
+            // 네이티브 삭제 버튼의 텍스트는 시스템 로케일에 따라 결정되어 앱 문자열로 강제할 수 없음
+            .tint(Color.getTabiColor(.tabiPrimary))
         }
     }
 
@@ -138,6 +139,7 @@ private extension PlanView {
                             } label: {
                                 Text(Strings.Common.delete)
                             }
+                            .tint(Color.getTabiColor(.tabiPrimary))
                         }
                     }
                 }
