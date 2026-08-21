@@ -377,7 +377,7 @@ public extension Strings.Detail {
     /// 일정에 추가 버튼
     static let ctaAddToItinerary = "旅程に追加"
     /// 지도보기 버튼
-    static let viewInMap = "地図で見る"
+    static let viewInMap = "NAVERマップで見る"
     /// 지도 준비 중
     static let mapComingSoon = "地図準備中"
     /// 공유 텍스트 - 장소명 접두사
