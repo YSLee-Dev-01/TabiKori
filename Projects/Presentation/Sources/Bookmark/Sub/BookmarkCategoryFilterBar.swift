@@ -19,37 +19,53 @@ struct BookmarkCategoryFilterBar: View {
     var includesSubwayChip: Bool = false
     var onSelect: (CategoryType?) -> Void
 
+    private let allChipID: String = "BookmarkCategoryFilterBar.all"
+
+    private var selectedChipID: String {
+        self.selectedCategory?.rawValue ?? self.allChipID
+    }
+
     var body: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 8) {
-                if self.includesAllChip {
-                    TabiChip(
-                        Strings.Common.contentTypeAll,
-                        isSelected: self.selectedCategory == nil
-                    ) {
-                        self.onSelect(nil)
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                HStack(spacing: 8) {
+                    if self.includesAllChip {
+                        TabiChip(
+                            Strings.Common.contentTypeAll,
+                            isSelected: self.selectedCategory == nil
+                        ) {
+                            self.onSelect(nil)
+                        }
+                        .id(self.allChipID)
                     }
-                }
 
-                if self.includesSubwayChip {
-                    TabiChip(
-                        CategoryType.subway.label,
-                        isSelected: self.selectedCategory == .subway
-                    ) {
-                        self.onSelect(.subway)
+                    if self.includesSubwayChip {
+                        TabiChip(
+                            CategoryType.subway.label,
+                            isSelected: self.selectedCategory == .subway
+                        ) {
+                            self.onSelect(.subway)
+                        }
+                        .id(CategoryType.subway.rawValue)
                     }
-                }
 
-                ForEach(CategoryType.allItems, id: \.self) { category in
-                    TabiChip(
-                        category.label,
-                        isSelected: self.selectedCategory == category
-                    ) {
-                        self.onSelect(category)
+                    ForEach(CategoryType.allItems, id: \.self) { category in
+                        TabiChip(
+                            category.label,
+                            isSelected: self.selectedCategory == category
+                        ) {
+                            self.onSelect(category)
+                        }
+                        .id(category.rawValue)
                     }
                 }
             }
+            .scrollIndicators(.hidden)
+            .onChange(of: self.selectedCategory) { _, _ in
+                withAnimation(.tabiStandard) {
+                    proxy.scrollTo(self.selectedChipID, anchor: .center)
+                }
+            }
         }
-        .scrollIndicators(.hidden)
     }
 }
