@@ -19,11 +19,13 @@ public struct SettingFeature: Sendable {
 
     @Dependency(\.locationUseCase) var locationUseCase
     @Dependency(\.dataResetUseCase) var dataResetUseCase
+    @Dependency(\.autoScrollToTodayUseCase) var autoScrollToTodayUseCase
 
     @ObservableState
     public struct State: Equatable {
         var locationStatus: LocationAuthorizationStatus = .denied
         var isResetting: Bool = false
+        var isAutoScrollToTodayEnabled: Bool = false
         @Presents var infoState: SettingInfoFeature.State?
         @Presents var alert: AlertState<Action.Alert>?
 
@@ -35,6 +37,7 @@ public struct SettingFeature: Sendable {
         case scenePhaseBecameActive
         case gpsRowTapped
         case resetRowTapped
+        case autoScrollToTodayToggled(Bool)
         case etcRowTapped(SettingEtcItem)
         case resetResult(Bool)
         case resetCompleted
@@ -53,6 +56,12 @@ public struct SettingFeature: Sendable {
             switch action {
             case .onAppear, .scenePhaseBecameActive:
                 state.locationStatus = self.locationUseCase.checkAuthorization()
+                state.isAutoScrollToTodayEnabled = self.autoScrollToTodayUseCase.isEnabled()
+                return .none
+
+            case .autoScrollToTodayToggled(let isEnabled):
+                state.isAutoScrollToTodayEnabled = isEnabled
+                self.autoScrollToTodayUseCase.setEnabled(isEnabled)
                 return .none
 
             case .gpsRowTapped:

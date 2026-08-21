@@ -365,9 +365,8 @@ private extension HomeFeature {
     }
 
     func dayIndex(for plan: TravelPlan) -> Int {
-        let calendar = Calendar.current
-        let start = calendar.startOfDay(for: plan.startDate)
-        let today = calendar.startOfDay(for: Date())
-        return calendar.dateComponents([.day], from: start, to: today).day ?? 0
+        // 호출 시점에 이미 plan.section == .ongoing(오늘이 기간 내)임이 보장되므로
+        // todayDayIndex는 항상 non-nil이어야 하지만, 방어적으로 0으로 폴백한다
+        plan.todayDayIndex ?? 0
     }
 }

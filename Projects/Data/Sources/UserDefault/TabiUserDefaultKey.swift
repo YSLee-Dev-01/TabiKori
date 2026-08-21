@@ -11,4 +11,5 @@ import Foundation
 public enum TabiUserDefaultKey: String {
     case onboardingCompleted
     case recentSearchHistory
+    case autoScrollToTodayEnabled
 }

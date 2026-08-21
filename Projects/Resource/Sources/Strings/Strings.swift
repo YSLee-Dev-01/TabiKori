@@ -485,6 +485,13 @@ public extension Strings.Setting {
     /// GPS 권한 상태 - 미결정
     static let gpsStatusUndetermined = "未設定"
 
+    /// 일정 상세 섹션 타이틀
+    static let planDetailSectionTitle = "日程詳細"
+    /// 오늘 날짜 자동 이동 토글 행 타이틀
+    static let autoScrollToTodayRowTitle = "今日の日程へ自動移動"
+    /// 오늘 날짜 자동 이동 토글 행 설명
+    static let autoScrollToTodayRowDescription = "日程詳細を開いたとき、今日に該当する日を自動的に表示します"
+
     /// 데이터 초기화 섹션 타이틀
     static let dataResetSectionTitle = "データの初期化"
     /// 데이터 초기화 행 타이틀

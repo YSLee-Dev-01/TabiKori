@@ -23,6 +23,7 @@ public struct PlanDetailView: View {
     @State private var isMovingForward: Bool = true
     @State private var scrolledDayIndex: Int?
     @State private var isFullOverviewScrollAtBottom: Bool = false
+    @State private var isDayHeaderHidden: Bool = false
 
     public init(store: StoreOf<PlanDetailFeature>) {
         self.store = store
@@ -31,21 +32,29 @@ public struct PlanDetailView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if self.store.isFullOverview == false {
-                // toolBarButtons()는 일자 전환 트랜지션(dayTransition) 영역 밖에 배치해,
-                // 일자를 이동해도 버튼 위치는 고정되고 날짜 텍스트(dayHeaderRow)만 슬라이드되도록 한다
-                HStack(alignment: .center, spacing: 8) {
-                    self.dayHeaderRow(plan: self.store.plan)
-                        .id(self.store.selectedDayIndex)
-                        .transition(self.dayTransition)
-                        .layoutPriority(1)
-                    Spacer(minLength: 4)
-                    self.toolBarButtons()
-                        .fixedSize()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
+                // 스크롤 방향에 따라 이 블록 전체(날짜 헤더 + 일자 칩)를 숨기고/보인다.
+                // dayHeaderRow 자체의 좌우 day 전환 트랜지션(dayTransition)과 겹치지 않도록,
+                // 숨김/보임은 별도로 frame(height:)+opacity를 사용해 수직으로만 접는다
+                VStack(alignment: .leading, spacing: 10) {
+                    // toolBarButtons()는 일자 전환 트랜지션(dayTransition) 영역 밖에 배치해,
+                    // 일자를 이동해도 버튼 위치는 고정되고 날짜 텍스트(dayHeaderRow)만 슬라이드되도록 한다
+                    HStack(alignment: .center, spacing: 8) {
+                        self.dayHeaderRow(plan: self.store.plan)
+                            .id(self.store.selectedDayIndex)
+                            .transition(self.dayTransition)
+                            .layoutPriority(1)
+                        Spacer(minLength: 4)
+                        self.toolBarButtons()
+                            .fixedSize()
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
 
-                self.dayTabScroll(plan: self.store.plan)
+                    self.dayTabScroll(plan: self.store.plan)
+                }
+                .frame(height: self.isDayHeaderHidden ? 0 : nil)
+                .opacity(self.isDayHeaderHidden ? 0 : 1)
+                .clipped()
             }
 
             if self.store.isFullOverview {
@@ -68,7 +77,13 @@ public struct PlanDetailView: View {
                         self.spotList()
                     }
                     .id(self.store.selectedDayIndex)
+                    // List(spotList)는 스크롤 배경이 투명(scrollContentBackground(.hidden))이라,
+                    // 전환 중 옛 일자 콘텐츠와 새 일자 콘텐츠가 겹쳐 비치는 잔상이 생긴다.
+                    // 불투명 배경으로 새로 들어오는 콘텐츠가 나가는 콘텐츠를 가리도록 하고,
+                    // clipped()로 슬라이드 도중 프레임 밖으로 삐져나온 부분을 잘라낸다
+                    .background(TabiColor.tabiBackground)
                     .transition(self.dayTransition)
+                    .clipped()
                 }
                 .transition(.opacity)
             }
@@ -82,6 +97,7 @@ public struct PlanDetailView: View {
         .animation(.tabiStandard, value: self.store.isEditing)
         .animation(.tabiStandard, value: self.store.isFullOverview)
         .animation(.tabiStandard, value: self.store.visibleDayIndex)
+        .animation(.tabiStandard, value: self.isDayHeaderHidden)
         .navigationTitle("\(self.store.plan.title) · \(self.store.plan.displayRegionTitle)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -96,7 +112,7 @@ public struct PlanDetailView: View {
             if self.store.isEditing == false {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        self.store.send(.fullOverviewToggleTapped)
+                        self.handleFullOverviewToggleTapped()
                     } label: {
                         Image(systemName: self.store.isFullOverview ? "rectangle.grid.1x2.fill" : "rectangle.grid.1x2")
                     }
@@ -145,8 +161,22 @@ public struct PlanDetailView: View {
             self.store.send(.onAppear)
         }
         .onChange(of: self.store.isFullOverview) { _, isFullOverview in
+            self.isDayHeaderHidden = false
             guard isFullOverview else { return }
             self.scrolledDayIndex = self.store.visibleDayIndex
+        }
+        .onChange(of: self.store.selectedDayIndex) { _, _ in
+            self.isDayHeaderHidden = false
+        }
+        .onChange(of: self.store.pendingSelectedDayIndexClamp) { _, target in
+            // 일정 편집(기간 단축)으로 selectedDayIndex가 범위를 벗어났을 때, day chip 탭과 동일한
+            // 두 프레임 분리 경로(changeSelectedDay)로 보정해 좌우 전환 방향을 올바르게 계산한다
+            guard let target else { return }
+            self.changeSelectedDay(
+                from: self.store.selectedDayIndex,
+                to: target,
+                action: .dayButtonTapped(index: target)
+            )
         }
     }
 }
@@ -166,6 +196,9 @@ private struct DayHeaderOffsetPreferenceKey: PreferenceKey {
 private extension PlanDetailView {
     static let fullOverviewScrollSpace = "PlanDetailFullOverviewScroll"
     static let dayHeaderVisibilityThreshold: CGFloat = 1
+    /// spotList 스크롤 오프셋 변화가 이 값을 넘어야 날짜 헤더 숨김/표시 상태를 바꾼다.
+    /// 너무 작으면 미세한 스크롤 흔들림에도 헤더가 깜빡여 임계값을 둔다
+    static let dayHeaderScrollThreshold: CGFloat = 12
 
     func dayTabScroll(plan: TravelPlan) -> some View {
         ScrollViewReader { proxy in
@@ -225,13 +258,38 @@ private extension PlanDetailView {
 
     func handleDayChipTapped(_ offset: Int) {
         guard offset != self.store.selectedDayIndex else { return }
-        self.isMovingForward = offset >= self.store.selectedDayIndex
-        // 방향 플래그 변경과 selectedDayIndex 변경이 같은 렌더 프레임에서 처리되면
-        // 사라지는 뷰의 removal transition이 직전 프레임의 방향을 그대로 사용해버림.
-        // DispatchQueue.main.async는 같은 화면 갱신 프레임 안에서 실행될 수 있어
-        // 이를 보장하지 못하므로, 실제 프레임 경계(CADisplayLink)를 기다린 뒤 전송
+        self.changeSelectedDay(from: self.store.selectedDayIndex, to: offset, action: .dayButtonTapped(index: offset))
+    }
+
+    func handleFullOverviewToggleTapped() {
+        guard self.store.isFullOverview else {
+            self.store.send(.fullOverviewToggleTapped)
+            return
+        }
+        // 전체보기 종료 시 selectedDayIndex가 visibleDayIndex로 점프하므로(PlanDetailFeature의
+        // fullOverviewToggleTapped 참고), day chip 탭과 동일하게 방향 플래그를 먼저 커밋한 뒤
+        // 다음 프레임에 실제 전환 액션을 보낸다
+        self.changeSelectedDay(
+            from: self.store.selectedDayIndex,
+            to: self.store.visibleDayIndex,
+            action: .fullOverviewToggleTapped
+        )
+    }
+
+    /// 일자 전환 좌우 애니메이션 방향(isMovingForward)과 실제 selectedDayIndex 변경을 서로 다른
+    /// 렌더 프레임으로 분리해 보낸다. 두 변경이 같은 렌더 트랜잭션에서 처리되면 사라지는 뷰의
+    /// removal transition이 직전 프레임에 커밋된(스테일) 방향을 그대로 사용해버리는 SwiftUI 특성 때문에
+    /// (DispatchQueue.main.async로는 프레임 분리를 보장하지 못해 CADisplayLink 기반
+    /// PlanDetailNextFrameTrigger를 사용), selectedDayIndex를 변경하는 모든 경로(day chip 탭,
+    /// 전체보기 종료, dayCount 축소 보정)가 이 메서드를 거쳐야 한다
+    func changeSelectedDay(from currentIndex: Int, to newIndex: Int, action: PlanDetailFeature.Action) {
+        guard newIndex != currentIndex else {
+            self.store.send(action)
+            return
+        }
+        self.isMovingForward = newIndex >= currentIndex
         _ = PlanDetailNextFrameTrigger { [store = self.store] in
-            store.send(.dayButtonTapped(index: offset))
+            store.send(action)
         }
     }
 
@@ -364,6 +422,11 @@ private extension PlanDetailView {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .environment(\.editMode, .constant(self.store.isEditing ? .active : .inactive))
+        .onScrollGeometryChange(for: CGFloat.self) { geometry in
+            geometry.contentOffset.y
+        } action: { oldOffsetY, newOffsetY in
+            self.handleSpotListScrollChanged(oldOffsetY: oldOffsetY, newOffsetY: newOffsetY)
+        }
     }
 
     /// 모든 일자를 세션(Section)으로 구분해 하나의 스크롤 뷰에 표시한다.
@@ -466,6 +529,20 @@ private extension PlanDetailView {
         let maxOffsetY = geometry.contentSize.height + geometry.contentInsets.bottom - geometry.containerSize.height
         guard maxOffsetY > Self.dayHeaderVisibilityThreshold else { return false }
         return geometry.contentOffset.y >= maxOffsetY - Self.dayHeaderVisibilityThreshold
+    }
+
+    /// 단일 일자 상세(spotList) 스크롤 방향에 따라 상단 날짜 헤더 영역의 숨김/표시를 전환한다.
+    /// 콘텐츠가 위로 올라가면(오프셋 증가) 숨기고, 아래로 내려가면(오프셋 감소) 다시 표시한다.
+    /// 최상단 부근(오버스크롤 포함)에서는 임계값과 무관하게 항상 표시해, 스크롤을 끝까지 올렸을 때
+    /// 헤더가 숨겨진 채로 남아있지 않도록 한다
+    func handleSpotListScrollChanged(oldOffsetY: CGFloat, newOffsetY: CGFloat) {
+        guard newOffsetY > Self.dayHeaderScrollThreshold else {
+            self.isDayHeaderHidden = false
+            return
+        }
+        let delta = newOffsetY - oldOffsetY
+        guard abs(delta) > Self.dayHeaderScrollThreshold else { return }
+        self.isDayHeaderHidden = delta > 0
     }
 
     func editActionButtons() -> some View {

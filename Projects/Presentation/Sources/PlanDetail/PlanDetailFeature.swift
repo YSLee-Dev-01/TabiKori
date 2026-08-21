@@ -22,6 +22,7 @@ public struct PlanDetailFeature: Sendable {
     @Dependency(\.travelPlanShareUseCase) var travelPlanShareUseCase
     @Dependency(\.shoppingPlanItemUseCase) var shoppingPlanItemUseCase
     @Dependency(\.toolBarItemUseCase) var toolBarItemUseCase
+    @Dependency(\.autoScrollToTodayUseCase) var autoScrollToTodayUseCase
     @Dependency(\.dismiss) var dismiss
 
     @ObservableState
@@ -65,6 +66,15 @@ public struct PlanDetailFeature: Sendable {
 
         var mapMarkerSpots: [TravelPlanDetailSpot] {
             self.isFullOverview ? self.spots(forDay: self.visibleDayIndex) : self.displayedSpots
+        }
+
+        /// 일정 편집(기간 단축)으로 plan.dayCount가 selectedDayIndex보다 작아져 범위를 벗어났을 때
+        /// 보정되어야 할 목표 인덱스. 좌우 전환 애니메이션 방향(isMovingForward)을 View가 먼저 계산할 수
+        /// 있도록, selectedDayIndex 자체는 여기서 곧바로 클램프하지 않고 View가 이 값을 관찰해
+        /// dayButtonTapped(index:)와 동일한 경로로 보정을 요청하게 한다 (PlanDetailView.swift 참고)
+        var pendingSelectedDayIndexClamp: Int? {
+            let clamped = min(self.selectedDayIndex, max(self.plan.dayCount - 1, 0))
+            return clamped != self.selectedDayIndex ? clamped : nil
         }
     }
 
@@ -111,6 +121,13 @@ public struct PlanDetailFeature: Sendable {
             case .onAppear:
                 guard state.hasStartedLoading == false else { return .none }
                 state.hasStartedLoading = true
+                // 설정에서 켠 경우에만, 진입 경로(Home/Plan 리스트 등)와 무관하게 오늘 날짜가
+                // 포함된 일자로 자동 이동한다. Home 진행중 일정 진입은 이미 initialDayIndex로
+                // today matching이 적용되어 있지만, 그 외 경로(Plan 리스트 등)는 여기서 보정된다
+                if self.autoScrollToTodayUseCase.isEnabled(), let todayDayIndex = state.plan.todayDayIndex {
+                    state.selectedDayIndex = todayDayIndex
+                    state.visibleDayIndex = todayDayIndex
+                }
                 return self.fetchTravelPlanDetailEffect(id: state.plan.id)
 
             case .dayButtonTapped(let index):
@@ -227,6 +244,12 @@ public struct PlanDetailFeature: Sendable {
 
             case .travelPlanDetailResult(let detail):
                 state.travelPlanDetail = detail
+                // 편집(재정렬) 모드 중 조회 결과가 도착하면(예: 시간 수정 바텀시트 저장 후 재조회),
+                // editingSpots는 재정렬용 스냅샷이라 자동으로 최신화되지 않으므로 시간 값만 동기화한다.
+                // 배열 순서(사용자가 드래그로 재정렬한 순서)는 그대로 유지해야 하므로 배열 자체는 교체하지 않는다
+                if state.isEditing, let updatedSpots = detail?.spots {
+                    state.editingSpots = self.editingSpots(current: state.editingSpots, syncingTimeFrom: updatedSpots)
+                }
                 if self.hasValidCoordinateSpots(dayIndex: state.selectedDayIndex, in: state) {
                     state.dayMapFitToken += 1
                 }
@@ -301,7 +324,10 @@ public struct PlanDetailFeature: Sendable {
 
             case .editPlan(.presented(.planUpdated(let plan))):
                 state.plan = plan
-                state.selectedDayIndex = min(state.selectedDayIndex, plan.dayCount - 1)
+                // selectedDayIndex는 여기서 곧바로 클램프하지 않는다. 범위를 벗어난 상태로 잠시 두어도
+                // 인덱스를 사용하는 모든 지점이 이미 indices.contains 가드를 거치므로 안전하며,
+                // View가 pendingSelectedDayIndexClamp를 관찰해 dayButtonTapped(index:)와 동일한
+                // 좌우 애니메이션 방향 계산 경로로 보정하도록 위임한다 (State.pendingSelectedDayIndexClamp 참고)
                 state.visibleDayIndex = min(state.visibleDayIndex, plan.dayCount - 1)
                 state.isEditing = false
                 state.editingSpots = []
@@ -352,6 +378,31 @@ private enum CancelID {
 // MARK: - Method
 
 private extension PlanDetailFeature {
+    /// editingSpots의 배열 순서(사용자가 드래그로 재정렬한 순서)는 그대로 유지한 채,
+    /// updatedSpots에서 id가 일치하는 스팟의 시간 값(startTime/durationMinutes)만 최신화한다
+    func editingSpots(current: [TravelPlanDetailSpot], syncingTimeFrom updatedSpots: [TravelPlanDetailSpot]) -> [TravelPlanDetailSpot] {
+        let updatedById = Dictionary(uniqueKeysWithValues: updatedSpots.map { ($0.id, $0) })
+        return current.map { spot in
+            guard let updated = updatedById[spot.id] else { return spot }
+            return TravelPlanDetailSpot(
+                id: spot.id,
+                dayIndex: spot.dayIndex,
+                order: spot.order,
+                category: spot.category,
+                title: spot.title,
+                subtitle: spot.subtitle,
+                startTime: updated.startTime,
+                durationMinutes: updated.durationMinutes,
+                contentId: spot.contentId,
+                coordinate: spot.coordinate,
+                thumbnailURLString: spot.thumbnailURLString,
+                isCustom: spot.isCustom,
+                isStation: spot.isStation,
+                address: spot.address
+            )
+        }
+    }
+
     func hasValidCoordinateSpots(dayIndex: Int, in state: State) -> Bool {
         guard let spots = state.travelPlanDetail?.spots else { return false }
         return spots.contains { $0.dayIndex == dayIndex && $0.coordinate.isValid }

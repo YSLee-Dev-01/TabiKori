@@ -47,6 +47,16 @@ extension TravelPlan {
         return self.region.jaTitle
     }
 
+    /// 오늘 날짜가 이 일정의 dayDates 범위 안에 있으면 해당 일자 인덱스(0-based)를, 없으면 nil을 반환한다
+    var todayDayIndex: Int? {
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: self.startDate)
+        let today = calendar.startOfDay(for: Date())
+        let offset = calendar.dateComponents([.day], from: start, to: today).day ?? -1
+        guard self.dayDates.indices.contains(offset) else { return nil }
+        return offset
+    }
+
     var section: PlanSection {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())

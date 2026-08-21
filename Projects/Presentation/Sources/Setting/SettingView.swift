@@ -26,6 +26,7 @@ public struct SettingView: View {
         ScrollView {
             VStack(spacing: 20) {
                 self.gpsSection()
+                self.planDetailSection()
                 self.dataResetSection()
                 self.etcSection()
             }
@@ -73,6 +74,19 @@ private extension SettingView {
             ) {
                 self.store.send(.gpsRowTapped)
             }
+        }
+    }
+
+    func planDetailSection() -> some View {
+        SettingSectionCard(title: Strings.Setting.planDetailSectionTitle) {
+            SettingToggleRow(
+                title: Strings.Setting.autoScrollToTodayRowTitle,
+                description: Strings.Setting.autoScrollToTodayRowDescription,
+                isOn: Binding(
+                    get: { self.store.isAutoScrollToTodayEnabled },
+                    set: { self.store.send(.autoScrollToTodayToggled($0)) }
+                )
+            )
         }
     }
 

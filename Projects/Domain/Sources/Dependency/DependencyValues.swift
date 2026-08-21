@@ -15,6 +15,11 @@ extension DependencyValues {
         get {self[OnboardingUseCaseDependencyKey.self]}
         set {self[OnboardingUseCaseDependencyKey.self] = newValue}
     }
+
+    public var autoScrollToTodayUseCase: AutoScrollToTodayUseCaseProtocol {
+        get {self[AutoScrollToTodayUseCaseDependencyKey.self]}
+        set {self[AutoScrollToTodayUseCaseDependencyKey.self] = newValue}
+    }
     
     public var locationUseCase: LocationUseCaseProtocol {
         get {self[LocationUseCaseDependencyKey.self]}
