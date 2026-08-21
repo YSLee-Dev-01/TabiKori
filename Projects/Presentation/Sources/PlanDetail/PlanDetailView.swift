@@ -22,6 +22,7 @@ public struct PlanDetailView: View {
 
     @State private var isMovingForward: Bool = true
     @State private var scrolledDayIndex: Int?
+    @State private var isFullOverviewScrollAtBottom: Bool = false
 
     public init(store: StoreOf<PlanDetailFeature>) {
         self.store = store
@@ -341,16 +342,14 @@ private extension PlanDetailView {
                 .onDelete { indexSet in
                     self.store.send(.spotDeletedInEditMode(at: indexSet))
                 }
-                .onMove { source, destination in
+                // `.moveDisabled(true)`는 onMove 콜백 호출만 막을 뿐, 롱프레스 재정렬 제스처
+                // 인식기 자체는 List에 여전히 등록돼 있어 같은 행의 .onTapGesture/.swipeActions와
+                // 충돌해 편집모드 진입 전(state.editingSpots가 빈 배열)에도 크래시가 발생했다.
+                // onMove(perform:)는 옵셔널 클로저를 받으므로, 편집모드가 아닐 땐 nil을 넘겨
+                // 재정렬 제스처 인식기 자체를 등록하지 않도록 해 근본 원인을 제거한다
+                .onMove(perform: self.store.isEditing ? { source, destination in
                     self.store.send(.spotMovedInEditMode(source: source, destination: destination))
-                }
-                // SwiftUI List는 iOS 16+부터 EditMode(.active)와 무관하게 onMove가 붙은 row를
-                // 꾹 눌러 드래그하는 것만으로 재정렬 제스처가 즉시 활성화된다.
-                // isEditing == false일 때는 state.editingSpots가 빈 배열([])로 비어 있는데,
-                // 이 상태에서 제스처가 동작하면 reducer가 빈 배열에 move(fromOffsets:toOffset:)를
-                // 호출하게 되어 인덱스 범위를 벗어나 크래시한다.
-                // 편집모드로 진입(editingSpots가 selectedDaySpots로 채워짐)했을 때만 제스처를 허용해 근본 원인을 제거한다
-                .moveDisabled(self.store.isEditing == false)
+                } : nil)
             }
 
             if self.store.isEditing == false {
@@ -438,14 +437,21 @@ private extension PlanDetailView {
         .onScrollGeometryChange(for: Bool.self) { geometry in
             self.isScrollAtBottom(geometry)
         } action: { _, isAtBottom in
+            self.isFullOverviewScrollAtBottom = isAtBottom
             guard isAtBottom, let lastDayIndex = plan.dayDates.indices.last else { return }
             self.store.send(.visibleDayIndexChanged(lastDayIndex))
         }
     }
 
     /// 상단 임계값을 통과한(스크롤된) 헤더 중 가장 아래쪽(가장 최근에 통과한) 일자를 현재 보이는 세션으로 판단한다.
-    /// 아직 어떤 헤더도 임계값을 통과하지 않은 초기 상태에서는 가장 위에 있는(첫) 일자를 사용한다
+    /// 아직 어떤 헤더도 임계값을 통과하지 않은 초기 상태에서는 가장 위에 있는(첫) 일자를 사용한다.
+    /// 마지막 일자의 스팟이 적으면 그 헤더는 구조적으로 상단 임계선을 절대 통과할 수 없어, 스크롤이
+    /// 바닥에 닿아 있는 동안(isFullOverviewScrollAtBottom)에는 이 판정이 isScrollAtBottom 폴백이
+    /// 고른 마지막 일자를 곧바로 이전 일자로 덮어써버리는 경쟁이 발생한다 — 바닥에 닿아있는 동안은
+    /// 이 판정을 건너뛰어 우선순위를 폴백에 양보하고, 사용자가 다시 위로 스크롤해 바닥을 벗어나면
+    /// (isFullOverviewScrollAtBottom이 다시 false가 되며) 헤더 기반 판정이 정상 재개된다
     func handleDayHeaderOffsetsChanged(_ offsets: [Int: CGFloat]) {
+        guard self.isFullOverviewScrollAtBottom == false else { return }
         let passedHeaders = offsets.filter { $0.value <= Self.dayHeaderVisibilityThreshold }
         let visibleDay = passedHeaders.max { $0.value < $1.value }?.key
             ?? offsets.min { $0.value < $1.value }?.key
