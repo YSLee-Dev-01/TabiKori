@@ -21,6 +21,8 @@ public struct PlanFeature: Sendable {
     @Dependency(\.travelPlanUseCase) var travelPlanUseCase
     @Dependency(\.travelPlanDetailUseCase) var travelPlanDetailUseCase
     @Dependency(\.travelPlanShareUseCase) var travelPlanShareUseCase
+    @Dependency(\.shoppingPlanItemUseCase) var shoppingPlanItemUseCase
+    @Dependency(\.toolBarItemUseCase) var toolBarItemUseCase
 
     @ObservableState
     public struct State: Equatable {
@@ -253,15 +255,19 @@ private extension PlanFeature {
         .run { [
             travelPlanShareUseCase = self.travelPlanShareUseCase,
             travelPlanUseCase = self.travelPlanUseCase,
-            travelPlanDetailUseCase = self.travelPlanDetailUseCase
+            travelPlanDetailUseCase = self.travelPlanDetailUseCase,
+            shoppingPlanItemUseCase = self.shoppingPlanItemUseCase,
+            toolBarItemUseCase = self.toolBarItemUseCase
         ] send in
             _ = url.startAccessingSecurityScopedResource()
             defer { url.stopAccessingSecurityScopedResource() }
             do {
                 let data = try Data(contentsOf: url)
-                let (plan, detail) = try travelPlanShareUseCase.importPlan(from: data)
+                let (plan, detail, shoppingItems, toolBarItems) = try travelPlanShareUseCase.importPlan(from: data)
                 try await travelPlanUseCase.add(plan)
                 try await travelPlanDetailUseCase.add(detail)
+                try await shoppingPlanItemUseCase.replace(planId: plan.id, items: shoppingItems)
+                try await toolBarItemUseCase.replace(planId: plan.id, items: toolBarItems)
                 await send(.importResult(true))
             } catch {
                 AppLogger.view.log(.error, "일정 가져오기 실패 (fileName: \(url.lastPathComponent)): \(error.localizedDescription)")

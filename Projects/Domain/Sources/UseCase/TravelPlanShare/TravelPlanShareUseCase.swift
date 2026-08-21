@@ -17,8 +17,18 @@ public final class TravelPlanShareUseCase: TravelPlanShareUseCaseProtocol {
 
     // MARK: - Method
 
-    public func exportData(plan: TravelPlan, detail: TravelPlanDetail?) throws -> Data {
-        let payload = SharePayload(plan: plan, spots: detail?.spots ?? [])
+    public func exportData(
+        plan: TravelPlan,
+        detail: TravelPlanDetail?,
+        shoppingItems: [ShoppingPlanItem],
+        toolBarItems: [ToolBarPlanItem]
+    ) throws -> Data {
+        let payload = SharePayload(
+            plan: plan,
+            spots: detail?.spots ?? [],
+            shoppingItems: shoppingItems,
+            toolBarItems: toolBarItems
+        )
         do {
             let encoder = JSONEncoder()
             encoder.dateEncodingStrategy = .iso8601
@@ -29,7 +39,9 @@ public final class TravelPlanShareUseCase: TravelPlanShareUseCaseProtocol {
         }
     }
 
-    public func importPlan(from data: Data) throws -> (plan: TravelPlan, detail: TravelPlanDetail) {
+    public func importPlan(
+        from data: Data
+    ) throws -> (plan: TravelPlan, detail: TravelPlanDetail, shoppingItems: [ShoppingPlanItem], toolBarItems: [ToolBarPlanItem]) {
         let payload: SharePayload
         do {
             let decoder = JSONDecoder()
@@ -70,7 +82,30 @@ public final class TravelPlanShareUseCase: TravelPlanShareUseCaseProtocol {
             )
         }
 
-        return (plan, TravelPlanDetail(planId: newPlanId, spots: spots))
+        // 쇼핑/준비물 리스트는 스팟과 마찬가지로 받는 사람의 새 플랜 기준으로 id/planId를 새로 발급한다
+        let shoppingItems = payload.shoppingItems.map { itemPayload in
+            ShoppingPlanItem(
+                id: UUID(),
+                planId: newPlanId,
+                order: itemPayload.order,
+                title: itemPayload.title,
+                note: itemPayload.note,
+                isChecked: itemPayload.isChecked
+            )
+        }
+
+        let toolBarItems = payload.toolBarItems.map { itemPayload in
+            ToolBarPlanItem(
+                id: UUID(),
+                planId: newPlanId,
+                order: itemPayload.order,
+                title: itemPayload.title,
+                note: itemPayload.note,
+                isChecked: itemPayload.isChecked
+            )
+        }
+
+        return (plan, TravelPlanDetail(planId: newPlanId, spots: spots), shoppingItems, toolBarItems)
     }
 }
 
@@ -155,10 +190,33 @@ private struct SharePayload: Codable {
         }
     }
 
+    /// 쇼핑 리스트 항목 페이로드. `id`/`planId`는 가져오기 시 새로 발급하므로 직렬화 대상에서 제외한다
+    struct ShoppingItemPayload: Codable {
+        let order: Int
+        let title: String
+        let note: String?
+        let isChecked: Bool
+    }
+
+    /// 준비물 리스트 항목 페이로드. `id`/`planId`는 가져오기 시 새로 발급하므로 직렬화 대상에서 제외한다
+    struct ToolBarItemPayload: Codable {
+        let order: Int
+        let title: String
+        let note: String?
+        let isChecked: Bool
+    }
+
     let plan: PlanPayload
     let spots: [SpotPayload]
+    let shoppingItems: [ShoppingItemPayload]
+    let toolBarItems: [ToolBarItemPayload]
 
-    init(plan: TravelPlan, spots: [TravelPlanDetailSpot]) {
+    init(
+        plan: TravelPlan,
+        spots: [TravelPlanDetailSpot],
+        shoppingItems: [ShoppingPlanItem],
+        toolBarItems: [ToolBarPlanItem]
+    ) {
         self.plan = PlanPayload(
             title: plan.title,
             region: plan.region.rawValue,
@@ -185,5 +243,20 @@ private struct SharePayload: Codable {
                 address: spot.address
             )
         }
+        self.shoppingItems = shoppingItems.map { item in
+            ShoppingItemPayload(order: item.order, title: item.title, note: item.note, isChecked: item.isChecked)
+        }
+        self.toolBarItems = toolBarItems.map { item in
+            ToolBarItemPayload(order: item.order, title: item.title, note: item.note, isChecked: item.isChecked)
+        }
+    }
+
+    /// shoppingItems/toolBarItems 도입 이전에 내보낸(export) 파일과의 하위 호환 — 키가 없으면 빈 배열로 취급
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.plan = try container.decode(PlanPayload.self, forKey: .plan)
+        self.spots = try container.decode([SpotPayload].self, forKey: .spots)
+        self.shoppingItems = try container.decodeIfPresent([ShoppingItemPayload].self, forKey: .shoppingItems) ?? []
+        self.toolBarItems = try container.decodeIfPresent([ToolBarItemPayload].self, forKey: .toolBarItems) ?? []
     }
 }

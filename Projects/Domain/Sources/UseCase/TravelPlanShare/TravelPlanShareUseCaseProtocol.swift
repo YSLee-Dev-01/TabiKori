@@ -9,6 +9,13 @@
 import Foundation
 
 public protocol TravelPlanShareUseCaseProtocol: Sendable {
-    func exportData(plan: TravelPlan, detail: TravelPlanDetail?) throws -> Data
-    func importPlan(from data: Data) throws -> (plan: TravelPlan, detail: TravelPlanDetail)
+    func exportData(
+        plan: TravelPlan,
+        detail: TravelPlanDetail?,
+        shoppingItems: [ShoppingPlanItem],
+        toolBarItems: [ToolBarPlanItem]
+    ) throws -> Data
+    func importPlan(
+        from data: Data
+    ) throws -> (plan: TravelPlan, detail: TravelPlanDetail, shoppingItems: [ShoppingPlanItem], toolBarItems: [ToolBarPlanItem])
 }

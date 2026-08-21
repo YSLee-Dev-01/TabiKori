@@ -24,6 +24,7 @@ public struct PlanDetailEditFeature: Sendable {
     @ObservableState
     public struct State: Equatable {
         var title: String
+        var emojiText: String
         var startDate: Date?
         var endDate: Date?
         var isSaving: Bool = false
@@ -33,6 +34,7 @@ public struct PlanDetailEditFeature: Sendable {
         public init(plan: TravelPlan) {
             self.plan = plan
             self.title = plan.title
+            self.emojiText = plan.customEmoji ?? ""
             self.startDate = plan.startDate
             self.endDate = plan.endDate
         }
@@ -96,7 +98,7 @@ public struct PlanDetailEditFeature: Sendable {
                     title: state.trimmedTitle,
                     region: state.plan.region,
                     customRegionText: state.plan.customRegionText,
-                    customEmoji: state.plan.customEmoji,
+                    customEmoji: state.emojiText.isEmpty ? nil : state.emojiText,
                     startDate: startDate,
                     endDate: endDate
                 )
@@ -133,7 +135,7 @@ public struct PlanDetailEditFeature: Sendable {
                     title: state.trimmedTitle,
                     region: state.plan.region,
                     customRegionText: state.plan.customRegionText,
-                    customEmoji: state.plan.customEmoji,
+                    customEmoji: state.emojiText.isEmpty ? nil : state.emojiText,
                     startDate: startDate,
                     endDate: endDate
                 )

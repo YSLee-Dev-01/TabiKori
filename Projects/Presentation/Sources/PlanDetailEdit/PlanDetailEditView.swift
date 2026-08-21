@@ -27,6 +27,7 @@ struct PlanDetailEditView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 self.nameField()
+                self.emojiField()
                 self.dateSection()
             }
             .padding(20)
@@ -75,6 +76,13 @@ private extension PlanDetailEditView {
         VStack(alignment: .leading, spacing: 8) {
             TabiLabel(title: Strings.Plan.nameLabel, style: .bodyMBold, color: .tabiTextPrimary)
             TabiTextField(placeholder: Strings.Plan.namePlaceholder, text: self.$store.title, focus: self.$isTitleFocused)
+        }
+    }
+
+    func emojiField() -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            TabiLabel(title: Strings.Plan.emojiLabel, style: .bodyMBold, color: .tabiTextPrimary)
+            TabiTextField(placeholder: Strings.Plan.emojiPlaceholder, text: self.$store.emojiText, maxLength: 1)
         }
     }
 

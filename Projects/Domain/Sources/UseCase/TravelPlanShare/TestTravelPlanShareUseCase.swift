@@ -13,7 +13,7 @@ public final class TestTravelPlanShareUseCase: TravelPlanShareUseCaseProtocol, @
     // MARK: - Properties
 
     public var exportDataResult: Data = Data()
-    public var importPlanResult: (plan: TravelPlan, detail: TravelPlanDetail)?
+    public var importPlanResult: (plan: TravelPlan, detail: TravelPlanDetail, shoppingItems: [ShoppingPlanItem], toolBarItems: [ToolBarPlanItem])?
     public var shouldThrowOnExport: Bool = false
     public var shouldThrowOnImport: Bool = false
 
@@ -23,14 +23,21 @@ public final class TestTravelPlanShareUseCase: TravelPlanShareUseCaseProtocol, @
 
     // MARK: - Method
 
-    public func exportData(plan: TravelPlan, detail: TravelPlanDetail?) throws -> Data {
+    public func exportData(
+        plan: TravelPlan,
+        detail: TravelPlanDetail?,
+        shoppingItems: [ShoppingPlanItem],
+        toolBarItems: [ToolBarPlanItem]
+    ) throws -> Data {
         if self.shouldThrowOnExport {
             throw TabiError.decodingFailed(message: "테스트 내보내기 실패")
         }
         return self.exportDataResult
     }
 
-    public func importPlan(from data: Data) throws -> (plan: TravelPlan, detail: TravelPlanDetail) {
+    public func importPlan(
+        from data: Data
+    ) throws -> (plan: TravelPlan, detail: TravelPlanDetail, shoppingItems: [ShoppingPlanItem], toolBarItems: [ToolBarPlanItem]) {
         if self.shouldThrowOnImport {
             throw TabiError.decodingFailed(message: "테스트 가져오기 실패")
         }

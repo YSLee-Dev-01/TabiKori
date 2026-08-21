@@ -30,9 +30,19 @@ public struct PlanDetailView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             if self.store.isFullOverview == false {
-                self.dayHeaderRow(plan: self.store.plan)
-                    .id(self.store.selectedDayIndex)
-                    .transition(self.dayTransition)
+                // toolBarButtons()는 일자 전환 트랜지션(dayTransition) 영역 밖에 배치해,
+                // 일자를 이동해도 버튼 위치는 고정되고 날짜 텍스트(dayHeaderRow)만 슬라이드되도록 한다
+                HStack(alignment: .center, spacing: 8) {
+                    self.dayHeaderRow(plan: self.store.plan)
+                        .id(self.store.selectedDayIndex)
+                        .transition(self.dayTransition)
+                        .layoutPriority(1)
+                    Spacer(minLength: 4)
+                    self.toolBarButtons()
+                        .fixedSize()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
 
                 self.dayTabScroll(plan: self.store.plan)
             }
@@ -108,6 +118,9 @@ public struct PlanDetailView: View {
                                 Text(Strings.Plan.exportMenuTitle)
                             }
                         }
+                        Button(Strings.Plan.planDeleteMenuTitle, role: .destructive) {
+                            self.store.send(.deleteMenuButtonTapped)
+                        }
                     } label: {
                         Image(systemName: "ellipsis")
                     }
@@ -154,21 +167,29 @@ private extension PlanDetailView {
     static let dayHeaderVisibilityThreshold: CGFloat = 1
 
     func dayTabScroll(plan: TravelPlan) -> some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 8) {
-                ForEach(Array(plan.dayDates.enumerated()), id: \.offset) { offset, _ in
-                    TabiChip(
-                        Strings.Plan.dayChipTitle(offset + 1),
-                        isSelected: self.store.selectedDayIndex == offset
-                    ) {
-                        self.handleDayChipTapped(offset)
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                HStack(spacing: 8) {
+                    ForEach(Array(plan.dayDates.enumerated()), id: \.offset) { offset, _ in
+                        TabiChip(
+                            Strings.Plan.dayChipTitle(offset + 1),
+                            isSelected: self.store.selectedDayIndex == offset
+                        ) {
+                            self.handleDayChipTapped(offset)
+                        }
+                        .id(offset)
                     }
                 }
+                .padding(.horizontal, 20)
             }
-            .padding(.horizontal, 20)
+            .scrollIndicators(.hidden)
+            .disabled(self.store.isEditing)
+            .onAppear {
+                // 홈 화면 등에서 initialDayIndex로 진입했을 때, 선택된 일자 칩이 화면 가운데 오도록 정렬한다.
+                // 첫 번째 칩(index 0)은 스크롤 시작점이라 anchor: .center를 줘도 좌측에 그대로 붙어(회귀 없음)
+                proxy.scrollTo(self.store.selectedDayIndex, anchor: .center)
+            }
         }
-        .scrollIndicators(.hidden)
-        .disabled(self.store.isEditing)
     }
 
     func toolBarButtons() -> some View {
@@ -213,20 +234,13 @@ private extension PlanDetailView {
         }
     }
 
-    /// 단일 일자 뷰 전용: 일자 정보(PlanDetailDayHeader)와 준비물/쇼핑리스트 버튼을 한 행에 병합해 노출한다.
+    /// 단일 일자 뷰 전용: 일자 정보(PlanDetailDayHeader)만 노출한다.
+    /// 준비물/쇼핑리스트 버튼(toolBarButtons)은 일자 전환 트랜지션이 걸리지 않도록 상위(body)에서 별도로 배치된다.
     /// 전체보기(fullOverviewList)의 Section 헤더는 날짜 정보만 유지해야 하므로 별도로 인라인 구성됨
     func dayHeaderRow(plan: TravelPlan) -> some View {
         Group {
             if let dateTitle = self.selectedDayDateTitle(plan: plan) {
-                HStack(alignment: .center, spacing: 8) {
-                    PlanDetailDayHeader(dateTitle: dateTitle, spotCountTitle: nil)
-                        .layoutPriority(1)
-                    Spacer(minLength: 4)
-                    self.toolBarButtons()
-                        .fixedSize()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
+                PlanDetailDayHeader(dateTitle: dateTitle, spotCountTitle: nil)
             }
         }
     }
@@ -318,6 +332,9 @@ private extension PlanDetailView {
                             } label: {
                                 Label(Strings.Common.delete, systemImage: "trash")
                             }
+                            // PlanDetailView는 TabBarView의 TabView(.tint(tabiPrimary)) 스코프 밖(NavigationStack destination)에 있어
+                            // 스와이프 삭제 버튼이 기본 시스템 red로 표시됨. Bookmark(TabView 하위, tabiPrimary 상속)와 색상을 맞추기 위해 명시적으로 tint 지정
+                            .tint(Color.getTabiColor(.tabiPrimary))
                         }
                     }
                 }
@@ -327,6 +344,13 @@ private extension PlanDetailView {
                 .onMove { source, destination in
                     self.store.send(.spotMovedInEditMode(source: source, destination: destination))
                 }
+                // SwiftUI List는 iOS 16+부터 EditMode(.active)와 무관하게 onMove가 붙은 row를
+                // 꾹 눌러 드래그하는 것만으로 재정렬 제스처가 즉시 활성화된다.
+                // isEditing == false일 때는 state.editingSpots가 빈 배열([])로 비어 있는데,
+                // 이 상태에서 제스처가 동작하면 reducer가 빈 배열에 move(fromOffsets:toOffset:)를
+                // 호출하게 되어 인덱스 범위를 벗어나 크래시한다.
+                // 편집모드로 진입(editingSpots가 selectedDaySpots로 채워짐)했을 때만 제스처를 허용해 근본 원인을 제거한다
+                .moveDisabled(self.store.isEditing == false)
             }
 
             if self.store.isEditing == false {

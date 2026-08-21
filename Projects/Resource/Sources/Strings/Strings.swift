@@ -304,6 +304,8 @@ public extension Strings.Plan {
     static let planDeleteAlertMessage = "削除すると元に戻せません"
     /// 플랜 자체 편집 메뉴 타이틀
     static let planEditMenuTitle = "予定を編集"
+    /// 플랜 자체 삭제 메뉴 타이틀 (상세 화면 "..." 메뉴)
+    static let planDeleteMenuTitle = "日程を削除"
     /// 플랜 편집 화면 타이틀
     static let editPlanScreenTitle = "日程を編集"
     /// 날짜 축소 확인 알림 타이틀

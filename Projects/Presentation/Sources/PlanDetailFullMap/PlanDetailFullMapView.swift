@@ -13,15 +13,15 @@ import DesignSystem
 import Domain
 import Resource
 
-/// PlanDetail 지도 섹션 "전체화면 보기"로 push되는 화면. 배경 전체화면 지도 위에 좌측 세로 스팟 리스트를 겹쳐 보여준다
+/// PlanDetail 지도 섹션 "전체화면 보기"로 push되는 화면. 지도를 화면(하단 safe area 포함) 전체에 채우고,
+/// 하단에 스팟 카드 캐러셀을 가로 스와이프로 겹쳐 보여준다(Apple/Kakao 지도 스타일)
 struct PlanDetailFullMapView: View {
-    private static let listWidthRatio: CGFloat = 0.4
 
     @Bindable private var store: StoreOf<PlanDetailFullMapFeature>
 
     @Environment(\.dismiss) private var dismiss
 
-    /// 좌측 리스트의 스크롤 스냅 정착 위치. 뷰포트 상단에 걸린 스팟을 추적해 지도 포커스와 동기화한다
+    /// 카드 캐러셀의 스크롤 스냅 정착 위치. 뷰포트에 정착한 스팟을 추적해 지도 포커스와 동기화한다
     @State private var scrolledSpotID: UUID?
 
     init(store: StoreOf<PlanDetailFullMapFeature>) {
@@ -29,41 +29,34 @@ struct PlanDetailFullMapView: View {
     }
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .topLeading) {
-                self.mapSection()
-                    .ignoresSafeArea(edges: .top)
-
-                HStack(alignment: .top, spacing: 0) {
-                    self.spotList()
-                        .frame(width: geometry.size.width * Self.listWidthRatio)
-                    Spacer(minLength: 0)
-                }
-                .frame(maxHeight: .infinity, alignment: .topLeading)
+        self.mapSection()
+            .ignoresSafeArea(edges: .all)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                self.spotCarousel()
+                    .padding(.bottom, 12)
             }
-        }
-        .navigationTitle("\(self.store.dayTitle) · \(self.store.dateTitle)")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    self.dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
+            .navigationTitle("\(self.store.dayTitle) · \(self.store.dateTitle)")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        self.dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                    }
+                    .tint(Color.getTabiColor(.tabiPrimary))
                 }
-                .tint(Color.getTabiColor(.tabiPrimary))
             }
-        }
-        .toolbarBackground(.hidden, for: .navigationBar)
-        .navigationBarBackButtonHidden(true)
-        .interactivePopGestureEnabled(true)
-        .onAppear {
-            self.scrolledSpotID = self.store.selectedSpotId
-        }
-        .onChange(of: self.store.selectedSpotId) { _, newValue in
-            guard self.scrolledSpotID != newValue else { return }
-            self.scrolledSpotID = newValue
-        }
+            .toolbarBackground(.hidden, for: .navigationBar)
+            .navigationBarBackButtonHidden(true)
+            .interactivePopGestureEnabled(true)
+            .onAppear {
+                self.scrolledSpotID = self.store.selectedSpotId
+            }
+            .onChange(of: self.store.selectedSpotId) { _, newValue in
+                guard self.scrolledSpotID != newValue else { return }
+                self.scrolledSpotID = newValue
+            }
     }
 }
 
@@ -90,6 +83,10 @@ private extension PlanDetailFullMapView {
         self.store.spots.first { $0.id == self.store.selectedSpotId }
     }
 
+    var currentSpotIndex: Int {
+        self.store.spots.firstIndex { $0.id == self.store.selectedSpotId } ?? 0
+    }
+
     func mapSection() -> some View {
         TabiMapView(
             centerLatitude: self.markers.first?.latitude ?? Coordinate.seoulCityHall.latitude,
@@ -113,29 +110,32 @@ private extension PlanDetailFullMapView {
         .frame(maxHeight: .infinity)
     }
 
-    func spotList() -> some View {
-        ScrollView(.vertical) {
-            LazyVStack(spacing: 12) {
-                ForEach(self.store.spots) { spot in
-                    PlanDetailFullMapSpotRow(
-                        spot: spot,
-                        isSelected: spot.id == self.store.selectedSpotId
-                    ) {
-                        self.store.send(.spotSelected(spot.id))
+    func spotCarousel() -> some View {
+        VStack(spacing: 8) {
+            TabiPageIndicator(count: self.store.spots.count, currentIndex: self.currentSpotIndex)
+
+            ScrollView(.horizontal) {
+                HStack(spacing: 12) {
+                    ForEach(self.store.spots) { spot in
+                        PlanDetailFullMapSpotCard(
+                            spot: spot,
+                            isSelected: spot.id == self.store.selectedSpotId
+                        ) {
+                            self.store.send(.spotSelected(spot.id))
+                        }
+                        .id(spot.id)
                     }
-                    .id(spot.id)
                 }
+                .scrollTargetLayout()
+                .padding(.horizontal, 20)
             }
-            .scrollTargetLayout()
-            .padding(.horizontal, 12)
-            .padding(.vertical, 16)
-        }
-        .scrollIndicators(.hidden)
-        .scrollPosition(id: self.$scrolledSpotID, anchor: .top)
-        .scrollTargetBehavior(.viewAligned)
-        .onChange(of: self.scrolledSpotID) { _, newValue in
-            guard let newValue, newValue != self.store.selectedSpotId else { return }
-            self.store.send(.spotSelected(newValue))
+            .scrollIndicators(.hidden)
+            .scrollPosition(id: self.$scrolledSpotID, anchor: .leading)
+            .scrollTargetBehavior(.viewAligned)
+            .onChange(of: self.scrolledSpotID) { _, newValue in
+                guard let newValue, newValue != self.store.selectedSpotId else { return }
+                self.store.send(.spotSelected(newValue))
+            }
         }
     }
 }
