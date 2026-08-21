@@ -614,6 +614,10 @@ public extension Strings.KoreanPhrase {
     static let emptyTitle = "登録されたフレーズがありません"
     /// 빈 상태 설명 (문구 0건)
     static let emptyDescription = "しばらくしてから再度お試しください"
+    /// 문구 셀 롱프레스 메뉴 - 복사
+    static let copyMenuTitle = "コピー"
+    /// 문구 셀 롱프레스 메뉴 - 크게보기
+    static let viewLargeMenuTitle = "拡大表示"
 }
 
 public extension Strings.Shopping {

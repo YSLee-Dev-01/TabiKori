@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 
 import ComposableArchitecture
 import Core
@@ -33,6 +34,7 @@ public struct KoreanPhraseListFeature: Sendable {
         case onAppear
         case retryButtonTapped
         case phraseRowTapped(KoreanPhrase)
+        case phraseCopyMenuTapped(KoreanPhrase)
         case phrasesResult([KoreanPhrase])
         case phrasesFailed
         case phraseDetail(PresentationAction<KoreanPhraseDetailFeature.Action>)
@@ -69,7 +71,12 @@ public struct KoreanPhraseListFeature: Sendable {
                 return .none
 
             case .phraseRowTapped(let phrase):
+                OrientationLock.shared.setMask(.landscape)
                 state.phraseDetailState = KoreanPhraseDetailFeature.State(phrase: phrase)
+                return .none
+
+            case .phraseCopyMenuTapped(let phrase):
+                UIPasteboard.general.string = phrase.korean
                 return .none
 
             case .phraseDetail:
