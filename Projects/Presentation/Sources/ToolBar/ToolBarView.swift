@@ -187,6 +187,15 @@ private extension ToolBarView {
                                 self.phrasePreviewRow(phrase)
                             }
                             .buttonStyle(TabiPressStyle())
+                            // 기본 탭 동작(가로모드 상세 진입)은 그대로 유지하고, 롱프레스 시에만 복사/크게보기 메뉴를 노출한다
+                            .contextMenu {
+                                Button(Strings.KoreanPhrase.copyMenuTitle, systemImage: "doc.on.doc") {
+                                    self.store.send(.phraseCopyMenuTapped(phrase))
+                                }
+                                Button(Strings.KoreanPhrase.viewLargeMenuTitle, systemImage: "arrow.up.left.and.arrow.down.right") {
+                                    self.store.send(.phrasePreviewRowTapped(phrase))
+                                }
+                            }
                         }
                     }
                 }

@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 
 import ComposableArchitecture
 import Core
@@ -57,6 +58,7 @@ public struct ToolBarFeature: Sendable {
         case koreanPhraseListButtonTapped
         case shoppingListButtonTapped
         case phrasePreviewRowTapped(KoreanPhrase)
+        case phraseCopyMenuTapped(KoreanPhrase)
         case packingItemsResult([ToolBarItem])
         case packingItemsFailed
         case phrasesResult([KoreanPhrase])
@@ -126,6 +128,10 @@ public struct ToolBarFeature: Sendable {
             case .phrasePreviewRowTapped(let phrase):
                 OrientationLock.shared.setMask(.landscape)
                 state.phraseDetailState = KoreanPhraseDetailFeature.State(phrase: phrase)
+                return .none
+
+            case .phraseCopyMenuTapped(let phrase):
+                UIPasteboard.general.string = phrase.korean
                 return .none
 
             case .packingItemsResult(let items):
