@@ -32,6 +32,7 @@ struct MapSearchPanelView<Content: View>: View {
     private let collapsedHeight: CGFloat
     private let halfHeight: CGFloat
     private let fullHeight: CGFloat
+    private let tabBarHeight: CGFloat
     private let onStageChanged: (MapPanelStage) -> Void
     private let onDismiss: () -> Void
     private let onDragStarted: () -> Void
@@ -69,6 +70,7 @@ struct MapSearchPanelView<Content: View>: View {
         collapsedHeight: CGFloat,
         halfHeight: CGFloat,
         fullHeight: CGFloat,
+        tabBarHeight: CGFloat,
         onStageChanged: @escaping (MapPanelStage) -> Void,
         onDismiss: @escaping () -> Void,
         onDragStarted: @escaping () -> Void = {},
@@ -79,6 +81,7 @@ struct MapSearchPanelView<Content: View>: View {
         self.collapsedHeight = collapsedHeight
         self.halfHeight = halfHeight
         self.fullHeight = fullHeight
+        self.tabBarHeight = tabBarHeight
         self.onStageChanged = onStageChanged
         self.onDismiss = onDismiss
         self.onDragStarted = onDragStarted
@@ -125,11 +128,13 @@ struct MapSearchPanelView<Content: View>: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .top)
-            // 하단 여백을 단계별 bottomInsetFraction만큼 세이프에어리어(탭바 높이) 대비 비율로 계산한다.
-            // fraction 0(full)일 때 -inset만큼 음수 패딩을 줘 세이프에어리어를 완전히 뚫고 화면 하단까지 채우고(기존
-            // ignoresSafeArea와 동일 효과), fraction 1(collapsed)일 때는 패딩 0이라 자연스럽게 세이프에어리어
-            // 경계(탭바 상단)에 맞닿는다. 이 하나의 수식으로 3단계 모두를 연속적으로 표현한다
-            .padding(.bottom, -(proxy.safeAreaInsets.bottom * (1 - self.displayedStage.bottomInsetFraction)))
+            // ignoresSafeArea(bottom)로 프레임이 실제 화면 최하단까지 뚫고 내려갈 수 있게 먼저 허용한 뒤,
+            // bottomInsetFraction * tabBarHeight만큼 양수 패딩을 줘 그 지점에서 다시 끌어올린다.
+            // fraction 0(collapsed) → 패딩 0 → 화면 최하단까지 여백 없이 채움
+            // fraction 1(full) → 패딩 tabBarHeight → 탭바 높이만큼 끌어올려 탭바 상단에 정확히 맞닿음
+            // fraction 0.5(half) → 그 절반만큼만 끌어올려 중간 지점에 위치
+            .padding(.bottom, self.tabBarHeight * self.displayedStage.bottomInsetFraction)
+            .ignoresSafeArea(edges: .bottom)
             .offset(y: self.hiddenOffset)
             .animation(.tabiSpring, value: self.displayedStage)
             .onChange(of: self.isDragActive) { _, newValue in

@@ -22,6 +22,7 @@ public struct MapView: View {
     @Namespace private var searchFieldNamespace
     @State private var mapContainerHeight: CGFloat = 0
     @State private var topBarHeight: CGFloat = 0
+    @State private var tabBarHeight: CGFloat = 0
     @State private var keyboardHeight: CGFloat = 0
     @State private var lastTappedSpotID: String?
     @State private var isPanelDragging: Bool = false
@@ -46,6 +47,15 @@ public struct MapView: View {
             proxy.size.height
         } action: { newValue in
             self.mapContainerHeight = newValue
+        }
+        // 탭바가 실제로 차지하는 높이를 UIKit 레벨에서 직접 측정하는 프로브.
+        // SwiftUI의 safeAreaInsets(.bottom)는 이 뷰의 프레임 자체가 TabView 콘텐츠 영역 경계(탭바 상단)에서
+        // 이미 멈춰 있어 항상 0으로 측정되어 신뢰할 수 없었다. responder 체인을 타고 올라가 실제
+        // UITabBarController를 찾아 tabBar.frame.height를 직접 읽으면 safeArea 전파 방식과 무관하게
+        // 정확한 값을 얻을 수 있다
+        .background(alignment: .bottom) {
+            TabBarHeightReader(height: self.$tabBarHeight)
+                .frame(width: 0, height: 0)
         }
         .overlay(alignment: .bottom) {
             self.searchPanelOverlay()
@@ -96,6 +106,51 @@ private extension SubwayStation {
     /// selectStation()으로 geocode된 이후 만들어지는 TouristSpot.id("subway_\(stationCode)")와 동일한 형식을 미리 사용해
     /// 탭 직후 스크롤 위치(lastTappedSpotID)를 일관되게 유지한다
     var mapListID: String { "subway_\(self.stationCode)" }
+}
+
+// MARK: - TabBarHeightReader
+
+/// responder 체인을 타고 올라가 실제 UITabBarController를 찾아 tabBar.frame.height를 바인딩으로 보고하는
+/// 투명 프로브. SwiftUI의 safeAreaInsets는 TabView 콘텐츠 뷰 자체의 프레임이 탭바 상단에서 멈춰 있어
+/// 탭바 높이를 안정적으로 알려주지 못하므로, UIKit 레벨에서 직접 측정한다
+private struct TabBarHeightReader: UIViewRepresentable {
+    @Binding var height: CGFloat
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: .zero)
+        view.backgroundColor = .clear
+        view.isUserInteractionEnabled = false
+        self.measure(from: view)
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        self.measure(from: uiView)
+    }
+
+    private func measure(from view: UIView) {
+        DispatchQueue.main.async {
+            guard let tabBarController = view.findTabBarController() else { return }
+            let measuredHeight = tabBarController.tabBar.frame.height
+            guard measuredHeight != self.height else { return }
+            self.height = measuredHeight
+        }
+    }
+}
+
+private extension UIView {
+    /// UIHostingController가 UITabBarController의 자식으로 붙는 SwiftUI 계층에서는 view 계층이 아닌
+    /// responder 체인(next)을 타고 올라가야 UITabBarController를 안정적으로 찾을 수 있다
+    func findTabBarController() -> UITabBarController? {
+        var responder: UIResponder? = self
+        while let current = responder {
+            if let tabBarController = current as? UITabBarController {
+                return tabBarController
+            }
+            responder = current.next
+        }
+        return nil
+    }
 }
 
 // MARK: - MapSearchLoadingDots
@@ -194,6 +249,7 @@ private extension MapView {
             collapsedHeight: self.baseCollapsedHeight,
             halfHeight: self.baseHalfHeight,
             fullHeight: self.baseFullHeight,
+            tabBarHeight: self.tabBarHeight,
             onStageChanged: { stage in self.store.send(.panelDragEnded(stage)) },
             onDismiss: { self.cancelSearch() },
             onDragStarted: {
