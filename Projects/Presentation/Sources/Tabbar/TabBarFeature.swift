@@ -135,6 +135,10 @@ public struct TabBarFeature {
                 state.path.append(.koreanPhraseList(KoreanPhraseListFeature.State()))
                 return .none
 
+            case .toolbox(.shoppingListButtonTapped):
+                state.path.append(.shoppingList(ShoppingListFeature.State()))
+                return .none
+
             case .toolbox:
                 return .none
 

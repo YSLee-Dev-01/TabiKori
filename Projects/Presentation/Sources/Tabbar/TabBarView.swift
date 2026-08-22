@@ -81,6 +81,8 @@ public struct TabBarView: View {
                 PackingListView(store: store)
             case .koreanPhraseList(let store):
                 KoreanPhraseListView(store: store)
+            case .shoppingList(let store):
+                ShoppingListView(store: store)
             case .shoppingPlanList(let store):
                 ShoppingPlanListView(store: store)
             }

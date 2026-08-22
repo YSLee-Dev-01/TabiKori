@@ -661,4 +661,9 @@ public extension Strings.Shopping {
     static let planListNoteFieldLabel = "メモ"
     /// PlanDetail 연동 쇼핑 리스트 - 편집모드 서브타이틀(메모) 입력 placeholder
     static let planListNoteFieldPlaceholder = "メモを入力"
+
+    /// 플랜 저장 시 덮어쓰기 확인 알림 타이틀
+    static let overwriteAlertTitle = "お買い物リストを上書きしますか？"
+    /// 플랜 저장 시 덮어쓰기 확인 알림 메시지
+    static let overwriteAlertMessage = "この旅程には既にお買い物リストが保存されています。上書きすると、チェック状態を含む既存のリストは削除されます。"
 }
