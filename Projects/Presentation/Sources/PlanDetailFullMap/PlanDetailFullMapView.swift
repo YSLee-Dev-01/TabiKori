@@ -23,6 +23,9 @@ struct PlanDetailFullMapView: View {
 
     /// 카드 캐러셀의 스크롤 스냅 정착 위치. 뷰포트에 정착한 스팟을 추적해 지도 포커스와 동기화한다
     @State private var scrolledSpotID: UUID?
+    /// 캐러셀 ScrollView의 실제 가시 영역 폭. 마지막 카드가 leading anchor까지 스크롤될 수 있도록
+    /// 필요한 trailing 여백을 계산하는 데 사용한다
+    @State private var carouselViewportWidth: CGFloat = 0
 
     init(store: StoreOf<PlanDetailFullMapFeature>) {
         self.store = store
@@ -127,8 +130,27 @@ private extension PlanDetailFullMapView {
                     }
                 }
                 .scrollTargetLayout()
-                .padding(.horizontal, 20)
+                .padding(.leading, 20)
+                // 마지막 카드가 leading anchor까지 스크롤/스냅될 수 있으려면, 마지막 카드 뒤에 최소
+                // "뷰포트 폭 - 카드 폭"만큼의 실제 레이아웃 공간이 있어야 한다. contentMargins(.trailing:)는
+                // scrollTargetLayout의 스냅 대상 목록 계산에 반영되지 않아(뷰포트보다 좁을 때 마지막 카드가
+                // leading anchor에 정착하지 못하고 이전 카드로 되튕겨 탭이 스크롤 제스처에 먹히는 문제가
+                // 그대로 남았음), 실제 레이아웃 크기에 반영되는 padding으로 직접 여백을 준다
+                .padding(.trailing, max(20, self.carouselViewportWidth - PlanDetailFullMapSpotCard.width))
             }
+            .background(
+                // onScrollGeometryChange는 실제 기기/시뮬레이터에서 갱신이 지연되거나 발생하지 않아
+                // carouselViewportWidth가 0으로 남는 문제가 있었다(트레일링 패딩이 폴백값 20에 고정되어
+                // 마지막 카드가 leading anchor까지 스크롤되지 못함). GeometryReader는 이 뷰(ScrollView)의
+                // 실제 레이아웃 폭을 레이아웃 패스와 동기적으로 제공하므로 이 값을 대신 사용한다
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear { self.carouselViewportWidth = proxy.size.width }
+                        .onChange(of: proxy.size.width) { _, newValue in
+                            self.carouselViewportWidth = newValue
+                        }
+                }
+            )
             .scrollIndicators(.hidden)
             .scrollPosition(id: self.$scrolledSpotID, anchor: .leading)
             .scrollTargetBehavior(.viewAligned)
