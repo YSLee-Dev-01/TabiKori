@@ -41,6 +41,15 @@ public struct PlanDetailView: View {
                     HStack(alignment: .center, spacing: 8) {
                         self.dayHeaderRow(plan: self.store.plan)
                             .id(self.store.selectedDayIndex)
+                            // dayHeaderRow(Image + Text 조합)는 87~89행의 spotList 블록과 달리
+                            // compositingGroup()/clipped() 없이 transition(move)만 적용되어 있었다.
+                            // 이 경우 Image·Text 각각의 하위 레이어가 상위 move 트랜지션을 개별적으로
+                            // 뒤늦게 따라가면서, 사라지는 이전 날짜가 즉시 밀려나지 않고 잠깐 남아있는
+                            // 잔상이 발생했다. compositingGroup()으로 하위 트리를 하나의 레이어로 먼저
+                            // 합성하고 clipped()로 그 레이어를 자기 프레임에 잘라낸 뒤 transition을
+                            // 적용해, 합성된 레이어 전체가 한 번에 이동/제거되도록 한다
+                            .compositingGroup()
+                            .clipped()
                             .transition(self.dayTransition)
                             .layoutPriority(1)
                         Spacer(minLength: 4)
@@ -83,10 +92,13 @@ public struct PlanDetailView: View {
                     // compositingGroup()으로 List(UIKit 호스팅 뷰) 포함 하위 트리를 하나의 레이어로
                     // 미리 합성해야 move 트랜지션의 이동/클리핑이 매끈하게 적용된다(합성 없이는
                     // List 내부 레이어가 상위 트랜지션의 변환·클리핑을 온전히 따라가지 못해 잔상이 남는다).
-                    // clipped()는 그 합성된 레이어를 슬라이드 도중 프레임 밖으로 삐져나오지 않게 잘라낸다
-                    .background(TabiColor.tabiBackground)
+                    // clipped()는 그 합성된 레이어를 슬라이드 도중 프레임 밖으로 삐져나오지 않게 잘라낸다.
+                    // 배경색은 상단 일자 헤더 영역과 통일하기 위해 tabiBackground(베이지 톤)가 아닌
+                    // 흰색을 사용한다 — 이 화면의 다른 모든 영역(헤더, 전체보기)이 명시적 배경 없이
+                    // 시스템 기본(흰색)으로 렌더링되므로, 여기도 동일하게 흰색으로 맞춘다
+                    .background(Color.white)
                     .compositingGroup()
-                    .clipped()
+                    .clipped()#imageLiteral(resourceName: "simulator_screenshot_B9F46E3D-D157-4F37-86D9-94A19A581261.png")
                     .transition(self.dayTransition)
                 }
                 .transition(.opacity)
@@ -302,7 +314,12 @@ private extension PlanDetailView {
         }
         self.isMovingForward = newIndex >= currentIndex
         _ = PlanDetailNextFrameTrigger { [store = self.store] in
-            store.send(action)
+            // .animation(value:)만으로는 CADisplayLink 콜백에서 온 상태 변경에 트랜지션 애니메이션이
+            // 안정적으로 적용되지 않아(사라지는 dayHeaderRow가 애니메이션 도중 멈춘 채 남는 잔상 발생),
+            // withAnimation으로 명시적으로 감싸 이 전환에 확실히 애니메이션이 적용되도록 한다
+            withAnimation(.tabiStandard) {
+                _ = store.send(action)
+            }
         }
     }
 
