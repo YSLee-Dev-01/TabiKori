@@ -98,7 +98,7 @@ public struct PlanDetailView: View {
                     // 시스템 기본(흰색)으로 렌더링되므로, 여기도 동일하게 흰색으로 맞춘다
                     .background(Color.white)
                     .compositingGroup()
-                    .clipped()#imageLiteral(resourceName: "simulator_screenshot_B9F46E3D-D157-4F37-86D9-94A19A581261.png")
+                    .clipped()
                     .transition(self.dayTransition)
                 }
                 .transition(.opacity)
