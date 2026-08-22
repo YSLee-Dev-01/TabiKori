@@ -130,7 +130,6 @@ private extension PlanDetailFullMapView {
                     }
                 }
                 .scrollTargetLayout()
-                .padding(.leading, 20)
                 // 마지막 카드가 leading anchor까지 스크롤/스냅될 수 있으려면, 마지막 카드 뒤에 최소
                 // "뷰포트 폭 - 카드 폭"만큼의 실제 레이아웃 공간이 있어야 한다. contentMargins(.trailing:)는
                 // scrollTargetLayout의 스냅 대상 목록 계산에 반영되지 않아(뷰포트보다 좁을 때 마지막 카드가
@@ -154,6 +153,13 @@ private extension PlanDetailFullMapView {
             .scrollIndicators(.hidden)
             .scrollPosition(id: self.$scrolledSpotID, anchor: .leading)
             .scrollTargetBehavior(.viewAligned)
+            // 첫 카드는 HStack 앞에 있던 leading padding 덕에 화면 왼쪽 가장자리에서 20pt 떨어져
+            // 보였지만, anchor: .leading으로 다른 카드에 스냅될 때는 그 카드의 프레임 자체가 뷰포트
+            // 왼쪽 끝(x=0)에 딱 붙어 카드 테두리·그림자가 화면 가장자리에서 잘려 보였다(마지막 카드로
+            // 스크롤했을 때 특히 두드러짐). contentMargins(.leading:)는 이 환경에서 viewAligned의 앵커
+            // 정렬 계산에 반영되지 않아(트레일링에서와 동일하게 확인됨) 효과가 없었고, safeAreaPadding은
+            // 스크롤 콘텐츠의 세이프에어리어로 취급되어 앵커 정렬에 반영되므로 이걸 대신 사용한다
+            .safeAreaPadding(.leading, 20)
             .onChange(of: self.scrolledSpotID) { _, newValue in
                 guard let newValue, newValue != self.store.selectedSpotId else { return }
                 self.store.send(.spotSelected(newValue))
