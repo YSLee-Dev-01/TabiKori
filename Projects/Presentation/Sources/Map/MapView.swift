@@ -243,6 +243,9 @@ private extension MapView {
                         self.store.send(.recentSearchDeleteTapped(history))
                     }
                 )
+                // full 단계에서 시트가 SafeArea 하단까지 붙어 탭바 뒤로 이어지므로,
+                // 리스트 마지막 항목이 탭바에 가려지지 않도록 탭바 높이만큼 하단 여백을 둔다
+                .contentMargins(.bottom, self.tabBarHeight, for: .scrollContent)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -327,6 +330,9 @@ private extension MapView {
                     self.searchResultSkeletonRow()
                 }
             }
+            // full 단계에서 시트가 SafeArea 하단까지 붙어 탭바 뒤로 이어지므로,
+            // 리스트 마지막 항목이 탭바에 가려지지 않도록 탭바 높이만큼 하단 여백을 둔다
+            .contentMargins(.bottom, self.tabBarHeight, for: .scrollContent)
         }
         .scrollDisabled(true)
         .allowsHitTesting(false)
@@ -398,6 +404,9 @@ private extension MapView {
                     }
                 }
             }
+            // full 단계에서 시트가 SafeArea 하단까지 붙어 탭바 뒤로 이어지므로,
+            // 리스트 마지막 항목이 탭바에 가려지지 않도록 탭바 높이만큼 하단 여백을 둔다
+            .contentMargins(.bottom, self.tabBarHeight, for: .scrollContent)
             .onAppear {
                 guard let id = self.lastTappedSpotID else { return }
                 // sheet가 재생성되는 시점에 동기 scrollTo를 호출하면 "state changes lost" 레이스 컨디션이 발생해 한 틱 지연

@@ -55,8 +55,19 @@ struct MapSearchPanelView<Content: View>: View {
         min(self.fullHeight, max(0, self.baseHeight - self.dragOffset))
     }
 
+    /// full 단계에서만 글래스 박스 자체를 탭바 높이만큼 더 키워 SafeArea 하단까지 닿게 한다.
+    /// half/collapsed는 콘텐츠가 짧아 탭바 근처에 닿지 않으므로 기존 크기를 그대로 유지한다
+    private var extraBottomBleed: CGFloat {
+        self.displayedStage == .full ? self.tabBarHeight : 0
+    }
+
+    private var boxHeight: CGFloat {
+        self.fullHeight + self.extraBottomBleed
+    }
+
+    /// 박스가 늘어난 만큼(extraBottomBleed) 더 아래로 내려야 박스 상단 위치가 기존과 동일하게 유지된다
     private var hiddenOffset: CGFloat {
-        max(0, self.fullHeight - self.currentHeight)
+        max(0, self.fullHeight - self.currentHeight) + self.extraBottomBleed
     }
 
     private var dragHandleTotalHeight: CGFloat {
@@ -109,31 +120,15 @@ struct MapSearchPanelView<Content: View>: View {
             // GeometryReader 컨테이너 폭 기준으로 좌우 중앙 정렬한다. UIScreen을 직접 참조하지 않고
             // 항상 실제 부모 컨테이너 폭(proxy.size.width)에서 비율을 계산해 Stage Manager/멀티윈도우에서도 정확하다
             .frame(width: proxy.size.width * self.displayedStage.widthFraction, alignment: .top)
-            // 바깥 컨테이너는 fullHeight로 고정하고 offset(hiddenOffset)으로만 reveal한다.
-            // 컨테이너 높이 자체를 currentHeight로 재계산하면 등장 시 부모의
-            // .transition(.move(edge: .bottom))이 계산하는 삽입 지오메트리와 경합해
-            // 슬라이드업 애니메이션이 보이지 않게 된다
-            .frame(height: self.fullHeight, alignment: .top)
+            // 바깥 컨테이너는 boxHeight(full일 때만 탭바 높이만큼 더 큼)로 고정하고
+            // offset(hiddenOffset)으로만 reveal한다. 컨테이너 높이 자체를 currentHeight로
+            // 재계산하면 등장 시 부모의 .transition(.move(edge: .bottom))이 계산하는 삽입
+            // 지오메트리와 경합해 슬라이드업 애니메이션이 보이지 않게 된다
+            .frame(height: self.boxHeight, alignment: .top)
 
-            // collapsed/half 단계는 리퀴드 글래스, full은 불투명 배경 유지
-            Group {
-                if self.displayedStage == .full {
-                    panelContent
-                        .background {
-                            panelShape.fill(TabiColor.tabiSurface)
-                        }
-                } else {
-                    panelContent
-                        .glassEffect(.regular, in: panelShape)
-                }
-            }
+            panelContent
+                .glassEffect(.regular, in: panelShape)
             .frame(maxWidth: .infinity, alignment: .top)
-            // ignoresSafeArea(bottom)로 프레임이 실제 화면 최하단까지 뚫고 내려갈 수 있게 먼저 허용한 뒤,
-            // bottomInsetFraction * tabBarHeight만큼 양수 패딩을 줘 그 지점에서 다시 끌어올린다.
-            // fraction 0(collapsed) → 패딩 0 → 화면 최하단까지 여백 없이 채움
-            // fraction 1(full) → 패딩 tabBarHeight → 탭바 높이만큼 끌어올려 탭바 상단에 정확히 맞닿음
-            // fraction 0.5(half) → 그 절반만큼만 끌어올려 중간 지점에 위치
-            .padding(.bottom, self.tabBarHeight * self.displayedStage.bottomInsetFraction)
             .ignoresSafeArea(edges: .bottom)
             .offset(y: self.hiddenOffset)
             .animation(.tabiSpring, value: self.displayedStage)
