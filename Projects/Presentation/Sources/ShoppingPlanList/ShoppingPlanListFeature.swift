@@ -84,8 +84,7 @@ public struct ShoppingPlanListFeature: Sendable {
                 )
 
             case .addButtonTapped:
-                state.isEditing = false
-                state.editSnapshot = nil
+                guard state.isEditing == false else { return .none }
                 if state.isAdding {
                     state.isAdding = false
                     state.newItemTitle = ""
@@ -211,7 +210,7 @@ private extension ShoppingPlanListFeature {
             do {
                 try await shoppingPlanItemUseCase.replace(planId: planId, items: items)
             } catch {
-                AppLogger.core.log(.error, "쇼핑 리스트 항목 추가 저장 실패 (planId: \(planId)): \(error.localizedDescription)")
+                AppLogger.view.log(.error, "쇼핑 리스트 항목 추가 저장 실패 (planId: \(planId)): \(error.localizedDescription)")
                 await send(.addItemFailed(id: addedItemId))
             }
         }
@@ -226,7 +225,7 @@ private extension ShoppingPlanListFeature {
                 try await shoppingPlanItemUseCase.replace(planId: planId, items: reordered)
                 await send(.editSaveResult(reordered))
             } catch {
-                AppLogger.core.log(.error, "쇼핑 리스트 편집 저장 실패 (planId: \(planId)): \(error.localizedDescription)")
+                AppLogger.view.log(.error, "쇼핑 리스트 편집 저장 실패 (planId: \(planId)): \(error.localizedDescription)")
                 await send(.editSaveResult(nil))
             }
         }

@@ -50,7 +50,7 @@ public struct ShoppingPlanListView: View {
                 .accessibilityLabel(
                     self.store.isAdding ? Strings.Shopping.planListCloseAddButtonAccessibilityLabel : Strings.Shopping.planListAddButtonAccessibilityLabel
                 )
-                .disabled(self.store.isLoading)
+                .disabled(self.store.isLoading || self.store.isEditing)
             }
             if self.store.isAdding == false {
                 ToolbarItem(placement: .topBarTrailing) {
