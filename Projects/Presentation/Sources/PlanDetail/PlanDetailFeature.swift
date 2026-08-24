@@ -37,6 +37,7 @@ public struct PlanDetailFeature: Sendable {
         var isFullOverview: Bool = false
         var visibleDayIndex: Int = 0
         var shareFileURL: URL?
+        var isShareSheetPresented: Bool = false
         fileprivate var hasStartedLoading: Bool = false
         @Presents var addSpotState: PlanDetailAddSpotFeature.State?
         @Presents var editPlanState: PlanDetailEditFeature.State?
@@ -89,6 +90,8 @@ public struct PlanDetailFeature: Sendable {
         case shoppingListButtonTapped
         case fullMapButtonTapped
         case planEditMenuButtonTapped
+        case exportButtonTapped
+        case shareSheetPresentedChanged(Bool)
         case deleteMenuButtonTapped
         case editButtonTapped
         case editCancelButtonTapped
@@ -110,6 +113,7 @@ public struct PlanDetailFeature: Sendable {
 
         public enum Alert: Equatable {
             case deleteConfirmed
+            case exportConfirmed
         }
     }
 
@@ -225,6 +229,26 @@ public struct PlanDetailFeature: Sendable {
 
             case .planEditMenuButtonTapped:
                 state.editPlanState = PlanDetailEditFeature.State(plan: state.plan)
+                return .none
+
+            case .exportButtonTapped:
+                guard state.shareFileURL != nil else { return .none }
+                state.alert = AlertState {
+                    TextState(Strings.Plan.exportGuideAlertTitle)
+                } actions: {
+                    ButtonState(action: .exportConfirmed) {
+                        TextState(Strings.Plan.alertConfirm)
+                    }
+                    ButtonState(role: .cancel) {
+                        TextState(Strings.Plan.alertCancel)
+                    }
+                } message: {
+                    TextState(Strings.Plan.exportGuideAlertMessage)
+                }
+                return .none
+
+            case .shareSheetPresentedChanged(let isPresented):
+                state.isShareSheetPresented = isPresented
                 return .none
 
             case .deleteMenuButtonTapped:
@@ -350,6 +374,10 @@ public struct PlanDetailFeature: Sendable {
 
             case .alert(.presented(.deleteConfirmed)):
                 return self.removePlanEffect(planId: state.plan.id)
+
+            case .alert(.presented(.exportConfirmed)):
+                state.isShareSheetPresented = true
+                return .none
 
             case .alert:
                 return .none

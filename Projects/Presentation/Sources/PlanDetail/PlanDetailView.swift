@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 import ComposableArchitecture
 import DesignSystem
@@ -24,6 +25,11 @@ public struct PlanDetailView: View {
     @State private var scrolledDayIndex: Int?
     @State private var isFullOverviewScrollAtBottom: Bool = false
     @State private var isDayHeaderHidden: Bool = false
+    // changeSelectedDay가 연속으로(예: 일자 칩 빠르게 연타) 호출되면 이전 트리거가 아직 다음 프레임을
+    // 기다리는 중일 수 있다. 이전 트리거를 취소하지 않으면 두 트리거가 같은 프레임에 겹쳐 발화해
+    // isMovingForward가 이미 다음 탭의 값으로 덮어써진 상태로 이전 탭의 액션을 보내버려, 잘못된
+    // 방향으로 전환되거나 전환 중이던 뷰가 중간에 멈춘 것처럼 보이는 잔상이 생긴다
+    @State private var pendingDayChangeTrigger: PlanDetailNextFrameTrigger?
 
     public init(store: StoreOf<PlanDetailFeature>) {
         self.store = store
@@ -100,6 +106,10 @@ public struct PlanDetailView: View {
                     .compositingGroup()
                     .clipped()
                     .transition(self.dayTransition)
+                    // spotList(List)의 흰 배경이 홈 인디케이터 세이프 에어리어 경계에서 끊겨 보이지
+                    // 않도록 하단으로 확장한다. 실제 콘텐츠(마지막 스팟/추가 버튼)가 화면 하단에
+                    // 바로 붙지 않도록 하는 여백은 spotList() 내부 contentMargins로 별도 확보한다
+                    .ignoresSafeArea(edges: .bottom)
                 }
                 .transition(.opacity)
             }
@@ -146,9 +156,9 @@ public struct PlanDetailView: View {
                         Button(Strings.Plan.planEditMenuTitle) {
                             self.store.send(.planEditMenuButtonTapped)
                         }
-                        if let shareFileURL = self.store.shareFileURL {
-                            ShareLink(item: shareFileURL) {
-                                Text(Strings.Plan.exportMenuTitle)
+                        if self.store.shareFileURL != nil {
+                            Button(Strings.Plan.exportMenuTitle) {
+                                self.store.send(.exportButtonTapped)
                             }
                         }
                         Button(Strings.Plan.planDeleteMenuTitle, role: .destructive) {
@@ -173,6 +183,14 @@ public struct PlanDetailView: View {
             PlanDetailTimeEditView(store: store)
         }
         .alert($store.scope(state: \.alert, action: \.alert))
+        // ShareLink는 사용자가 직접 탭해야만 공유 시트를 열 수 있어 "안내 Alert 확인 후 자동으로
+        // 공유 시트 표시" 흐름을 구현할 수 없다. isShareSheetPresented 플래그로 공유 시트를 직접
+        // 프로그래매틱하게 띄우기 위해 UIActivityViewController를 최소 래핑해 사용한다
+        .sheet(isPresented: self.isShareSheetPresentedBinding) {
+            if let shareFileURL = self.store.shareFileURL {
+                PlanDetailActivityView(activityItems: [shareFileURL])
+            }
+        }
         .onAppear {
             self.store.send(.onAppear)
         }
@@ -214,6 +232,7 @@ private struct DayHeaderOffsetPreferenceKey: PreferenceKey {
 private struct SpotListScrollGeometry: Equatable {
     let offsetY: CGFloat
     let canScroll: Bool
+    let isAtBottom: Bool
 }
 
 // MARK: - View
@@ -239,6 +258,10 @@ private extension PlanDetailView {
                         .id(offset)
                     }
                 }
+                // TabiChip 미선택 상태의 overlay stroke는 캡슐 경계에 걸쳐 그려져 상하로 0.5pt씩
+                // 넘치는데, 세로 여백이 없으면 가로 ScrollView가 콘텐츠 높이에 맞춰 프레임을 잡아
+                // 그 여백만큼 border가 잘려 보인다. stroke가 온전히 들어갈 여백을 확보한다
+                .padding(.vertical, 1)
                 .padding(.horizontal, 20)
             }
             .scrollIndicators(.hidden)
@@ -313,7 +336,11 @@ private extension PlanDetailView {
             return
         }
         self.isMovingForward = newIndex >= currentIndex
-        _ = PlanDetailNextFrameTrigger { [store = self.store] in
+        // 이전 트리거가 아직 다음 프레임을 기다리는 중이면 먼저 취소한다. 취소하지 않으면 연타 시
+        // 두 트리거가 같은 프레임에 겹쳐 발화해, 이미 다음 탭의 값으로 덮어써진 isMovingForward를
+        // 이전 탭의 액션이 사용하게 되어 전환 방향이 꼬이거나 잔상이 남는다
+        self.pendingDayChangeTrigger?.cancel()
+        self.pendingDayChangeTrigger = PlanDetailNextFrameTrigger { [store = self.store] in
             // .animation(value:)만으로는 CADisplayLink 콜백에서 온 상태 변경에 트랜지션 애니메이션이
             // 안정적으로 적용되지 않아(사라지는 dayHeaderRow가 애니메이션 도중 멈춘 채 남는 잔상 발생),
             // withAnimation으로 명시적으로 감싸 이 전환에 확실히 애니메이션이 적용되도록 한다
@@ -338,6 +365,15 @@ private extension PlanDetailView {
         .asymmetric(
             insertion: .move(edge: self.isMovingForward ? .trailing : .leading),
             removal: .move(edge: self.isMovingForward ? .leading : .trailing)
+        )
+    }
+
+    /// PlanDetailFeature.Action은 BindableAction이 아니라 self.$store.isShareSheetPresented를 쓸 수 없어,
+    /// get/set을 각각 상태 읽기/액션 전송으로 연결하는 수동 Binding을 사용한다
+    var isShareSheetPresentedBinding: Binding<Bool> {
+        Binding(
+            get: { self.store.isShareSheetPresented },
+            set: { self.store.send(.shareSheetPresentedChanged($0)) }
         )
     }
 
@@ -451,11 +487,15 @@ private extension PlanDetailView {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        // 하단 세이프 에어리어까지 배경이 이어지되(위 ignoresSafeArea), 마지막 스팟/추가 버튼이
+        // 화면 하단(홈 인디케이터)에 바로 붙지 않도록 여백을 확보한다
+        .contentMargins(.bottom, 20, for: .scrollContent)
         .environment(\.editMode, .constant(self.store.isEditing ? .active : .inactive))
         .onScrollGeometryChange(for: SpotListScrollGeometry.self) { geometry in
             SpotListScrollGeometry(
                 offsetY: geometry.contentOffset.y,
-                canScroll: self.isScrollable(geometry)
+                canScroll: self.isScrollable(geometry),
+                isAtBottom: self.isScrollAtBottom(geometry)
             )
         } action: { oldGeometry, newGeometry in
             self.handleSpotListScrollChanged(oldGeometry: oldGeometry, newGeometry: newGeometry)
@@ -586,6 +626,9 @@ private extension PlanDetailView {
         }
         let delta = newGeometry.offsetY - oldGeometry.offsetY
         guard abs(delta) > Self.dayHeaderScrollThreshold else { return }
+        // 바닥에 닿은 상태에서 더 아래로 당기는(오버스크롤) 제스처는 delta가 양수로 잡혀 헤더를
+        // 숨기려 들지만, 더 보여줄 콘텐츠가 없으므로 이 경우엔 숨김을 적용하지 않고 현재 상태를 유지한다
+        guard newGeometry.isAtBottom == false || delta < 0 else { return }
         self.isDayHeaderHidden = delta > 0
     }
 
@@ -601,6 +644,20 @@ private extension PlanDetailView {
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
     }
+}
+
+// MARK: - PlanDetailActivityView
+
+/// "사용 방법 안내 Alert 확인 후 공유 시트 표시" 흐름을 위한 최소 UIActivityViewController 래핑.
+/// ShareLink는 사용자가 직접 탭해야만 시트를 열 수 있어 프로그래매틱 트리거가 불가능해 이 화면 전용으로 둔다
+private struct PlanDetailActivityView: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: self.activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 #Preview {
