@@ -28,6 +28,9 @@ public final class ExchangeRateUseCase: ExchangeRateUseCaseProtocol {
         guard let jpy = rates.first(where: { $0.currencyCode == ExchangeRate.jpyCurrencyCode }) else {
             throw TabiError.dataNotFound
         }
+        guard jpy.baseRate > 0 else {
+            throw TabiError.dataNotFound
+        }
 
         return KRWToJPYRate(rate: Double(jpy.unitScale) / jpy.baseRate, updatedAt: jpy.updatedAt)
     }
