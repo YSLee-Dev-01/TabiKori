@@ -47,6 +47,7 @@ struct AddToItineraryView: View {
                         startTime: self.$store.startTime,
                         endTime: self.$store.endTime,
                         durationMinutes: self.store.durationMinutes,
+                        isTimeUnset: self.$store.isTimeUnset,
                         isSaveEnabled: self.store.isSaveEnabled,
                         isSaving: self.store.isSaving,
                         onSaveTapped: { self.store.send(.saveButtonTapped) }

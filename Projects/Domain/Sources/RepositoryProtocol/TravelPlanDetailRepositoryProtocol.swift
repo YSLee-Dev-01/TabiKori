@@ -14,5 +14,5 @@ public protocol TravelPlanDetailRepositoryProtocol: Sendable {
     func removeSpot(planId: UUID, spotId: UUID) async throws
     func removeSpots(planId: UUID, fromDayIndex: Int) async throws
     func saveEditedSpots(planId: UUID, dayIndex: Int, orderedSpotIds: [UUID]) async throws
-    func updateSpotTime(planId: UUID, spotId: UUID, startTime: Date, durationMinutes: Int) async throws
+    func updateSpotTime(planId: UUID, spotId: UUID, startTime: Date?, durationMinutes: Int?) async throws
 }

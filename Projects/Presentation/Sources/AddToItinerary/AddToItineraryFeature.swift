@@ -36,6 +36,7 @@ public struct AddToItineraryFeature: Sendable {
         var isFetchingDetail: Bool = false
         var startTime: Date = Date()
         var endTime: Date = Date()
+        var isTimeUnset: Bool = false
         fileprivate var existingDetail: TravelPlanDetail? = nil
 
         public init(touristSpot: TouristSpot, address: String) {
@@ -54,7 +55,7 @@ public struct AddToItineraryFeature: Sendable {
         }
 
         var isSaveEnabled: Bool {
-            self.endTime > self.startTime
+            self.isTimeUnset || self.endTime > self.startTime
         }
     }
 
@@ -133,8 +134,8 @@ public struct AddToItineraryFeature: Sendable {
                     category: state.touristSpot.contentType,
                     title: state.touristSpot.japaneseTitle,
                     subtitle: state.address,
-                    startTime: state.startTime,
-                    durationMinutes: state.durationMinutes,
+                    startTime: state.isTimeUnset ? nil : state.startTime,
+                    durationMinutes: state.isTimeUnset ? nil : state.durationMinutes,
                     contentId: state.touristSpot.id,
                     coordinate: state.touristSpot.coordinate,
                     thumbnailURLString: state.touristSpot.thumbnailURLString,

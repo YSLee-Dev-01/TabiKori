@@ -75,7 +75,7 @@ public final class TestTravelPlanDetailUseCase: TravelPlanDetailUseCaseProtocol,
         )
     }
 
-    public func updateSpotTime(planId: UUID, spotId: UUID, startTime: Date, durationMinutes: Int) async throws {
+    public func updateSpotTime(planId: UUID, spotId: UUID, startTime: Date?, durationMinutes: Int?) async throws {
         guard let detailIndex = self.details.firstIndex(where: { $0.planId == planId }) else { return }
         let detail = self.details[detailIndex]
         guard let spotIndex = detail.spots.firstIndex(where: { $0.id == spotId }) else { return }

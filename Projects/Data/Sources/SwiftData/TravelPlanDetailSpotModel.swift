@@ -18,8 +18,8 @@ final class TravelPlanDetailSpotModel {
     var category: String
     var title: String
     var subtitle: String?
-    var startTime: Date
-    var durationMinutes: Int
+    var startTime: Date?
+    var durationMinutes: Int?
     var contentId: String = ""
     var latitude: Double = 0.0
     var longitude: Double = 0.0
@@ -36,8 +36,8 @@ final class TravelPlanDetailSpotModel {
         category: String,
         title: String,
         subtitle: String?,
-        startTime: Date,
-        durationMinutes: Int,
+        startTime: Date?,
+        durationMinutes: Int?,
         contentId: String,
         latitude: Double,
         longitude: Double,

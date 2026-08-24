@@ -18,6 +18,7 @@ public struct TabiItineraryTimeConfigView: View {
     @Binding var startTime: Date
     @Binding var endTime: Date
     let durationMinutes: Int
+    @Binding var isTimeUnset: Bool
     let isSaveEnabled: Bool
     let isSaving: Bool
     let onSaveTapped: () -> Void
@@ -29,6 +30,7 @@ public struct TabiItineraryTimeConfigView: View {
         startTime: Binding<Date>,
         endTime: Binding<Date>,
         durationMinutes: Int,
+        isTimeUnset: Binding<Bool>,
         isSaveEnabled: Bool,
         isSaving: Bool,
         onSaveTapped: @escaping () -> Void
@@ -39,6 +41,7 @@ public struct TabiItineraryTimeConfigView: View {
         self._startTime = startTime
         self._endTime = endTime
         self.durationMinutes = durationMinutes
+        self._isTimeUnset = isTimeUnset
         self.isSaveEnabled = isSaveEnabled
         self.isSaving = isSaving
         self.onSaveTapped = onSaveTapped
@@ -51,7 +54,8 @@ public struct TabiItineraryTimeConfigView: View {
                 TabiItineraryTimeForm(
                     startTime: self.$startTime,
                     endTime: self.$endTime,
-                    durationMinutes: self.durationMinutes
+                    durationMinutes: self.durationMinutes,
+                    isTimeUnset: self.$isTimeUnset
                 )
             }
             .padding(20)

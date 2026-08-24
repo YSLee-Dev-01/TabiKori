@@ -15,11 +15,12 @@ import Resource
 
 extension TravelPlanDetailSpot {
     var startTimeTitle: String {
-        self.startTime.planSpotTimeTitle
+        self.startTime?.planSpotTimeTitle ?? "-"
     }
 
     var durationTitle: String {
-        Strings.Plan.spotDurationTitle(self.durationMinutes)
+        guard let durationMinutes else { return "-" }
+        return Strings.Plan.spotDurationTitle(durationMinutes)
     }
 
     func toMapMarker(index: Int) -> TabiMapMarker? {

@@ -128,8 +128,8 @@ private struct SharePayload: Codable {
         let category: String
         let title: String
         let subtitle: String?
-        let startTime: Date
-        let durationMinutes: Int
+        let startTime: Date?
+        let durationMinutes: Int?
         let contentId: String
         let latitude: Double
         let longitude: Double
@@ -144,8 +144,8 @@ private struct SharePayload: Codable {
             category: String,
             title: String,
             subtitle: String?,
-            startTime: Date,
-            durationMinutes: Int,
+            startTime: Date?,
+            durationMinutes: Int?,
             contentId: String,
             latitude: Double,
             longitude: Double,
@@ -178,8 +178,8 @@ private struct SharePayload: Codable {
             self.category = try container.decode(String.self, forKey: .category)
             self.title = try container.decode(String.self, forKey: .title)
             self.subtitle = try container.decodeIfPresent(String.self, forKey: .subtitle)
-            self.startTime = try container.decode(Date.self, forKey: .startTime)
-            self.durationMinutes = try container.decode(Int.self, forKey: .durationMinutes)
+            self.startTime = try container.decodeIfPresent(Date.self, forKey: .startTime)
+            self.durationMinutes = try container.decodeIfPresent(Int.self, forKey: .durationMinutes)
             self.contentId = try container.decode(String.self, forKey: .contentId)
             self.latitude = try container.decode(Double.self, forKey: .latitude)
             self.longitude = try container.decode(Double.self, forKey: .longitude)

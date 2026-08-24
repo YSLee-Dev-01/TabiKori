@@ -28,6 +28,7 @@ public struct PlanDetailTimeEditFeature: Sendable {
         let spotId: UUID
         var startTime: Date
         var endTime: Date
+        var isTimeUnset: Bool
         var isSaving: Bool = false
 
         public init(planId: UUID, planTitle: String, dayTitle: String, dateTitle: String, spot: TravelPlanDetailSpot) {
@@ -36,8 +37,15 @@ public struct PlanDetailTimeEditFeature: Sendable {
             self.dayTitle = dayTitle
             self.dateTitle = dateTitle
             self.spotId = spot.id
-            self.startTime = spot.startTime
-            self.endTime = spot.startTime.addingTimeInterval(TimeInterval(spot.durationMinutes * 60))
+            if let startTime = spot.startTime {
+                self.startTime = startTime
+                self.endTime = startTime.addingTimeInterval(TimeInterval((spot.durationMinutes ?? 0) * 60))
+                self.isTimeUnset = false
+            } else {
+                self.startTime = Date()
+                self.endTime = Date().addingTimeInterval(60 * 60)
+                self.isTimeUnset = true
+            }
         }
 
         var durationMinutes: Int {
@@ -46,7 +54,7 @@ public struct PlanDetailTimeEditFeature: Sendable {
         }
 
         var isSaveEnabled: Bool {
-            self.endTime > self.startTime
+            self.isTimeUnset || self.endTime > self.startTime
         }
     }
 
@@ -76,8 +84,8 @@ public struct PlanDetailTimeEditFeature: Sendable {
                 return self.saveEffect(
                     planId: state.planId,
                     spotId: state.spotId,
-                    startTime: state.startTime,
-                    durationMinutes: state.durationMinutes
+                    startTime: state.isTimeUnset ? nil : state.startTime,
+                    durationMinutes: state.isTimeUnset ? nil : state.durationMinutes
                 )
 
             case .saveFailed:
@@ -94,7 +102,7 @@ public struct PlanDetailTimeEditFeature: Sendable {
 // MARK: - Method
 
 private extension PlanDetailTimeEditFeature {
-    func saveEffect(planId: UUID, spotId: UUID, startTime: Date, durationMinutes: Int) -> Effect<Action> {
+    func saveEffect(planId: UUID, spotId: UUID, startTime: Date?, durationMinutes: Int?) -> Effect<Action> {
         .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase] send in
             do {
                 try await travelPlanDetailUseCase.updateSpotTime(

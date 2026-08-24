@@ -42,6 +42,7 @@ public struct PlanDetailAddSpotFeature: Sendable {
         var selectedSpot: TouristSpot? = nil
         var startTime: Date = Date()
         var endTime: Date = Date()
+        var isTimeUnset: Bool = false
         var isSaving: Bool = false
         // 주소로 추가 탭
         var addressTitle: String = ""
@@ -77,7 +78,7 @@ public struct PlanDetailAddSpotFeature: Sendable {
         }
 
         var isSaveEnabled: Bool {
-            self.endTime > self.startTime
+            self.isTimeUnset || self.endTime > self.startTime
         }
 
         var trimmedAddressTitle: String {
@@ -229,8 +230,8 @@ public struct PlanDetailAddSpotFeature: Sendable {
                     category: spot.contentType,
                     title: spot.japaneseTitle,
                     subtitle: spot.koreanTitle,
-                    startTime: state.startTime,
-                    durationMinutes: state.durationMinutes,
+                    startTime: state.isTimeUnset ? nil : state.startTime,
+                    durationMinutes: state.isTimeUnset ? nil : state.durationMinutes,
                     contentId: spot.id,
                     coordinate: spot.coordinate,
                     thumbnailURLString: spot.thumbnailURLString,

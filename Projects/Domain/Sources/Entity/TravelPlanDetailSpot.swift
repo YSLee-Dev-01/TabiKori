@@ -15,8 +15,8 @@ public struct TravelPlanDetailSpot: Equatable, Sendable, Identifiable {
     public let category: CategoryType
     public let title: String
     public let subtitle: String?
-    public let startTime: Date
-    public let durationMinutes: Int
+    public let startTime: Date?
+    public let durationMinutes: Int?
     public let contentId: String
     public let coordinate: Coordinate
     public let thumbnailURLString: String?
@@ -31,8 +31,8 @@ public struct TravelPlanDetailSpot: Equatable, Sendable, Identifiable {
         category: CategoryType,
         title: String,
         subtitle: String?,
-        startTime: Date,
-        durationMinutes: Int,
+        startTime: Date?,
+        durationMinutes: Int?,
         contentId: String,
         coordinate: Coordinate,
         thumbnailURLString: String?,

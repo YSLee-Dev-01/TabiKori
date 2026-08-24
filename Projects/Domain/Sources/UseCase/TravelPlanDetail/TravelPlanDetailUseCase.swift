@@ -42,7 +42,7 @@ public final class TravelPlanDetailUseCase: TravelPlanDetailUseCaseProtocol {
         try await self.repository.saveEditedSpots(planId: planId, dayIndex: dayIndex, orderedSpotIds: orderedSpotIds)
     }
 
-    public func updateSpotTime(planId: UUID, spotId: UUID, startTime: Date, durationMinutes: Int) async throws {
+    public func updateSpotTime(planId: UUID, spotId: UUID, startTime: Date?, durationMinutes: Int?) async throws {
         try await self.repository.updateSpotTime(planId: planId, spotId: spotId, startTime: startTime, durationMinutes: durationMinutes)
     }
 }

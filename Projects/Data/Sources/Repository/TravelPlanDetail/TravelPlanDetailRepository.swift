@@ -120,7 +120,7 @@ extension TravelPlanDetailRepository: TravelPlanDetailRepositoryProtocol {
         }
     }
 
-    public func updateSpotTime(planId: UUID, spotId: UUID, startTime: Date, durationMinutes: Int) async throws {
+    public func updateSpotTime(planId: UUID, spotId: UUID, startTime: Date?, durationMinutes: Int?) async throws {
         do {
             let context = ModelContext(self.modelContainer)
             var descriptor = FetchDescriptor<TravelPlanDetailSpotModel>(
