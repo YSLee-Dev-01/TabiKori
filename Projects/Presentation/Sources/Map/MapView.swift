@@ -306,9 +306,12 @@ private extension MapView {
                 title: Strings.Map.searchResultEmptyTitle,
                 description: Strings.Map.searchResultEmptyDescription
             )
-            self.languageGuideBadge()
-                .padding(.horizontal, 20)
-                .padding(.bottom, 8)
+            // 가장 작은 collapsed 단계에서는 문구가 들어갈 공간이 부족해 노출하지 않는다
+            if self.store.panelStage != .collapsed {
+                self.languageGuideBadge()
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 8)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

@@ -115,9 +115,9 @@ struct MapSearchPanelView<Content: View>: View {
             // 슬라이드업 애니메이션이 보이지 않게 된다
             .frame(height: self.fullHeight, alignment: .top)
 
-            // full/half 단계는 리퀴드 글래스, collapsed는 기존 불투명 배경 유지
+            // collapsed/half 단계는 리퀴드 글래스, full은 불투명 배경 유지
             Group {
-                if self.displayedStage == .collapsed {
+                if self.displayedStage == .full {
                     panelContent
                         .background {
                             panelShape.fill(TabiColor.tabiSurface)
@@ -146,7 +146,12 @@ struct MapSearchPanelView<Content: View>: View {
             }
             .onChange(of: self.stage) { _, newValue in
                 guard self.isDragActive == false, newValue != self.displayedStage else { return }
-                self.displayedStage = newValue
+                // 패널이 막 삽입된 직후(첫 검색 등)처럼 삽입 트랜지션이 아직 정리되지 않은 시점에는
+                // 위 .animation(value:) 모디파이어가 이 변경을 놓쳐 애니메이션 없이 스냅되는 경우가 있어,
+                // 명시적 withAnimation으로 감싸 항상 애니메이션이 적용되도록 보장한다
+                withAnimation(.tabiSpring) {
+                    self.displayedStage = newValue
+                }
             }
         }
         .frame(height: self.fullHeight, alignment: .top)
