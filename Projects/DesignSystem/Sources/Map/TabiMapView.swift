@@ -20,6 +20,7 @@ public struct TabiMapView {
     private let showsLocationButton: Bool
     private let showsZoomControls: Bool
     private let followsUserLocation: Bool
+    private let bottomContentInset: CGFloat
     private let onMapTapped: (Double, Double) -> Void
     private let onMarkerTapped: (String) -> Void
     private let onMapDragged: () -> Void
@@ -39,6 +40,7 @@ public struct TabiMapView {
         showsLocationButton: Bool = false,
         showsZoomControls: Bool = true,
         followsUserLocation: Bool = true,
+        bottomContentInset: CGFloat = 0,
         boundsFitToken: Int = 0,
         focusLatitude: Double? = nil,
         focusLongitude: Double? = nil,
@@ -57,6 +59,7 @@ public struct TabiMapView {
         self.showsLocationButton = showsLocationButton
         self.showsZoomControls = showsZoomControls
         self.followsUserLocation = followsUserLocation
+        self.bottomContentInset = bottomContentInset
         self.boundsFitToken = boundsFitToken
         self.focusLatitude = focusLatitude
         self.focusLongitude = focusLongitude
@@ -109,6 +112,7 @@ extension TabiMapView: UIViewRepresentable {
         uiView.showLocationButton = self.showsLocationButton
         uiView.showZoomControls = self.showsZoomControls
         uiView.mapView.positionMode = self.showsLocationButton ? (self.followsUserLocation ? .direction : .normal) : .disabled
+        uiView.mapView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: self.bottomContentInset, right: 0)
 
         context.coordinator.sync(
             markers: self.markers,
