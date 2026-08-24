@@ -67,7 +67,7 @@ private extension FestivalUseCase {
             return festivals
         }
         return festivals.filter { festival in
-            festival.startDate >= startDate && (festival.endDate ?? festival.startDate) <= endDate
+            festival.startDate <= endDate && (festival.endDate ?? festival.startDate) >= startDate
         }
     }
 }
