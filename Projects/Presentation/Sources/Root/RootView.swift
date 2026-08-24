@@ -9,6 +9,7 @@
 import SwiftUI
 
 import ComposableArchitecture
+import Resource
 
 public struct RootView: View {
     
@@ -23,11 +24,13 @@ public struct RootView: View {
             if let tabBarStore = self.store.scope(state: \.tabBarState, action: \.tabBar) {
                 TabBarView(store: tabBarStore)
             } else {
+                #if DEBUG
                 Button {
                     self.store.send(.testBtnTapped)
                 } label: {
-                    Text("온보딩 완료 버튼")
+                    Text(Strings.Root.onboardingCompleteButton)
                 }
+                #endif
             }
         }
         .onAppear {

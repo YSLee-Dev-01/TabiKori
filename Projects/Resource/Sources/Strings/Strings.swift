@@ -10,6 +10,7 @@ import Foundation
 
 public enum Strings {
     public enum Common {}
+    public enum Root {}
     public enum Tabbar {}
     public enum Home {}
     public enum Region {}
@@ -61,6 +62,11 @@ public extension Strings.Common {
     static let subwayKatakanaGuide = "カタカナで入力してください"
     /// 지하철역명 입력 후 검색 안내 문구
     static let subwaySearchEnterGuide = "Enterキーで検索してください"
+}
+
+public extension Strings.Root {
+    /// 온보딩 완료 버튼 (임시 테스트용, DEBUG 전용)
+    static let onboardingCompleteButton = "オンボーディング完了ボタン"
 }
 
 public extension Strings.Home {
