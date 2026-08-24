@@ -190,10 +190,8 @@ public extension Strings.Map {
     static let researchAtCurrentLocation = "このエリアで再検索"
     /// 검색 로딩 표시
     static let loading = "読み込み中"
-    /// 지하철역 검색 결과 노출 시 가타카나 입력 안내 문구
-    static let subwayKatakanaSearchGuide = "駅名を検索する際はカタカナのみで入力してください"
-    /// 검색 시 한국어/영어 입력 안내 문구
-    static let searchLanguageGuide = "韓国語・英語で検索すると、より正確な結果が得られます"
+    /// 검색 TF 하단 안내 문구 (한국어·영어 검색 권장 + 역명 가타카나 검색 안내 통합)
+    static let searchLanguageGuide = "韓国語・英語で検索すると、より正確な結果が得られます。駅名の検索はカタカナのみに対応しています"
 }
 
 public extension Strings.Bookmark {
@@ -322,18 +320,22 @@ public extension Strings.Plan {
     static let fullOverviewToggleTitle = "全体表示"
     /// 일자별 보기로 돌아가기 타이틀
     static let dayOverviewToggleTitle = "日別表示に戻る"
-    /// 내보내기 메뉴 타이틀
-    static let exportMenuTitle = "エクスポート"
+    /// 공유(내보내기) 메뉴 타이틀
+    static let exportMenuTitle = "共有"
+    /// 공유 사용 방법 안내 알림 타이틀
+    static let exportGuideAlertTitle = "共有方法について"
+    /// 공유 사용 방법 안내 알림 메시지
+    static let exportGuideAlertMessage = "書き出したファイルは、受け取った人がタビコリの「読み込み」から開くと日程が追加されます"
     /// 추가 메뉴 타이틀
     static let addMenuTitle = "追加"
     /// 가져오기 메뉴 타이틀
-    static let importMenuTitle = "インポート"
+    static let importMenuTitle = "読み込み"
     /// 가져오기 성공 알림 타이틀
-    static let importSuccessAlertTitle = "インポートが完了しました"
+    static let importSuccessAlertTitle = "読み込みが完了しました"
     /// 가져오기 성공 알림 메시지
     static let importSuccessAlertMessage = "日程一覧に追加されました"
     /// 가져오기 실패 알림 타이틀
-    static let importFailedAlertTitle = "インポートに失敗しました"
+    static let importFailedAlertTitle = "読み込みに失敗しました"
     /// 가져오기 실패 알림 메시지
     static let importFailedAlertMessage = "ファイルを確認してもう一度お試しください"
 
@@ -395,6 +397,8 @@ public extension Strings.AddToItinerary {
     static let endTimeLabel = "終了時刻"
     /// 소요시간 라벨
     static let durationLabel = "所要時間"
+    /// 시간 저장 안 함 토글 라벨
+    static let noTimeToggleTitle = "時刻を保存しない"
     /// 저장(추가) 버튼
     static let saveButton = "追加する"
 }
