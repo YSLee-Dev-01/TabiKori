@@ -35,7 +35,7 @@ public final class TravelPlanShareUseCase: TravelPlanShareUseCaseProtocol {
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             return try encoder.encode(payload)
         } catch {
-            throw TabiError.decodingFailed(message: error.localizedDescription)
+            throw TabiError.encodingFailed(message: error.localizedDescription)
         }
     }
 

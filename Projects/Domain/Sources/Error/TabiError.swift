@@ -13,4 +13,5 @@ public enum TabiError: Error, Equatable, Sendable {
     case dataNotFound
     case persistenceFailed(message: String)
     case decodingFailed(message: String)
+    case encodingFailed(message: String)
 }
