@@ -257,6 +257,8 @@ private extension AddCustomPlaceView {
     func searchTabContent() -> some View {
         VStack(alignment: .leading, spacing: 16) {
             self.searchField()
+            TabiLabel(title: Strings.Map.searchLanguageGuide, style: .captionM, color: .tabiTextSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
             self.searchResultsSection()
         }
     }
