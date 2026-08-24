@@ -30,6 +30,7 @@ public struct MapView: View {
     fileprivate var baseFullHeight: CGFloat { max(0, self.mapContainerHeight - self.topBarHeight) }
     fileprivate var baseHalfHeight: CGFloat { min(self.baseFullHeight, self.mapContainerHeight * 0.42) }
     fileprivate var baseCollapsedHeight: CGFloat { min(self.baseHalfHeight, 140) }
+    fileprivate var isKeyboardVisible: Bool { self.keyboardHeight > 0 }
 
     public init(store: StoreOf<MapFeature>) {
         self.store = store
@@ -63,6 +64,7 @@ public struct MapView: View {
         .animation(.tabiStandard, value: self.store.searchQuery.isEmpty)
         .animation(.tabiStandard, value: self.store.mode)
         .animation(.tabiStandard, value: self.store.showsResearchButton)
+        .animation(.tabiStandard, value: self.isKeyboardVisible)
         .onChange(of: self.store.mode) { _, mode in
             self.isSearchFieldFocused = mode == .typing
         }
@@ -80,6 +82,12 @@ public struct MapView: View {
         }
         .onAppear {
             self.store.send(.onAppear)
+            // 홈 화면 검색바 경유 진입처럼 이 뷰가 mode == .typing 상태로 처음 마운트되는 경우,
+            // .onChange(of: store.mode)는 마운트 이후의 "변화"에만 반응해 포커스가 걸리지 않는다.
+            // 마운트 시점의 상태를 한 틱 뒤에 다시 동기화해 이 경우에도 키보드가 올라오게 한다
+            DispatchQueue.main.async {
+                self.isSearchFieldFocused = self.store.mode == .typing
+            }
         }
     }
 }
@@ -197,13 +205,18 @@ private extension MapView {
                         isClusteringEnabled: false,
                         showsLocationButton: self.store.showsUserLocation,
                         followsUserLocation: false,
+                        bottomContentInset: self.tabBarHeight,
                         boundsFitToken: self.store.searchResultFitToken,
                         onMapTapped: { _, _ in },
                         onMarkerTapped: { id in
                             guard let spot = self.store.searchResults.first(where: { $0.id == id }) else { return }
                             self.selectSearchResult(spot)
                         },
-                        onMapDragged: { self.store.send(.mapDragged) },
+                        onMapDragged: {
+                            withAnimation(.tabiStandard) {
+                                _ = self.store.send(.mapDragged)
+                            }
+                        },
                         onCameraIdle: { latitude, longitude, radiusMeters in
                             self.store.send(.mapCenterChanged(Coordinate(latitude: latitude, longitude: longitude), radiusMeters: radiusMeters))
                         }
@@ -287,11 +300,17 @@ private extension MapView {
     }
 
     func searchResultEmptyState() -> some View {
-        TabiEmptyState(
-            systemImageName: "mappin.slash",
-            title: Strings.Map.searchResultEmptyTitle,
-            description: Strings.Map.searchResultEmptyDescription
-        )
+        VStack(spacing: 0) {
+            TabiEmptyState(
+                systemImageName: "mappin.slash",
+                title: Strings.Map.searchResultEmptyTitle,
+                description: Strings.Map.searchResultEmptyDescription
+            )
+            self.languageGuideBadge()
+                .padding(.horizontal, 20)
+                .padding(.bottom, 8)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     func searchResultSkeletonList() -> some View {
@@ -434,13 +453,11 @@ private extension MapView {
             }
             .padding(.horizontal, 20)
 
-            if self.store.mode == .typing {
-                TabiLabel(
-                    title: Strings.Map.searchLanguageGuide,
-                    style: .captionM,
-                    color: .tabiTextSecondary
-                )
-                .padding(.horizontal, 20)
+            // 키보드가 실제로 올라와 검색어를 입력 중일 때만 안내를 노출한다
+            if self.store.mode == .typing && self.isKeyboardVisible {
+                self.languageGuideBadge()
+                    .padding(.horizontal, 20)
+                    .transition(.opacity)
             }
 
             if self.store.mode == .map {
@@ -500,6 +517,22 @@ private extension MapView {
             .padding(.horizontal, 20)
             .glassEffect(.regular, in: .rect(cornerRadius: .tabiRadiusSm))
             Spacer()
+        }
+    }
+
+    func languageGuideBadge() -> some View {
+        HStack {
+            Spacer(minLength: 0)
+            TabiLabel(
+                title: Strings.Map.searchLanguageGuide,
+                style: .captionM,
+                color: .tabiTextSecondary,
+                alignment: .center
+            )
+            .padding(.vertical, 10)
+            .padding(.horizontal, 16)
+            .glassEffect(.regular, in: .rect(cornerRadius: .tabiRadiusSm))
+            Spacer(minLength: 0)
         }
     }
 
