@@ -48,6 +48,7 @@ public struct AddCustomPlaceFeature: Sendable {
         var searchResults: [TouristSpot] = []
         var searchStationResults: [SubwayStation] = []
         var isSearchLoading: Bool = false
+        var hasSearched: Bool = false
         var isSearchNextPageLoading: Bool = false
         fileprivate var searchPage: Int = 1
         fileprivate var hasMoreSearchResults: Bool = true
@@ -126,6 +127,16 @@ public struct AddCustomPlaceFeature: Sendable {
                 state.subwayResults = []
                 state.isSubwaySearching = false
                 return .cancel(id: CancelID.stationSearch)
+
+            case .binding(\.searchQuery):
+                guard state.searchQuery.isEmpty == false else { return .none }
+                state.searchResults = []
+                state.searchStationResults = []
+                state.hasSearched = false
+                return .merge(
+                    .cancel(id: CancelID.searchSpots),
+                    .cancel(id: CancelID.searchStations)
+                )
 
             case .binding:
                 return .none
@@ -257,6 +268,7 @@ public struct AddCustomPlaceFeature: Sendable {
                 state.searchResults = []
                 state.searchStationResults = []
                 state.isSearchLoading = true
+                state.hasSearched = true
                 state.searchPage = 1
                 state.hasMoreSearchResults = true
                 return .merge(

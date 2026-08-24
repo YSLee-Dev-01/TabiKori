@@ -284,6 +284,12 @@ private extension AddCustomPlaceView {
             ProgressView()
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 24)
+        } else if self.store.hasSearched == false {
+            TabiEmptyState(
+                systemImageName: "magnifyingglass",
+                description: Strings.Map.searchEmptyDescription
+            )
+            .frame(maxWidth: .infinity)
         } else if self.store.searchStationResults.isEmpty, self.store.searchResults.isEmpty {
             TabiEmptyState(
                 systemImageName: "mappin.slash",
