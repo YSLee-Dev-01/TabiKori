@@ -14,8 +14,8 @@ public final class TestTouristSpotUseCase: TouristSpotUseCaseProtocol, @unchecke
 
     public var nearbySpots: [TouristSpot] = []
     public var regionSpots: [TouristSpot] = []
-    public var detail: TouristSpotDetail!
-    public var intro: TouristSpotIntro!
+    public var detail: TouristSpotDetail?
+    public var intro: TouristSpotIntro?
     public var images: [TouristSpotImage] = []
     public var searchResults: [TouristSpot] = []
 
@@ -43,11 +43,17 @@ public final class TestTouristSpotUseCase: TouristSpotUseCaseProtocol, @unchecke
     }
 
     public func fetchDetail(contentId: String) async throws -> TouristSpotDetail {
-        return self.detail
+        guard let detail else {
+            throw TabiError.dataNotFound
+        }
+        return detail
     }
 
     public func fetchIntro(contentId: String, contentType: CategoryType) async throws -> TouristSpotIntro {
-        return self.intro
+        guard let intro else {
+            throw TabiError.dataNotFound
+        }
+        return intro
     }
 
     public func fetchImages(contentId: String) async throws -> [TouristSpotImage] {
