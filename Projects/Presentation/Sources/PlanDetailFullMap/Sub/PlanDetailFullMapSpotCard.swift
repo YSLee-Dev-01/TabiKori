@@ -12,13 +12,8 @@ import DesignSystem
 import Domain
 import Resource
 
-/// 지도 전체화면 하단 가로 스크롤 카드 캐러셀의 카드 한 장.
-/// 세로 리스트용 `PlanDetailFullMapSpotRow`와 달리 고정 너비 카드로 가로 스와이프 정착에 맞춰 레이아웃이 구성되어 별도 컴포넌트로 분리함.
-/// `TabiCard`를 재사용하지 않고 배경/테두리를 직접 구성한다 — TabiCard의 자체 테두리(opacity 0.4)와
-/// 선택 상태 테두리가 이중으로 겹쳐 그려지며 삐뚤빼뚤하게 보이는 문제가 있어, 단일 테두리만 그린다
 struct PlanDetailFullMapSpotCard: View {
     static let width: CGFloat = 260
-    /// subtitle 유무와 무관하게 카드 높이를 고정해, 캐러셀 카드들의 세로 크기가 항상 동일하게 한다
     static let height: CGFloat = 100
 
     let spot: TravelPlanDetailSpot
@@ -44,7 +39,7 @@ struct PlanDetailFullMapSpotCard: View {
             .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusLg))
             .overlay {
                 RoundedRectangle(cornerRadius: .tabiRadiusLg)
-                    .stroke(
+                    .strokeBorder(
                         self.isSelected ? TabiColor.tabiPrimary.opacity(1) : TabiColor.tabiBorder.opacity(0.4),
                         lineWidth: self.isSelected ? 2 : 1
                     )
