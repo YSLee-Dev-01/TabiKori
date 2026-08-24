@@ -28,6 +28,8 @@ public final class TestSearchHistoryUseCase: SearchHistoryUseCaseProtocol, @unch
 
     public func add(keyword: String) {
         self.addedKeyword = keyword
+        self.histories.removeAll { $0.keyword == keyword }
+        self.histories.insert(SearchHistory(keyword: keyword, searchedAt: Date()), at: 0)
     }
 
     public func remove(keyword: String) {
