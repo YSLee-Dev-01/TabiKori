@@ -21,7 +21,7 @@ extension MapPanelStage {
         switch self {
         case .full: return 1.0
         case .half: return 0.95
-        case .collapsed: return 0.9
+        case .collapsed: return 0.918
         }
     }
 }

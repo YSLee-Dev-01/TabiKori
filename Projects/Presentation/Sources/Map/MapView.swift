@@ -313,7 +313,9 @@ private extension MapView {
             if self.store.panelStage != .collapsed {
                 self.languageGuideBadge()
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 8)
+                    // full 단계에서 시트 박스 자체가 탭바 높이만큼 화면 밖으로 bleed되므로,
+                    // 콘텐츠 하단에 위치한 이 안내 문구가 탭바 뒤로 가려지지 않도록 동일하게 보정한다
+                    .padding(.bottom, 8 + self.tabBarHeight)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -501,7 +503,13 @@ private extension MapView {
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.height
         } action: { newValue in
-            self.topBarHeight = newValue
+            // 새로고침 버튼 등 topBar 구성 요소가 트랜지션되며 높이가 바뀔 때, 이 값에 의존하는
+            // 시트 최대 높이(baseFullHeight)가 같은 곡선으로 함께 애니메이션되도록 명시적으로 감싼다.
+            // 감싸지 않으면 이 값의 변경이 애니메이션 컨텍스트 없이 그대로 반영되어 시트 높이가
+            // topBar 트랜지션과 어긋나게 스냅되거나 갱신이 지연되어 보일 수 있다
+            withAnimation(.tabiStandard) {
+                self.topBarHeight = newValue
+            }
         }
     }
 
