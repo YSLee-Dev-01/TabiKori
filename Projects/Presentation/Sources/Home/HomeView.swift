@@ -599,16 +599,16 @@ fileprivate extension HomeView {
             VStack(spacing: 6) {
                 RoundedRectangle(cornerRadius: .tabiRadiusMd)
                     .fill(item.color.opacity(0.1))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: .tabiRadiusMd)
+                            .strokeBorder(item.color.opacity(0.3), lineWidth: 1)
+                    }
                     .frame(width: 55, height: 55)
                     .overlay {
                         Image(item.icon)
                             .resizable()
                             .frame(width: 25, height: 25)
                             .foregroundStyle(item.color)
-                    }
-                    .overlay {
-                        RoundedRectangle(cornerRadius: .tabiRadiusMd)
-                            .stroke(item.color.opacity(0.3), lineWidth: 1)
                     }
 
                 TabiLabel(title: item.label, style: .captionM, color: .tabiTextSecondary)
@@ -652,8 +652,7 @@ fileprivate extension HomeView {
                     
                     self.chevronIcon()
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 16)
+                .padding(16)
             }
             .frame(maxWidth: .infinity)
         }
