@@ -23,6 +23,7 @@ public struct PlanDetailAddSpotFeature: Sendable {
     @Dependency(\.travelPlanDetailUseCase) var travelPlanDetailUseCase
     @Dependency(\.subwayStationUseCase) var subwayStationUseCase
     @Dependency(\.naverGeocodingUseCase) var naverGeocodingUseCase
+    @Dependency(\.toastCenter) var toastCenter
     @Dependency(\.dismiss) var dismiss
 
     @ObservableState
@@ -315,13 +316,16 @@ private enum CancelID {
 
 private extension PlanDetailAddSpotFeature {
     func searchEffect(keyword: String) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase] send in
+        .run { [touristSpotUseCase = self.touristSpotUseCase, toastCenter = self.toastCenter] send in
             do {
                 let results = try await touristSpotUseCase.searchByKeyword(keyword: keyword, pageNo: 1)
                 await send(.searchResultsResult(results))
             } catch {
                 guard !Task.isCancelled else { return }
                 AppLogger.view.log(.error, "관광지 키워드 검색 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.searchResultsResult([]))
             }
         }
@@ -336,13 +340,16 @@ private extension PlanDetailAddSpotFeature {
     }
 
     func selectSubwayStationEffect(station: SubwayStation) -> Effect<Action> {
-        .run { [subwayStationUseCase = self.subwayStationUseCase] send in
+        .run { [subwayStationUseCase = self.subwayStationUseCase, toastCenter = self.toastCenter] send in
             do {
                 let spot = try await subwayStationUseCase.selectStation(station)
                 await send(.spotRowTapped(spot))
             } catch {
                 guard !Task.isCancelled else { return }
                 AppLogger.network.log(.error, "지하철역 좌표 조회 실패: \(station.koreanName) - \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.stationResolveFailed)
             }
         }
@@ -350,7 +357,7 @@ private extension PlanDetailAddSpotFeature {
     }
 
     func addressPreviewEffect(address: String) -> Effect<Action> {
-        .run { [naverGeocodingUseCase = self.naverGeocodingUseCase] send in
+        .run { [naverGeocodingUseCase = self.naverGeocodingUseCase, toastCenter = self.toastCenter] send in
             do {
                 let geocoded = try await naverGeocodingUseCase.geocode(address: address)
                 await send(.addressPreviewResult(geocoded.coordinate))
@@ -360,6 +367,9 @@ private extension PlanDetailAddSpotFeature {
             } catch {
                 guard !Task.isCancelled else { return }
                 AppLogger.view.log(.error, "일정 주소 추가 미리보기 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.addressNotFound)
             }
         }
@@ -367,25 +377,31 @@ private extension PlanDetailAddSpotFeature {
     }
 
     func fetchBookmarksEffect() -> Effect<Action> {
-        .run { [bookmarkUseCase = self.bookmarkUseCase] send in
+        .run { [bookmarkUseCase = self.bookmarkUseCase, toastCenter = self.toastCenter] send in
             do {
                 let bookmarks = try await bookmarkUseCase.fetch()
                 await send(.bookmarksResult(bookmarks))
             } catch {
                 guard !Task.isCancelled else { return }
                 AppLogger.view.log(.error, "북마크 목록 조회 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.bookmarksResult([]))
             }
         }
     }
 
     func saveEffect(planId: UUID, spot: TravelPlanDetailSpot) -> Effect<Action> {
-        .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase] send in
+        .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase, toastCenter = self.toastCenter] send in
             do {
                 try await travelPlanDetailUseCase.add(TravelPlanDetail(planId: planId, spots: [spot]))
                 await send(.spotAdded)
             } catch {
                 AppLogger.view.log(.error, "일정에 스팟 추가 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.saveFailed)
             }
         }

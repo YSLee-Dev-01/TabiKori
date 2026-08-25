@@ -23,6 +23,7 @@ public struct PlanDetailFeature: Sendable {
     @Dependency(\.shoppingPlanItemUseCase) var shoppingPlanItemUseCase
     @Dependency(\.toolBarItemUseCase) var toolBarItemUseCase
     @Dependency(\.autoScrollToTodayUseCase) var autoScrollToTodayUseCase
+    @Dependency(\.toastCenter) var toastCenter
     @Dependency(\.dismiss) var dismiss
 
     @ObservableState
@@ -437,37 +438,46 @@ private extension PlanDetailFeature {
     }
 
     func fetchTravelPlanDetailEffect(id: UUID) -> Effect<Action> {
-        .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase] send in
+        .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase, toastCenter = self.toastCenter] send in
             do {
                 let detail = try await travelPlanDetailUseCase.fetch(planId: id)
                 await send(.travelPlanDetailResult(detail))
             } catch {
                 AppLogger.view.log(.error, "일정 상세(TravelPlanDetail) 조회 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.travelPlanDetailResult(nil))
             }
         }
     }
 
     func removeSpotEffect(planId: UUID, spotId: UUID) -> Effect<Action> {
-        .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase] send in
+        .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase, toastCenter = self.toastCenter] send in
             do {
                 try await travelPlanDetailUseCase.removeSpot(planId: planId, spotId: spotId)
                 await send(.spotDeleted(id: spotId))
             } catch {
                 AppLogger.view.log(.error, "일정 상세 스팟 삭제 실패 (planId: \(planId), spotId: \(spotId)): \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.spotDeleteFailed)
             }
         }
     }
 
     func saveEditedSpotsEffect(planId: UUID, dayIndex: Int, orderedSpotIds: [UUID]) -> Effect<Action> {
-        .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase] send in
+        .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase, toastCenter = self.toastCenter] send in
             do {
                 try await travelPlanDetailUseCase.saveEditedSpots(planId: planId, dayIndex: dayIndex, orderedSpotIds: orderedSpotIds)
                 let detail = try await travelPlanDetailUseCase.fetch(planId: planId)
                 await send(.editSaveResult(detail))
             } catch {
                 AppLogger.view.log(.error, "일정 상세 스팟 편집 저장 실패 (planId: \(planId), dayIndex: \(dayIndex)): \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.editSaveResult(nil))
             }
         }
@@ -483,7 +493,8 @@ private extension PlanDetailFeature {
         return .run { [
             shoppingPlanItemUseCase = self.shoppingPlanItemUseCase,
             toolBarItemUseCase = self.toolBarItemUseCase,
-            travelPlanShareUseCase = self.travelPlanShareUseCase
+            travelPlanShareUseCase = self.travelPlanShareUseCase,
+            toastCenter = self.toastCenter
         ] send in
             do {
                 let shoppingItems = try await shoppingPlanItemUseCase.fetchSavedItems(planId: planId)
@@ -500,6 +511,9 @@ private extension PlanDetailFeature {
                 await send(.shareFileURLResult(fileURL))
             } catch {
                 AppLogger.view.log(.error, "일정 공유 파일 생성 실패 (planId: \(planId)): \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.shareFileURLResult(nil))
             }
         }
@@ -507,12 +521,15 @@ private extension PlanDetailFeature {
     }
 
     func removePlanEffect(planId: UUID) -> Effect<Action> {
-        .run { [travelPlanUseCase = self.travelPlanUseCase] send in
+        .run { [travelPlanUseCase = self.travelPlanUseCase, toastCenter = self.toastCenter] send in
             do {
                 try await travelPlanUseCase.remove(planId: planId)
                 await send(.planDeleteResult(true))
             } catch {
                 AppLogger.view.log(.error, "일정 삭제 실패 (planId: \(planId)): \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.planDeleteResult(false))
             }
         }
