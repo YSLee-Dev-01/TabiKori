@@ -105,4 +105,9 @@ extension DependencyValues {
         get {self[ShoppingItemUseCaseDependencyKey.self]}
         set {self[ShoppingItemUseCaseDependencyKey.self] = newValue}
     }
+
+    public var toastCenter: ToastCenterProtocol {
+        get {self[ToastCenterDependencyKey.self]}
+        set {self[ToastCenterDependencyKey.self] = newValue}
+    }
 }
