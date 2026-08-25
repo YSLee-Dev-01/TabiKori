@@ -22,6 +22,7 @@ public struct AddCustomPlaceFeature: Sendable {
     @Dependency(\.subwayStationUseCase) var subwayStationUseCase
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
     @Dependency(\.bookmarkUseCase) var bookmarkUseCase
+    @Dependency(\.toastCenter) var toastCenter
     @Dependency(\.dismiss) var dismiss
 
     private let searchPageSize = 50
@@ -329,7 +330,11 @@ private enum CancelID {
 
 private extension AddCustomPlaceFeature {
     func saveEffect(category: CategoryType, title: String, address: String, editingContentId: String?) -> Effect<Action> {
-        .run { [naverGeocodingUseCase = self.naverGeocodingUseCase, bookmarkUseCase = self.bookmarkUseCase] send in
+        .run { [
+            naverGeocodingUseCase = self.naverGeocodingUseCase,
+            bookmarkUseCase = self.bookmarkUseCase,
+            toastCenter = self.toastCenter
+        ] send in
             let geocoded: GeocodedAddress
             do {
                 geocoded = try await naverGeocodingUseCase.geocode(address: address)
@@ -339,6 +344,9 @@ private extension AddCustomPlaceFeature {
                 return
             } catch {
                 AppLogger.view.log(.error, "커스텀 장소 주소 변환 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.saveResult(false))
                 return
             }
@@ -362,6 +370,9 @@ private extension AddCustomPlaceFeature {
                 await send(.saveResult(true))
             } catch {
                 AppLogger.view.log(.error, "커스텀 장소 저장 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.saveResult(false))
             }
         }
@@ -370,12 +381,15 @@ private extension AddCustomPlaceFeature {
 
     /// 확정된 TouristSpot을 북마크에 저장한다. 커스텀 탭의 지하철역 확인 저장, 검색 탭의 스팟 즉시 저장에서 공용으로 사용
     func saveSpotEffect(spot: TouristSpot) -> Effect<Action> {
-        .run { [bookmarkUseCase = self.bookmarkUseCase] send in
+        .run { [bookmarkUseCase = self.bookmarkUseCase, toastCenter = self.toastCenter] send in
             do {
                 try await bookmarkUseCase.add(spot)
                 await send(.saveResult(true))
             } catch {
                 AppLogger.view.log(.error, "스팟 북마크 저장 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.saveResult(false))
             }
         }
@@ -392,13 +406,16 @@ private extension AddCustomPlaceFeature {
     }
 
     func selectSubwayStationEffect(station: SubwayStation) -> Effect<Action> {
-        .run { [subwayStationUseCase = self.subwayStationUseCase] send in
+        .run { [subwayStationUseCase = self.subwayStationUseCase, toastCenter = self.toastCenter] send in
             do {
                 let spot = try await subwayStationUseCase.selectStation(station)
                 await send(.stationResolveResult(spot))
             } catch {
                 guard !Task.isCancelled else { return }
                 AppLogger.network.log(.error, "지하철역 좌표 조회 실패: \(station.koreanName) - \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.stationResolveFailed)
             }
         }
@@ -406,7 +423,7 @@ private extension AddCustomPlaceFeature {
     }
 
     func addressPreviewEffect(address: String) -> Effect<Action> {
-        .run { [naverGeocodingUseCase = self.naverGeocodingUseCase] send in
+        .run { [naverGeocodingUseCase = self.naverGeocodingUseCase, toastCenter = self.toastCenter] send in
             do {
                 let geocoded = try await naverGeocodingUseCase.geocode(address: address)
                 await send(.addressPreviewResult(geocoded.coordinate))
@@ -417,6 +434,9 @@ private extension AddCustomPlaceFeature {
             } catch {
                 guard !Task.isCancelled else { return }
                 AppLogger.view.log(.error, "커스텀 장소 주소 미리보기 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.addressPreviewFailed)
             }
         }
@@ -424,13 +444,16 @@ private extension AddCustomPlaceFeature {
     }
 
     func searchSpotsEffect(keyword: String, pageNo: Int) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase] send in
+        .run { [touristSpotUseCase = self.touristSpotUseCase, toastCenter = self.toastCenter] send in
             do {
                 let results = try await touristSpotUseCase.searchByKeyword(keyword: keyword, pageNo: pageNo)
                 await send(.searchResultsResult(results))
             } catch {
                 guard !Task.isCancelled else { return }
                 AppLogger.view.log(.error, "스팟 검색 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.searchResultsResult([]))
             }
         }
@@ -438,13 +461,16 @@ private extension AddCustomPlaceFeature {
     }
 
     func searchSpotsNextPageEffect(keyword: String, pageNo: Int) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase] send in
+        .run { [touristSpotUseCase = self.touristSpotUseCase, toastCenter = self.toastCenter] send in
             do {
                 let results = try await touristSpotUseCase.searchByKeyword(keyword: keyword, pageNo: pageNo)
                 await send(.searchNextPageResultsResult(results))
             } catch {
                 guard !Task.isCancelled else { return }
                 AppLogger.view.log(.error, "스팟 검색 다음 페이지 조회 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.searchNextPageResultsResult([]))
             }
         }
@@ -461,13 +487,20 @@ private extension AddCustomPlaceFeature {
     }
 
     func searchSaveStationEffect(station: SubwayStation) -> Effect<Action> {
-        .run { [subwayStationUseCase = self.subwayStationUseCase, bookmarkUseCase = self.bookmarkUseCase] send in
+        .run { [
+            subwayStationUseCase = self.subwayStationUseCase,
+            bookmarkUseCase = self.bookmarkUseCase,
+            toastCenter = self.toastCenter
+        ] send in
             do {
                 let spot = try await subwayStationUseCase.selectStation(station)
                 try await bookmarkUseCase.add(spot)
                 await send(.saveResult(true))
             } catch {
                 AppLogger.view.log(.error, "검색 지하철역 저장 실패: \(station.koreanName) - \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.saveResult(false))
             }
         }
