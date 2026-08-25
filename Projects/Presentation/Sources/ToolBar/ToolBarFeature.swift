@@ -44,6 +44,8 @@ public struct ToolBarFeature: Sendable {
         var scrollToTopTrigger: Int = 0
 
         @Presents var phraseDetailState: KoreanPhraseDetailFeature.State?
+        @Presents var packingPlanPickerState: ToolBarPlanPickerFeature.State?
+        @Presents var shoppingPlanPickerState: ShoppingPlanPickerFeature.State?
 
         public init() {}
     }
@@ -59,6 +61,8 @@ public struct ToolBarFeature: Sendable {
         case shoppingListButtonTapped
         case phrasePreviewRowTapped(KoreanPhrase)
         case phraseCopyMenuTapped(KoreanPhrase)
+        case packingPreviewRowTapped(ToolBarItem)
+        case shoppingPreviewRowTapped(ShoppingItem)
         case packingItemsResult([ToolBarItem])
         case packingItemsFailed
         case phrasesResult([KoreanPhrase])
@@ -67,6 +71,8 @@ public struct ToolBarFeature: Sendable {
         case shoppingItemsFailed
         case exchangeRateCalculator(ExchangeRateCalculatorFeature.Action)
         case phraseDetail(PresentationAction<KoreanPhraseDetailFeature.Action>)
+        case packingPlanPicker(PresentationAction<ToolBarPlanPickerFeature.Action>)
+        case shoppingPlanPicker(PresentationAction<ShoppingPlanPickerFeature.Action>)
     }
 
     public init() {}
@@ -134,6 +140,14 @@ public struct ToolBarFeature: Sendable {
                 UIPasteboard.general.string = phrase.korean
                 return .none
 
+            case .packingPreviewRowTapped(let item):
+                state.packingPlanPickerState = ToolBarPlanPickerFeature.State(items: [item], alwaysAppend: true)
+                return .none
+
+            case .shoppingPreviewRowTapped(let item):
+                state.shoppingPlanPickerState = ShoppingPlanPickerFeature.State(items: [item], alwaysAppend: true)
+                return .none
+
             case .packingItemsResult(let items):
                 state.packingItems = items
                 state.isLoadingPacking = false
@@ -172,10 +186,30 @@ public struct ToolBarFeature: Sendable {
 
             case .phraseDetail:
                 return .none
+
+            case .packingPlanPicker(.presented(.savedToPlan)):
+                state.packingPlanPickerState = nil
+                return .none
+
+            case .packingPlanPicker:
+                return .none
+
+            case .shoppingPlanPicker(.presented(.savedToPlan)):
+                state.shoppingPlanPickerState = nil
+                return .none
+
+            case .shoppingPlanPicker:
+                return .none
             }
         }
         .ifLet(\.$phraseDetailState, action: \.phraseDetail) {
             KoreanPhraseDetailFeature()
+        }
+        .ifLet(\.$packingPlanPickerState, action: \.packingPlanPicker) {
+            ToolBarPlanPickerFeature()
+        }
+        .ifLet(\.$shoppingPlanPickerState, action: \.shoppingPlanPicker) {
+            ShoppingPlanPickerFeature()
         }
     }
 }

@@ -32,10 +32,10 @@ public struct ToolBarView: View {
                         .frame(height: 0)
                         .id(Self.topAnchorID)
 
-                    self.packingSection()
                     self.exchangeRateSection()
-                    self.koreanPhraseSection()
+                    self.packingSection()
                     self.shoppingSection()
+                    self.koreanPhraseSection()
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 15)
@@ -50,6 +50,12 @@ public struct ToolBarView: View {
         }
         .fullScreenCover(item: self.$store.scope(state: \.phraseDetailState, action: \.phraseDetail)) { store in
             KoreanPhraseDetailView(store: store)
+        }
+        .sheet(item: self.$store.scope(state: \.packingPlanPickerState, action: \.packingPlanPicker)) { store in
+            ToolBarPlanPickerView(store: store)
+        }
+        .sheet(item: self.$store.scope(state: \.shoppingPlanPickerState, action: \.shoppingPlanPicker)) { store in
+            ShoppingPlanPickerView(store: store)
         }
         .onAppear {
             self.store.send(.onAppear)
@@ -110,7 +116,12 @@ private extension ToolBarView {
                                 Divider()
                                     .padding(.horizontal, 16)
                             }
-                            self.packingPreviewRow(item)
+                            Button {
+                                self.store.send(.packingPreviewRowTapped(item))
+                            } label: {
+                                self.packingPreviewRow(item)
+                            }
+                            .buttonStyle(TabiPressStyle())
                         }
                     }
                 }
@@ -250,7 +261,12 @@ private extension ToolBarView {
                                 Divider()
                                     .padding(.horizontal, 16)
                             }
-                            self.shoppingPreviewRow(item)
+                            Button {
+                                self.store.send(.shoppingPreviewRowTapped(item))
+                            } label: {
+                                self.shoppingPreviewRow(item)
+                            }
+                            .buttonStyle(TabiPressStyle())
                         }
                     }
                 }
