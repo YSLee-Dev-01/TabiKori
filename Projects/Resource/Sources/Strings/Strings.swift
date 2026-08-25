@@ -48,12 +48,6 @@ public extension Strings.Common {
     static let categoryNature = "自然"
     /// 지하철
     static let categorySubway = "地下鉄"
-    /// 문화시설
-    static let contentTypeCulturalFacility = "文化施設"
-    /// 레포츠
-    static let contentTypeLeisure = "レジャー"
-    /// 교통
-    static let contentTypeTransportation = "交通"
     /// 전체
     static let contentTypeAll = "すべて"
     /// 삭제 (스와이프 액션)
@@ -76,8 +70,6 @@ public extension Strings.Home {
     }
     /// 이벤트·축제
     static let eventFestivalTitle = "イベント・お祭り"
-    /// 상세보기
-    static let detailViewTitle = "詳細を見る"
     /// 위치 배너 제목
     static let locationBannerTitle = "位置情報へのアクセス"
     /// 위치 배너 설명
@@ -116,8 +108,6 @@ public extension Strings.Home {
     }
     /// 플랜으로 이동 버튼
     static let moveToPlanButton = "プランへ移動"
-    /// 환율 위젯 - 툴박스 탭으로 이동 버튼
-    static let moveToToolBoxButton = "ツールボックスへ移動"
     /// 환율 기준 시각 (%@: 날짜/시간)
     nonisolated(unsafe) static let exchangeRateUpdatedAtTitle: ((String) -> String) = {
         "為替レート基準時刻: \($0)"
@@ -176,8 +166,6 @@ public extension Strings.Tabbar {
 }
 
 public extension Strings.Map {
-    /// 지도 네비게이션 subtitle
-    static let navigationSubtitle = "🔍 検索"
     /// 검색 placeholder
     static let searchPlaceholder = "スポットを検索"
     /// 검색 취소
@@ -216,8 +204,6 @@ public extension Strings.Bookmark {
 public extension Strings.Plan {
     /// 화면 타이틀
     static let title = "日程"
-    /// 신규작성 버튼
-    static let newPlanButton = "新規作成"
     /// 진행중 섹션 타이틀
     static let ongoingSectionTitle = "進行中の日程"
     /// 다가오는 섹션 타이틀
@@ -332,8 +318,6 @@ public extension Strings.Plan {
     static let exportGuideAlertTitle = "共有方法について"
     /// 공유 사용 방법 안내 알림 메시지
     static let exportGuideAlertMessage = "書き出したファイルは、受け取った人がタビコリの「読み込み」から開くと日程が追加されます"
-    /// 추가 메뉴 타이틀
-    static let addMenuTitle = "追加"
     /// 가져오기 메뉴 타이틀
     static let importMenuTitle = "読み込み"
     /// 가져오기 성공 알림 타이틀
@@ -360,8 +344,6 @@ public extension Strings.Detail {
     static let tabPhotos = "写真"
     /// 지도 탭
     static let tabMap = "地図"
-    /// 지도 섹션 제목
-    static let sectionMap = "地図"
     /// 영업시간
     static let infoOpenTime = "営業時間"
     /// 정기휴일
@@ -386,8 +368,6 @@ public extension Strings.Detail {
     static let ctaAddToItinerary = "旅程に追加"
     /// 지도보기 버튼
     static let viewInMap = "NAVERマップで見る"
-    /// 지도 준비 중
-    static let mapComingSoon = "地図準備中"
     /// 공유 텍스트 - 장소명 접두사
     static let shareTitlePrefix = "🏯"
     /// 공유 텍스트 - 주소 접두사
@@ -412,8 +392,6 @@ public extension Strings.AddToItinerary {
 public extension Strings.AddCustomPlace {
     /// 화면 타이틀
     static let screenTitle = "スポットを追加"
-    /// Bookmark 화면 진입 버튼
-    static let entryButtonTitle = "カスタムスポット"
     /// 검색 탭 라벨
     static let searchTabLabel = "検索"
     /// 커스텀 탭 라벨
@@ -459,8 +437,6 @@ public extension Strings.RegionSpot {
     static let spotEmptyDescription = "他のカテゴリーもお試しください"
     /// 축제 빈 상태 설명
     static let festivalEmptyDescription = "現在開催中のイベントはありません"
-    /// 에러 상태 제목
-    static let errorTitle = "読み込みに失敗しました"
     /// 에러 상태 설명
     static let errorDescription = "通信状態を確認してもう一度お試しください"
     /// 재시도 버튼 라벨
@@ -616,8 +592,6 @@ public extension Strings.ToolBar {
     static let editButtonAccessibilityLabel = "編集"
     /// PlanDetail 저장된 체크리스트 - 항목 추가 입력 placeholder
     static let addItemPlaceholder = "項目を入力"
-    /// PlanDetail 저장된 체크리스트 - 편집모드 서브타이틀(메모) 필드 라벨
-    static let noteFieldLabel = "メモ"
     /// PlanDetail 저장된 체크리스트 - 편집모드 서브타이틀(메모) 입력 placeholder
     static let noteFieldPlaceholder = "メモを入力"
 }
@@ -667,8 +641,6 @@ public extension Strings.Shopping {
     static let planListEditButtonAccessibilityLabel = "編集"
     /// PlanDetail 연동 쇼핑 리스트 - 항목 추가 입력 placeholder
     static let planListAddItemPlaceholder = "項目を入力"
-    /// PlanDetail 연동 쇼핑 리스트 - 편집모드 서브타이틀(메모) 필드 라벨
-    static let planListNoteFieldLabel = "メモ"
     /// PlanDetail 연동 쇼핑 리스트 - 편집모드 서브타이틀(메모) 입력 placeholder
     static let planListNoteFieldPlaceholder = "メモを入力"
 

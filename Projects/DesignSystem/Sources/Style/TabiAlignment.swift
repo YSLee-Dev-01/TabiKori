@@ -1,5 +1,5 @@
 //
-//  Alignment+.swift
+//  TabiAlignment.swift
 //  DesignSystem
 //
 //  Created by 이윤수 on 6/11/26.
