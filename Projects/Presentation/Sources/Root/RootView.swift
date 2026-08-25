@@ -9,16 +9,18 @@
 import SwiftUI
 
 import ComposableArchitecture
+import Domain
+import DesignSystem
 import Resource
 
 public struct RootView: View {
-    
+
     @State private var store: StoreOf<RootFeature>
-    
+
     public init(store: StoreOf<RootFeature>) {
         self.store = store
     }
-    
+
     public var body: some View {
         Group {
             if let tabBarStore = self.store.scope(state: \.tabBarState, action: \.tabBar) {
@@ -35,6 +37,22 @@ public struct RootView: View {
         }
         .onAppear {
             self.store.send(.onAppear)
+        }
+        .tabiToast(
+            message: self.store.currentToast?.message,
+            style: self.toastStyle(for: self.store.currentToast?.type)
+        )
+    }
+}
+
+// MARK: - Method
+
+private extension RootView {
+    func toastStyle(for type: ToastType?) -> TabiToast.Style {
+        switch type {
+        case .success: return .success
+        case .info: return .info
+        case .error, .none: return .error
         }
     }
 }
