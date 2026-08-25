@@ -38,6 +38,12 @@ public enum TabiIcon: String, Sendable {
     case shopping = "bag"
     case nature = "leaf"
     case subway = "tram.fill"
+
+    // MARK: - Toast Icon
+
+    case toastSuccess = "checkmark.circle.fill"
+    case toastInfo = "info.circle.fill"
+    case toastError = "exclamationmark.triangle.fill"
 }
 
 // MARK: - Extension
