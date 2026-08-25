@@ -21,6 +21,7 @@ public struct MapFeature: Sendable {
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
     @Dependency(\.searchHistoryUseCase) var searchHistoryUseCase
     @Dependency(\.subwayStationUseCase) var subwayStationUseCase
+    @Dependency(\.toastCenter) var toastCenter
 
     private let searchPageSize = 50
     private let minimumLoadingDuration: TimeInterval = 0.2
@@ -294,7 +295,7 @@ private enum CancelID {
 
 private extension MapFeature {
     func fetchCoordinateEffect() -> Effect<Action> {
-        .run { [locationUseCase = self.locationUseCase] send in
+        .run { [locationUseCase = self.locationUseCase, toastCenter = self.toastCenter] send in
             do {
                 let coordinate = try await locationUseCase.fetchCurrentCoordinate()
                 await send(.coordinateResult(coordinate))
@@ -305,6 +306,9 @@ private extension MapFeature {
                 }
                 await send(.fallbackToSeoul)
                 AppLogger.view.log(.error, "현재 좌표 조회 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
             }
         }
     }
@@ -329,7 +333,11 @@ private extension MapFeature {
     }
 
     func searchEffect(keyword: String) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase, minimumLoadingDuration = self.minimumLoadingDuration] send in
+        .run { [
+            touristSpotUseCase = self.touristSpotUseCase,
+            minimumLoadingDuration = self.minimumLoadingDuration,
+            toastCenter = self.toastCenter
+        ] send in
             do {
                 let results = try await Task.withMinimumDuration(seconds: minimumLoadingDuration) {
                     try await touristSpotUseCase.searchByKeyword(keyword: keyword, pageNo: 1)
@@ -342,13 +350,20 @@ private extension MapFeature {
                 }
                 await send(.searchResultsResult([]))
                 AppLogger.view.log(.error, "키워드 검색 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
             }
         }
         .cancellable(id: CancelID.search, cancelInFlight: true)
     }
 
     func searchNextPageEffect(keyword: String, pageNo: Int) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase, minimumLoadingDuration = self.minimumLoadingDuration] send in
+        .run { [
+            touristSpotUseCase = self.touristSpotUseCase,
+            minimumLoadingDuration = self.minimumLoadingDuration,
+            toastCenter = self.toastCenter
+        ] send in
             do {
                 let results = try await Task.withMinimumDuration(seconds: minimumLoadingDuration) {
                     try await touristSpotUseCase.searchByKeyword(keyword: keyword, pageNo: pageNo)
@@ -361,6 +376,9 @@ private extension MapFeature {
                 }
                 await send(.searchNextPageResultsResult([]))
                 AppLogger.view.log(.error, "키워드 검색 다음 페이지 조회 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
             }
         }
         .cancellable(id: CancelID.search, cancelInFlight: true)
@@ -379,7 +397,7 @@ private extension MapFeature {
     }
 
     func selectSubwayStationEffect(station: SubwayStation) -> Effect<Action> {
-        .run { [subwayStationUseCase = self.subwayStationUseCase] send in
+        .run { [subwayStationUseCase = self.subwayStationUseCase, toastCenter = self.toastCenter] send in
             do {
                 let spot = try await subwayStationUseCase.selectStation(station)
                 await send(.searchResultTapped(spot))
@@ -389,13 +407,20 @@ private extension MapFeature {
                     return
                 }
                 AppLogger.network.log(.error, "지하철역 좌표 조회 실패: \(station.koreanName) - \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
             }
         }
         .cancellable(id: CancelID.resolveStation, cancelInFlight: true)
     }
 
     func categorySearchEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase, minimumLoadingDuration = self.minimumLoadingDuration] send in
+        .run { [
+            touristSpotUseCase = self.touristSpotUseCase,
+            minimumLoadingDuration = self.minimumLoadingDuration,
+            toastCenter = self.toastCenter
+        ] send in
             do {
                 let results = try await Task.withMinimumDuration(seconds: minimumLoadingDuration) {
                     try await touristSpotUseCase.fetchNearbySpots(
@@ -413,13 +438,20 @@ private extension MapFeature {
                 }
                 await send(.searchResultsResult([]))
                 AppLogger.view.log(.error, "카테고리 검색 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
             }
         }
         .cancellable(id: CancelID.search, cancelInFlight: true)
     }
 
     func categoryResearchEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase, minimumLoadingDuration = self.minimumLoadingDuration] send in
+        .run { [
+            touristSpotUseCase = self.touristSpotUseCase,
+            minimumLoadingDuration = self.minimumLoadingDuration,
+            toastCenter = self.toastCenter
+        ] send in
             do {
                 let results = try await Task.withMinimumDuration(seconds: minimumLoadingDuration) {
                     try await touristSpotUseCase.fetchNearbySpots(
@@ -437,13 +469,20 @@ private extension MapFeature {
                 }
                 await send(.researchResultsResult([]))
                 AppLogger.view.log(.error, "위치 재검색 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
             }
         }
         .cancellable(id: CancelID.search, cancelInFlight: true)
     }
 
     func categoryNextPageEffect(category: CategoryType, coordinate: Coordinate, radiusMeters: Int, pageNo: Int) -> Effect<Action> {
-        .run { [touristSpotUseCase = self.touristSpotUseCase, minimumLoadingDuration = self.minimumLoadingDuration] send in
+        .run { [
+            touristSpotUseCase = self.touristSpotUseCase,
+            minimumLoadingDuration = self.minimumLoadingDuration,
+            toastCenter = self.toastCenter
+        ] send in
             do {
                 let results = try await Task.withMinimumDuration(seconds: minimumLoadingDuration) {
                     try await touristSpotUseCase.fetchNearbySpots(
@@ -461,6 +500,9 @@ private extension MapFeature {
                 }
                 await send(.searchNextPageResultsResult([]))
                 AppLogger.view.log(.error, "카테고리 검색 다음 페이지 조회 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
             }
         }
         .cancellable(id: CancelID.search, cancelInFlight: true)
