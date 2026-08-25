@@ -73,12 +73,14 @@ private extension DetailInfoTabView {
                     color: self.detail.contentType.color
                 )
             }
-            DetailInfoRow(
-                systemName: "mappin",
-                label: self.detail.contentType == .subway ? Strings.Detail.infoLine : Strings.Detail.infoAddress,
-                value: self.detail.address,
-                color: self.detail.contentType.color
-            )
+            if self.detail.address.isEmpty == false {
+                DetailInfoRow(
+                    systemName: "mappin",
+                    label: self.detail.contentType == .subway ? Strings.Detail.infoLine : Strings.Detail.infoAddress,
+                    value: self.detail.address,
+                    color: self.detail.contentType.color
+                )
+            }
             if let homepage = self.detail.homepageURLString, let homepageURL = self.detail.homepageURL {
                 DetailInfoRow(
                     systemName: "globe",

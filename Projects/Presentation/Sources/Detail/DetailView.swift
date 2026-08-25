@@ -25,7 +25,7 @@ struct DetailView: View {
         DetailTab.allCases.filter { tab in
             switch tab {
             case .photos: return self.store.images.isEmpty == false
-            case .map: return self.store.isLoading == false
+            case .map: return self.store.isLoading == false && self.store.detail.address.isEmpty == false
             case .info: return true
             }
         }
@@ -141,12 +141,14 @@ private extension DetailView {
                         TabiTag(Strings.AddCustomPlace.customBadgeTitle, color: .tabiTextTertiary)
                     }
                 }
-                Spacer()
-                HStack(spacing: 3) {
-                    Image(systemName: "location.fill")
-                        .font(.system(size: 10))
-                        .foregroundStyle(TabiColor.tabiTextTertiary)
-                    TabiLabel(title: self.store.detail.address, style: .captionM, color: .tabiTextTertiary, alignment: .trailing, lineLimit: 1)
+                if self.store.detail.address.isEmpty == false {
+                    Spacer()
+                    HStack(spacing: 3) {
+                        Image(systemName: "location.fill")
+                            .font(.system(size: 10))
+                            .foregroundStyle(TabiColor.tabiTextTertiary)
+                        TabiLabel(title: self.store.detail.address, style: .captionM, color: .tabiTextTertiary, alignment: .trailing, lineLimit: 1)
+                    }
                 }
             }
             .padding(.top, 12)
@@ -219,6 +221,7 @@ private extension DetailView {
 
     func infoLoadingPlaceholder() -> some View {
         ProgressView()
+            .tint(Color.getTabiColor(.tabiPrimary))
             .frame(maxWidth: .infinity)
             .padding(.vertical, 40)
     }
