@@ -23,6 +23,7 @@ public struct PlanFeature: Sendable {
     @Dependency(\.travelPlanShareUseCase) var travelPlanShareUseCase
     @Dependency(\.shoppingPlanItemUseCase) var shoppingPlanItemUseCase
     @Dependency(\.toolBarItemUseCase) var toolBarItemUseCase
+    @Dependency(\.toastCenter) var toastCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -204,12 +205,15 @@ private enum CancelID {
 
 private extension PlanFeature {
     func fetchPlansEffect() -> Effect<Action> {
-        .run { [travelPlanUseCase = self.travelPlanUseCase] send in
+        .run { [travelPlanUseCase = self.travelPlanUseCase, toastCenter = self.toastCenter] send in
             do {
                 let plans = try await travelPlanUseCase.fetch()
                 await send(.plansResult(plans))
             } catch {
                 AppLogger.view.log(.error, "일정 목록 조회 실패: \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.plansResult([]))
             }
         }
@@ -217,7 +221,7 @@ private extension PlanFeature {
     }
 
     func fetchSpotCountsEffect(plans: [TravelPlan]) -> Effect<Action> {
-        .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase] send in
+        .run { [travelPlanDetailUseCase = self.travelPlanDetailUseCase, toastCenter = self.toastCenter] send in
             var counts: [UUID: Int] = [:]
             await withTaskGroup(of: (UUID, Int).self) { group in
                 for plan in plans {
@@ -227,6 +231,9 @@ private extension PlanFeature {
                             return (plan.id, detail?.spots.count ?? 0)
                         } catch {
                             AppLogger.view.log(.error, "일정 스팟 개수 조회 실패 (planId: \(plan.id)): \(error.localizedDescription)")
+                            if error.isNetworkOriginatedError {
+                                toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                            }
                             return (plan.id, 0)
                         }
                     }
@@ -241,12 +248,15 @@ private extension PlanFeature {
     }
 
     func removePlanEffect(planId: UUID) -> Effect<Action> {
-        .run { [travelPlanUseCase = self.travelPlanUseCase] send in
+        .run { [travelPlanUseCase = self.travelPlanUseCase, toastCenter = self.toastCenter] send in
             do {
                 try await travelPlanUseCase.remove(planId: planId)
                 await send(.planDeleted(id: planId))
             } catch {
                 AppLogger.view.log(.error, "일정 삭제 실패 (planId: \(planId)): \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
             }
         }
     }
@@ -257,7 +267,8 @@ private extension PlanFeature {
             travelPlanUseCase = self.travelPlanUseCase,
             travelPlanDetailUseCase = self.travelPlanDetailUseCase,
             shoppingPlanItemUseCase = self.shoppingPlanItemUseCase,
-            toolBarItemUseCase = self.toolBarItemUseCase
+            toolBarItemUseCase = self.toolBarItemUseCase,
+            toastCenter = self.toastCenter
         ] send in
             _ = url.startAccessingSecurityScopedResource()
             defer { url.stopAccessingSecurityScopedResource() }
@@ -271,6 +282,9 @@ private extension PlanFeature {
                 await send(.importResult(true))
             } catch {
                 AppLogger.view.log(.error, "일정 가져오기 실패 (fileName: \(url.lastPathComponent)): \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
                 await send(.importResult(false))
             }
         }
