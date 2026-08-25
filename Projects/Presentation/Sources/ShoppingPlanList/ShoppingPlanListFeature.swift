@@ -129,7 +129,10 @@ public struct ShoppingPlanListFeature: Sendable {
 
             case .editItemDeleted(let indexSet):
                 state.items.remove(atOffsets: indexSet)
-                return .none
+                state.items = state.items.enumerated().map { index, item in
+                    ShoppingPlanItem(id: item.id, planId: item.planId, order: index, title: item.title, note: item.note, isChecked: item.isChecked)
+                }
+                return self.deleteItemsEffect(planId: state.plan.id, items: state.items)
 
             case .editCancelButtonTapped:
                 if let snapshot = state.editSnapshot {
@@ -212,6 +215,18 @@ private extension ShoppingPlanListFeature {
             } catch {
                 AppLogger.view.log(.error, "쇼핑 리스트 항목 추가 저장 실패 (planId: \(planId)): \(error.localizedDescription)")
                 await send(.addItemFailed(id: addedItemId))
+            }
+        }
+    }
+
+    /// 스와이프 삭제는 낙관적으로 처리한다: UI에서는 즉시 제거된 상태를 유지하고,
+    /// 저장 실패 시에도 목록을 되돌리지 않으며 에러만 로깅한다
+    func deleteItemsEffect(planId: UUID, items: [ShoppingPlanItem]) -> Effect<Action> {
+        .run { [shoppingPlanItemUseCase = self.shoppingPlanItemUseCase] _ in
+            do {
+                try await shoppingPlanItemUseCase.replace(planId: planId, items: items)
+            } catch {
+                AppLogger.view.log(.error, "쇼핑 리스트 항목 삭제 저장 실패 (planId: \(planId)): \(error.localizedDescription)")
             }
         }
     }
