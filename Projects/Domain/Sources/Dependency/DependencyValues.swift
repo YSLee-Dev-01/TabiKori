@@ -110,4 +110,9 @@ extension DependencyValues {
         get {self[ToastCenterDependencyKey.self]}
         set {self[ToastCenterDependencyKey.self] = newValue}
     }
+
+    public var settingInfoUseCase: SettingInfoUseCaseProtocol {
+        get {self[SettingInfoUseCaseDependencyKey.self]}
+        set {self[SettingInfoUseCaseDependencyKey.self] = newValue}
+    }
 }
