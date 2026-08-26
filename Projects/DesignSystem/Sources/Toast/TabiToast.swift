@@ -28,12 +28,21 @@ public struct TabiToast: View {
 
     private let message: String
     private let style: Style
+    private let actionButtonTitle: String?
+    private let onActionTapped: (() -> Void)?
 
     // MARK: - Init
 
-    public init(message: String, style: Style) {
+    public init(
+        message: String,
+        style: Style,
+        actionButtonTitle: String? = nil,
+        onActionTapped: (() -> Void)? = nil
+    ) {
         self.message = message
         self.style = style
+        self.actionButtonTitle = actionButtonTitle
+        self.onActionTapped = onActionTapped
     }
 
     // MARK: - View
@@ -52,6 +61,13 @@ public struct TabiToast: View {
             )
 
             Spacer(minLength: 0)
+
+            if let actionButtonTitle = self.actionButtonTitle, let onActionTapped = self.onActionTapped {
+                Button(action: onActionTapped) {
+                    TabiLabel(title: actionButtonTitle, style: .captionMBold, color: self.accentColor)
+                }
+                .buttonStyle(TabiPressStyle())
+            }
         }
         .padding(.vertical, 14)
         .padding(.horizontal, 18)
@@ -90,24 +106,37 @@ private extension TabiToast {
 private struct TabiToastModifier: ViewModifier {
     let message: String?
     let style: TabiToast.Style
+    let actionButtonTitle: String?
+    let onActionTapped: (() -> Void)?
 
     func body(content: Content) -> some View {
         content
-            .overlay(alignment: .bottom) {
-                if let message = self.message {
-                    TabiToast(message: message, style: self.style)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 100)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-            }
-            .animation(.tabiSpring, value: self.message)
+            .background(
+                ToastOverlayWindowAccessor(
+                    message: self.message,
+                    style: self.style,
+                    actionButtonTitle: self.actionButtonTitle,
+                    onActionTapped: self.onActionTapped
+                )
+                .frame(width: 0, height: 0)
+            )
     }
 }
 
 public extension View {
-    /// 화면 하단에 Toast를 오버레이로 표시한다. `message`가 `nil`이면 표시하지 않는다
-    func tabiToast(message: String?, style: TabiToast.Style) -> some View {
-        self.modifier(TabiToastModifier(message: message, style: style))
+    /// 앱 최상단의 별도 오버레이 윈도우로 Toast를 표시한다. `.sheet()`/`.fullScreenCover()` 위에서도 항상 최상단에 보인다.
+    /// `message`가 `nil`이면 표시하지 않는다
+    func tabiToast(
+        message: String?,
+        style: TabiToast.Style,
+        actionButtonTitle: String? = nil,
+        onActionTapped: (() -> Void)? = nil
+    ) -> some View {
+        self.modifier(TabiToastModifier(
+            message: message,
+            style: style,
+            actionButtonTitle: actionButtonTitle,
+            onActionTapped: onActionTapped
+        ))
     }
 }
