@@ -23,7 +23,7 @@ public final class AutoScrollToTodayRepository: AutoScrollToTodayRepositoryProto
     }
 
     public func isEnabled() -> Bool {
-        return self.userDefault.get(forKey: .autoScrollToTodayEnabled) ?? false
+        return self.userDefault.get(forKey: .autoScrollToTodayEnabled) ?? true
     }
 
     public func setEnabled(_ isEnabled: Bool) {
