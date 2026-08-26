@@ -272,16 +272,21 @@ private extension PlanFeature {
         ] send in
             _ = url.startAccessingSecurityScopedResource()
             defer { url.stopAccessingSecurityScopedResource() }
+            var addedPlanId: UUID?
             do {
                 let data = try Data(contentsOf: url)
                 let (plan, detail, shoppingItems, toolBarItems) = try travelPlanShareUseCase.importPlan(from: data)
                 try await travelPlanUseCase.add(plan)
+                addedPlanId = plan.id
                 try await travelPlanDetailUseCase.add(detail)
                 try await shoppingPlanItemUseCase.replace(planId: plan.id, items: shoppingItems)
                 try await toolBarItemUseCase.replace(planId: plan.id, items: toolBarItems)
                 await send(.importResult(true))
             } catch {
                 AppLogger.view.log(.error, "일정 가져오기 실패 (fileName: \(url.lastPathComponent)): \(error.localizedDescription)")
+                if let addedPlanId {
+                    try? await travelPlanUseCase.remove(planId: addedPlanId)
+                }
                 if error.isNetworkOriginatedError {
                     toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
                 }

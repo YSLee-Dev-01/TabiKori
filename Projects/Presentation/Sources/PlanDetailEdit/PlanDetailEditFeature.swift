@@ -191,8 +191,8 @@ private extension PlanDetailEditFeature {
     func shrinkAndSaveEffect(plan: TravelPlan, fromDayIndex: Int) -> Effect<Action> {
         .run { [travelPlanUseCase = self.travelPlanUseCase, travelPlanDetailUseCase = self.travelPlanDetailUseCase] send in
             do {
-                try await travelPlanDetailUseCase.removeSpots(planId: plan.id, fromDayIndex: fromDayIndex)
                 try await travelPlanUseCase.update(plan)
+                try await travelPlanDetailUseCase.removeSpots(planId: plan.id, fromDayIndex: fromDayIndex)
                 await send(.planUpdated(plan))
             } catch {
                 AppLogger.view.log(.error, "일정 수정(날짜 축소) 실패 (planId: \(plan.id)): \(error.localizedDescription)")
