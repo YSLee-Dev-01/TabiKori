@@ -509,6 +509,8 @@ public extension Strings.Setting {
     static let etcInfoTitle = "その他の情報"
     /// 문의하기 행 타이틀
     static let etcContactTitle = "お問い合わせ"
+    /// 메일 앱 미설정 기기에서 문의하기 탭 시 안내 메시지
+    static let mailNotAvailableMessage = "メールアプリが設定されていません"
     /// 버전 정보 행 타이틀
     static let etcVersionTitle = "バージョン情報"
     /// 비활성화(TODO) 행 보조 라벨
@@ -516,8 +518,8 @@ public extension Strings.Setting {
 
     /// 데이터 출처 안내 본문
     static let dataSourceContent = "本アプリは韓国観光公社 多言語観光情報サービス(EngService2)、NAVER 地図・Geocoding API、為替レートAPIの情報を利用しています。"
-    /// 오픈소스 라이선스 안내 본문
-    static let licenseContent = "本アプリは以下のオープンソースライブラリを使用しています。\n\n・swift-composable-architecture\n・Kingfisher\n・lottie-ios\n・firebase-ios-sdk\n・SPM-NMapsMap"
+    /// 오픈소스 라이선스 안내 본문. 각 라이브러리명 + 라이센스 종류 + 저작권 고지(GitHub license API/LICENSE 파일 기준 확인)
+    static let licenseContent = "本アプリは以下のライブラリ・SDKを使用しています。\n\n・swift-composable-architecture — MIT License\n   © Point-Free, Inc.\n\n・Kingfisher — MIT License\n   © Wei Wang\n\n・lottie-ios — Apache License 2.0\n   © Airbnb, Inc.\n\n・firebase-ios-sdk — Apache License 2.0\n   © Google LLC\n\n・SPM-NMapsMap (NAVER Maps SDK) — プロプライエタリライセンス\n   © NAVER Corp. All rights reserved."
     /// 기타 정보 안내 본문 (TODO: 내용 추가 예정)
     static let etcInfoContent = ""
     /// 버전 정보 표시 (%@: 버전, %@: 빌드번호)
