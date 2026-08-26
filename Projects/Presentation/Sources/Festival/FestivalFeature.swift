@@ -11,6 +11,7 @@ import Foundation
 import ComposableArchitecture
 import Core
 import Domain
+import Resource
 
 /// `FestivalFeature`에서 현재 캘린더 편집 대상이 되는 날짜 필드
 public enum FestivalDateField: Equatable, Hashable, Sendable {
@@ -30,6 +31,7 @@ public enum FestivalLoadState: Equatable, Sendable {
 public struct FestivalFeature: Sendable {
 
     @Dependency(\.festivalUseCase) var festivalUseCase
+    @Dependency(\.toastCenter) var toastCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -145,7 +147,7 @@ private extension FestivalFeature {
         let endDate = state.endDate
         let regionCode = state.selectedRegionCode
 
-        return .run { [festivalUseCase = self.festivalUseCase] send in
+        return .run { [festivalUseCase = self.festivalUseCase, toastCenter = self.toastCenter] send in
             do {
                 let festivals = try await festivalUseCase.fetchFestivals(
                     startDate: startDate,
@@ -161,6 +163,7 @@ private extension FestivalFeature {
                     return
                 }
                 AppLogger.view.log(.error, "행사 검색 실패: \(error.localizedDescription)")
+                toastCenter.show(ToastItem(message: Strings.RegionSpot.errorDescription, type: .error))
                 await send(.festivalsFailed)
             }
         }

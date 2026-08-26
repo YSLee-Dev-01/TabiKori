@@ -33,6 +33,7 @@ public struct DetailFeature {
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
     @Dependency(\.naverMapUseCase) var naverMapUseCase
     @Dependency(\.bookmarkUseCase) var bookmarkUseCase
+    @Dependency(\.toastCenter) var toastCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -192,7 +193,7 @@ public struct DetailFeature {
                 state.hasReceivedDetail = true
                 state.hasDetailFailed = true
                 state.isLoading = !state.hasReceivedAllResults
-                return .none
+                return state.loadFailed ? self.loadFailedToastEffect() : .none
 
             case .introResult(let intro):
                 state.intro = intro
@@ -204,7 +205,7 @@ public struct DetailFeature {
                 state.hasReceivedIntro = true
                 state.hasIntroFailed = true
                 state.isLoading = !state.hasReceivedAllResults
-                return .none
+                return state.loadFailed ? self.loadFailedToastEffect() : .none
 
             case .imagesResult(let images):
                 state.images = images
@@ -219,7 +220,7 @@ public struct DetailFeature {
                 state.hasReceivedImages = true
                 state.hasImagesFailed = true
                 state.isLoading = !state.hasReceivedAllResults
-                return .none
+                return state.loadFailed ? self.loadFailedToastEffect() : .none
 
             case .isBookmarkedResult(let isSaved):
                 state.isSaved = isSaved
@@ -287,6 +288,12 @@ private extension DetailFeature {
                 AppLogger.view.log(.error, "관광지 이미지 조회 실패: \(error.localizedDescription)")
                 await send(.imagesFailed)
             }
+        }
+    }
+
+    func loadFailedToastEffect() -> Effect<Action> {
+        .run { [toastCenter = self.toastCenter] _ in
+            toastCenter.show(ToastItem(message: Strings.RegionSpot.errorDescription, type: .error))
         }
     }
 
