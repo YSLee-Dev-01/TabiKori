@@ -30,6 +30,12 @@ public struct PlanDetailView: View {
     // isMovingForward가 이미 다음 탭의 값으로 덮어써진 상태로 이전 탭의 액션을 보내버려, 잘못된
     // 방향으로 전환되거나 전환 중이던 뷰가 중간에 멈춘 것처럼 보이는 잔상이 생긴다
     @State private var pendingDayChangeTrigger: PlanDetailNextFrameTrigger?
+    // 자동 정렬(오늘 일자로 이동)로 인한 최초 진입 시의 selectedDayIndex 보정은 애니메이션 없이
+    // 즉시 반영되어야 하고, 이후 사용자가 직접 day 칩을 탭하거나 전체보기를 종료할 때만
+    // 기존 좌우 슬라이드 애니메이션이 적용되어야 한다. onAppear가 store.send(.onAppear)를 보내
+    // 리듀서가 동기적으로 selectedDayIndex를 today로 보정한 "직후" 다음 런루프 틱에 이 플래그를
+    // true로 전환해, 그 보정 자체는 애니메이션 없이 반영되고 이후 변경부터 애니메이션이 걸리게 한다
+    @State private var hasAppliedInitialDaySelection: Bool = false
 
     public init(store: StoreOf<PlanDetailFeature>) {
         self.store = store
@@ -119,7 +125,9 @@ public struct PlanDetailView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(.tabiStandard, value: self.store.selectedDayIndex)
+        // 최초 자동 정렬(오늘 일자) 보정은 애니메이션을 타지 않도록, 플래그가 세워지기 전까지는
+        // 애니메이션을 nil로 둔다. 이후 day 칩 탭 등 사용자 인터랙션에는 다시 정상적으로 애니메이션된다
+        .animation(self.hasAppliedInitialDaySelection ? .tabiStandard : nil, value: self.store.selectedDayIndex)
         .animation(.tabiStandard, value: self.store.isEditing)
         .animation(.tabiStandard, value: self.store.isFullOverview)
         .animation(.tabiStandard, value: self.store.visibleDayIndex)
@@ -193,6 +201,12 @@ public struct PlanDetailView: View {
         }
         .onAppear {
             self.store.send(.onAppear)
+            // store.send(.onAppear)는 동기적으로 리듀서를 실행하므로, 이 시점에는 이미 자동 정렬
+            // 보정(있다면)이 state에 반영된 뒤다. 다음 런루프 틱으로 미뤄 그 보정 자체가 애니메이션
+            // 없이 커밋되도록 한 뒤에 플래그를 올린다
+            DispatchQueue.main.async {
+                self.hasAppliedInitialDaySelection = true
+            }
         }
         .onChange(of: self.store.isFullOverview) { _, isFullOverview in
             self.isDayHeaderHidden = false
@@ -270,6 +284,17 @@ private extension PlanDetailView {
                 // 홈 화면 등에서 initialDayIndex로 진입했을 때, 선택된 일자 칩이 화면 가운데 오도록 정렬한다.
                 // 첫 번째 칩(index 0)은 스크롤 시작점이라 anchor: .center를 줘도 좌측에 그대로 붙어(회귀 없음)
                 proxy.scrollTo(self.store.selectedDayIndex, anchor: .center)
+            }
+            // day 칩을 탭할 때마다 선택된 칩이 가운데로 오도록 재정렬한다(BookmarkCategoryFilterBar와 동일 패턴).
+            // 단, 최초 자동 정렬(오늘 일자) 보정 시에는 body의 dayTransition과 마찬가지로 애니메이션 없이 즉시 반영한다
+            .onChange(of: self.store.selectedDayIndex) { _, newIndex in
+                guard self.hasAppliedInitialDaySelection else {
+                    proxy.scrollTo(newIndex, anchor: .center)
+                    return
+                }
+                withAnimation(.tabiStandard) {
+                    proxy.scrollTo(newIndex, anchor: .center)
+                }
             }
         }
     }
