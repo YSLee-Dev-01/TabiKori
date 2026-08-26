@@ -20,6 +20,11 @@ extension DependencyValues {
         get {self[AutoScrollToTodayUseCaseDependencyKey.self]}
         set {self[AutoScrollToTodayUseCaseDependencyKey.self] = newValue}
     }
+
+    public var autoTranslateSearchUseCase: AutoTranslateSearchUseCaseProtocol {
+        get {self[AutoTranslateSearchUseCaseDependencyKey.self]}
+        set {self[AutoTranslateSearchUseCaseDependencyKey.self] = newValue}
+    }
     
     public var locationUseCase: LocationUseCaseProtocol {
         get {self[LocationUseCaseDependencyKey.self]}

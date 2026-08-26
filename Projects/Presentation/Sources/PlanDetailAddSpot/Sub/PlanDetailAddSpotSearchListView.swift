@@ -18,19 +18,30 @@ struct PlanDetailAddSpotSearchListView: View {
     let results: [TouristSpot]
     let isLoading: Bool
     let hasSearched: Bool
+    let isAutoTranslateSearchEnabled: Bool
     let focus: FocusState<Bool>.Binding
     let onSubmit: () -> Void
     let onSpotTapped: (TouristSpot) -> Void
     let onSubwayStationTapped: (SubwayStation) -> Void
+    let onTranslateTapped: () -> Void
 
     var body: some View {
         VStack(spacing: 8) {
-            TabiSearchField(
-                placeholder: Strings.Map.searchPlaceholder,
-                text: self.$keyword,
-                focus: self.focus,
-                onSubmit: self.onSubmit
-            )
+            HStack(spacing: 8) {
+                TabiSearchField(
+                    placeholder: Strings.Map.searchPlaceholder,
+                    text: self.$keyword,
+                    focus: self.focus,
+                    onSubmit: self.onSubmit
+                )
+
+                if self.isAutoTranslateSearchEnabled {
+                    TabiCircleIconButton(systemName: TabiIcon.translate.rawValue) {
+                        self.onTranslateTapped()
+                    }
+                    .accessibilityLabel(Strings.Map.translateSearchButtonAccessibilityLabel)
+                }
+            }
             .padding(.horizontal, 20)
 
             TabiLabel(title: Strings.Map.searchLanguageGuide, style: .captionM, color: .tabiTextSecondary)

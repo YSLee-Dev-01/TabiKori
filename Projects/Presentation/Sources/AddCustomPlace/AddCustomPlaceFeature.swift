@@ -22,6 +22,7 @@ public struct AddCustomPlaceFeature: Sendable {
     @Dependency(\.subwayStationUseCase) var subwayStationUseCase
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
     @Dependency(\.bookmarkUseCase) var bookmarkUseCase
+    @Dependency(\.autoTranslateSearchUseCase) var autoTranslateSearchUseCase
     @Dependency(\.toastCenter) var toastCenter
     @Dependency(\.dismiss) var dismiss
 
@@ -51,8 +52,13 @@ public struct AddCustomPlaceFeature: Sendable {
         var isSearchLoading: Bool = false
         var hasSearched: Bool = false
         var isSearchNextPageLoading: Bool = false
+        var isAutoTranslateSearchEnabled: Bool = false
+        /// View가 관찰해 Translation 프레임워크로 번역을 실행해야 하는 트리거. 값이 채워지면 View가 번역을 실행하고 결과를 돌려준다
+        var pendingTranslationQuery: String?
         fileprivate var searchPage: Int = 1
         fileprivate var hasMoreSearchResults: Bool = true
+        /// 번역 유도 Toast를 띄웠을 때의 id. ToastCenter의 액션 탭 이벤트가 이 id와 일치할 때만 번역을 트리거한다
+        fileprivate var translationToastId: UUID?
 
         @Presents var alert: AlertState<Action.Alert>?
 
@@ -83,6 +89,7 @@ public struct AddCustomPlaceFeature: Sendable {
 
     public enum Action: BindableAction, Equatable {
         case binding(BindingAction<State>)
+        case onAppear
         case closeTapped
         case tabSelected(AddCustomPlaceTab)
         case categorySelected(CategoryType)
@@ -107,6 +114,10 @@ public struct AddCustomPlaceFeature: Sendable {
         case searchResultsResult([TouristSpot])
         case searchStationResultsResult([SubwayStation])
         case searchNextPageResultsResult([TouristSpot])
+        case translateSearchButtonTapped
+        case toastActionTapReceived(UUID)
+        case translationResultReceived(String)
+        case translationFailed
 
         public enum Alert: Equatable {}
     }
@@ -117,6 +128,10 @@ public struct AddCustomPlaceFeature: Sendable {
         BindingReducer()
         Reduce { state, action in
             switch action {
+            case .onAppear:
+                state.isAutoTranslateSearchEnabled = self.autoTranslateSearchUseCase.isEnabled()
+                return self.subscribeToastActionTapEffect()
+
             case .binding(\.address):
                 state.previewCoordinate = nil
                 return .none
@@ -134,6 +149,7 @@ public struct AddCustomPlaceFeature: Sendable {
                 state.searchResults = []
                 state.searchStationResults = []
                 state.hasSearched = false
+                state.translationToastId = nil
                 return .merge(
                     .cancel(id: CancelID.searchSpots),
                     .cancel(id: CancelID.searchStations)
@@ -272,6 +288,7 @@ public struct AddCustomPlaceFeature: Sendable {
                 state.hasSearched = true
                 state.searchPage = 1
                 state.hasMoreSearchResults = true
+                state.translationToastId = nil
                 return .merge(
                     self.searchSpotsEffect(keyword: keyword, pageNo: 1),
                     self.searchStationsEffect(keyword: keyword)
@@ -298,7 +315,7 @@ public struct AddCustomPlaceFeature: Sendable {
                 state.searchResults = spots
                 state.isSearchLoading = false
                 state.hasMoreSearchResults = spots.count >= self.searchPageSize
-                return .none
+                return self.showTranslationSuggestionIfNeededEffect(&state)
 
             case .searchStationResultsResult(let stations):
                 state.searchStationResults = stations
@@ -309,6 +326,31 @@ public struct AddCustomPlaceFeature: Sendable {
                 state.isSearchNextPageLoading = false
                 state.hasMoreSearchResults = spots.count >= self.searchPageSize
                 return .none
+
+            case .translateSearchButtonTapped:
+                guard state.trimmedSearchQuery.isEmpty == false else {
+                    return self.showEmptyQueryGuideEffect()
+                }
+                state.pendingTranslationQuery = state.trimmedSearchQuery
+                return .none
+
+            case .toastActionTapReceived(let toastId):
+                guard state.translationToastId == toastId else { return .none }
+                guard state.trimmedSearchQuery.isEmpty == false else {
+                    return self.showEmptyQueryGuideEffect()
+                }
+                state.pendingTranslationQuery = state.trimmedSearchQuery
+                return .none
+
+            case .translationResultReceived(let translatedQuery):
+                state.pendingTranslationQuery = nil
+                guard translatedQuery.isEmpty == false else { return .none }
+                state.searchQuery = translatedQuery
+                return .send(.searchSubmitted)
+
+            case .translationFailed:
+                state.pendingTranslationQuery = nil
+                return self.showTranslationFailedEffect()
             }
         }
         .ifLet(\.$alert, action: \.alert)
@@ -324,6 +366,7 @@ private enum CancelID {
     case resolveStation
     case searchSpots
     case searchStations
+    case toastActionSubscription
 }
 
 // MARK: - Method
@@ -505,5 +548,53 @@ private extension AddCustomPlaceFeature {
             }
         }
         .cancellable(id: CancelID.save, cancelInFlight: true)
+    }
+
+    /// 검색어가 비어 있는 상태로 번역 버튼(아이콘 또는 Toast 액션)이 눌렸을 때, 조용히 무시하는 대신
+    /// 안내 Toast를 띄운다
+    func showEmptyQueryGuideEffect() -> Effect<Action> {
+        .run { [toastCenter = self.toastCenter] _ in
+            toastCenter.show(ToastItem(
+                message: Strings.Map.translateSearchEmptyQueryGuideMessage,
+                type: .info
+            ))
+        }
+    }
+
+    /// 번역 실패 시 에러 Toast를 띄운다
+    func showTranslationFailedEffect() -> Effect<Action> {
+        .run { [toastCenter = self.toastCenter] _ in
+            toastCenter.show(ToastItem(message: Strings.Map.translateFailedMessage, type: .error))
+        }
+    }
+
+    func subscribeToastActionTapEffect() -> Effect<Action> {
+        .run { [toastCenter = self.toastCenter] send in
+            for await toastId in toastCenter.actionTapEvents {
+                await send(.toastActionTapReceived(toastId))
+            }
+        }
+        .cancellable(id: CancelID.toastActionSubscription, cancelInFlight: true)
+    }
+
+    /// 자동 번역 검색 flag가 켜져 있고, 검색어가 일본어이며, 검색 결과(관광지·지하철역)가 모두 비어 있을 때만
+    /// "한국어로 번역 후 검색" 유도 Toast를 노출한다
+    func showTranslationSuggestionIfNeededEffect(_ state: inout State) -> Effect<Action> {
+        guard state.isAutoTranslateSearchEnabled,
+              state.trimmedSearchQuery.isEmpty == false,
+              state.trimmedSearchQuery.containsJapanese,
+              state.searchResults.isEmpty,
+              state.searchStationResults.isEmpty else { return .none }
+
+        let toastId = UUID()
+        state.translationToastId = toastId
+        return .run { [toastCenter = self.toastCenter] _ in
+            toastCenter.show(ToastItem(
+                id: toastId,
+                message: Strings.Map.searchResultEmptyTitle,
+                type: .info,
+                actionButtonTitle: Strings.Map.translateAndSearchButtonTitle
+            ))
+        }
     }
 }

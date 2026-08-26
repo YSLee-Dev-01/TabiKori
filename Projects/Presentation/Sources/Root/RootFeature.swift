@@ -30,6 +30,7 @@ public struct RootFeature {
         case toastEventReceived(ToastItem)
         case toastQueueAdvanced
         case toastDismissed
+        case toastActionButtonTapped
         case tabBar(TabBarFeature.Action)
     }
 
@@ -71,6 +72,13 @@ public struct RootFeature {
                 state.currentToast = nil
                 return .send(.toastQueueAdvanced)
 
+            case .toastActionButtonTapped:
+                guard let toastId = state.currentToast?.id else { return .none }
+                return .merge(
+                    self.notifyToastActionTappedEffect(id: toastId),
+                    .send(.toastDismissed)
+                )
+
             case .tabBar:
                 return .none
             }
@@ -106,5 +114,11 @@ private extension RootFeature {
             await send(.toastDismissed)
         }
         .cancellable(id: CancelID.toastAutoDismiss, cancelInFlight: true)
+    }
+
+    func notifyToastActionTappedEffect(id: UUID) -> Effect<Action> {
+        .run { [toastCenter = self.toastCenter] _ in
+            toastCenter.notifyActionTapped(id: id)
+        }
     }
 }

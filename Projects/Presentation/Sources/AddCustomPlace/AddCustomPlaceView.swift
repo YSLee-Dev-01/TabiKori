@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+@preconcurrency import Translation
 
 import ComposableArchitecture
 import Core
@@ -22,6 +23,7 @@ public struct AddCustomPlaceView: View {
     @FocusState private var isTitleFocused: Bool
     @FocusState private var isAddressFocused: Bool
     @FocusState private var isSearchFieldFocused: Bool
+    @State private var translationConfiguration: TranslationSession.Configuration?
 
     public init(store: StoreOf<AddCustomPlaceFeature>) {
         self.store = store
@@ -85,6 +87,33 @@ public struct AddCustomPlaceView: View {
             self.isTitleFocused = false
             self.isAddressFocused = false
             self.isSearchFieldFocused = false
+        }
+        .onAppear {
+            self.store.send(.onAppear)
+        }
+        .onChange(of: self.store.pendingTranslationQuery) { _, newValue in
+            guard newValue != nil else { return }
+            // TranslationSession.Configuration은 Equatable이라 동일한 source/target으로 새 인스턴스를 만들어도
+            // 이전 값과 같다고 판단되어 .translationTask가 재실행되지 않는다. 이미 Configuration이 있다면
+            // invalidate()로 명시적으로 무효화해야 동일 언어쌍으로도 번역이 다시 실행된다
+            guard self.translationConfiguration != nil else {
+                self.translationConfiguration = TranslationSession.Configuration(
+                    source: Locale.Language(languageCode: .japanese),
+                    target: Locale.Language(languageCode: .korean)
+                )
+                return
+            }
+            self.translationConfiguration?.invalidate()
+        }
+        .translationTask(self.translationConfiguration) { session in
+            guard let query = self.store.pendingTranslationQuery else { return }
+            do {
+                let response = try await session.translate(query)
+                self.store.send(.translationResultReceived(response.targetText))
+            } catch {
+                AppLogger.view.log(.error, "検索語の翻訳に失敗: \(error.localizedDescription)")
+                self.store.send(.translationFailed)
+            }
         }
     }
 }
@@ -264,14 +293,27 @@ private extension AddCustomPlaceView {
     }
 
     func searchField() -> some View {
-        TabiTextField(
-            placeholder: Strings.Map.searchPlaceholder,
-            text: self.$store.searchQuery,
-            focus: self.$isSearchFieldFocused
-        )
-        .onSubmit {
-            self.store.send(.searchSubmitted)
+        HStack(spacing: 8) {
+            TabiTextField(
+                placeholder: Strings.Map.searchPlaceholder,
+                text: self.$store.searchQuery,
+                focus: self.$isSearchFieldFocused
+            )
+            .onSubmit {
+                self.store.send(.searchSubmitted)
+            }
+
+            if self.store.isAutoTranslateSearchEnabled {
+                self.translateSearchButton()
+            }
         }
+    }
+
+    func translateSearchButton() -> some View {
+        TabiCircleIconButton(systemName: TabiIcon.translate.rawValue) {
+            self.store.send(.translateSearchButtonTapped)
+        }
+        .accessibilityLabel(Strings.Map.translateSearchButtonAccessibilityLabel)
     }
 
     @ViewBuilder

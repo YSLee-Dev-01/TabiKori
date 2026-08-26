@@ -7,8 +7,10 @@
 //
 
 import SwiftUI
+@preconcurrency import Translation
 
 import ComposableArchitecture
+import Core
 import DesignSystem
 import Domain
 import Resource
@@ -21,6 +23,7 @@ struct PlanDetailAddSpotView: View {
     @FocusState private var isSearchFocused: Bool
     @FocusState private var isAddressTitleFocused: Bool
     @FocusState private var isAddressFieldFocused: Bool
+    @State private var translationConfiguration: TranslationSession.Configuration?
 
     init(store: StoreOf<PlanDetailAddSpotFeature>) {
         self.store = store
@@ -46,6 +49,33 @@ struct PlanDetailAddSpotView: View {
         .onChange(of: self.isAddressFieldFocused) { _, isFocused in
             guard isFocused else { return }
             self.selectedDetent = .large
+        }
+        .onAppear {
+            self.store.send(.onAppear)
+        }
+        .onChange(of: self.store.pendingTranslationQuery) { _, newValue in
+            guard newValue != nil else { return }
+            // TranslationSession.Configuration은 Equatable이라 동일한 source/target으로 새 인스턴스를 만들어도
+            // 이전 값과 같다고 판단되어 .translationTask가 재실행되지 않는다. 이미 Configuration이 있다면
+            // invalidate()로 명시적으로 무효화해야 동일 언어쌍으로도 번역이 다시 실행된다
+            guard self.translationConfiguration != nil else {
+                self.translationConfiguration = TranslationSession.Configuration(
+                    source: Locale.Language(languageCode: .japanese),
+                    target: Locale.Language(languageCode: .korean)
+                )
+                return
+            }
+            self.translationConfiguration?.invalidate()
+        }
+        .translationTask(self.translationConfiguration) { session in
+            guard let query = self.store.pendingTranslationQuery else { return }
+            do {
+                let response = try await session.translate(query)
+                self.store.send(.translationResultReceived(response.targetText))
+            } catch {
+                AppLogger.view.log(.error, "検索語の翻訳に失敗: \(error.localizedDescription)")
+                self.store.send(.translationFailed)
+            }
         }
     }
 }
@@ -120,10 +150,12 @@ private extension PlanDetailAddSpotView {
                     results: self.store.searchResults,
                     isLoading: self.store.isSearchLoading,
                     hasSearched: self.store.hasSearched,
+                    isAutoTranslateSearchEnabled: self.store.isAutoTranslateSearchEnabled,
                     focus: self.$isSearchFocused,
                     onSubmit: { self.store.send(.searchSubmitted) },
                     onSpotTapped: { self.store.send(.spotRowTapped($0)) },
-                    onSubwayStationTapped: { self.store.send(.subwayStationTapped($0)) }
+                    onSubwayStationTapped: { self.store.send(.subwayStationTapped($0)) },
+                    onTranslateTapped: { self.store.send(.translateSearchButtonTapped) }
                 )
 
             case .address:

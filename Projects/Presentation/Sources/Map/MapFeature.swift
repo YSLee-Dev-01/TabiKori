@@ -11,6 +11,7 @@ import Foundation
 import ComposableArchitecture
 import Core
 import Domain
+import Resource
 
 // MARK: - MapFeature
 
@@ -21,6 +22,7 @@ public struct MapFeature: Sendable {
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
     @Dependency(\.searchHistoryUseCase) var searchHistoryUseCase
     @Dependency(\.subwayStationUseCase) var subwayStationUseCase
+    @Dependency(\.autoTranslateSearchUseCase) var autoTranslateSearchUseCase
     @Dependency(\.toastCenter) var toastCenter
 
     private let searchPageSize = 50
@@ -44,9 +46,13 @@ public struct MapFeature: Sendable {
         var isSearchNextPageLoading: Bool = false
         var recentSearches: [SearchHistory] = []
         var hasMapMovedSinceSearch: Bool = false
+        var isAutoTranslateSearchEnabled: Bool = false
+        /// View가 관찰해 Translation 프레임워크로 번역을 실행해야 하는 트리거. 값이 채워지면 View가 번역을 실행하고 결과를 돌려준다
+        var pendingTranslationQuery: String?
         var isCategorySearchActive: Bool { self.activeCategory != nil }
         var activeCategoryLabel: String? { self.activeCategory?.label }
         var showsResearchButton: Bool { self.mode == .result && self.isCategorySearchActive && self.hasMapMovedSinceSearch }
+        var showsTranslateSearchButton: Bool { self.isAutoTranslateSearchEnabled && self.mode == .typing }
         fileprivate var hasLoadedInitial: Bool = false
         fileprivate var searchPage: Int = 1
         fileprivate var hasMoreSearchResults: Bool = true
@@ -54,6 +60,8 @@ public struct MapFeature: Sendable {
         fileprivate var activeCategoryCoordinate: Coordinate?
         fileprivate var activeCategoryRadiusMeters: Int?
         fileprivate var isTrackingUserDrag: Bool = false
+        /// 번역 유도 Toast를 띄웠을 때의 id. ToastCenter의 액션 탭 이벤트가 이 id와 일치할 때만 번역을 트리거한다
+        fileprivate var translationToastId: UUID?
 
         public init() {}
     }
@@ -83,6 +91,10 @@ public struct MapFeature: Sendable {
         case researchResultsResult([TouristSpot])
         case searchNextPageResultsResult([TouristSpot])
         case recentSearchesLoaded([SearchHistory])
+        case translateSearchButtonTapped
+        case toastActionTapReceived(UUID)
+        case translationResultReceived(String)
+        case translationFailed
     }
 
     public init() {}
@@ -97,6 +109,7 @@ public struct MapFeature: Sendable {
             case .searchFieldTapped:
                 state.mode = .typing
                 state.panelStage = .full
+                state.isAutoTranslateSearchEnabled = self.autoTranslateSearchUseCase.isEnabled()
                 return self.fetchRecentSearchesEffect()
 
             case .searchCancelTapped:
@@ -134,6 +147,7 @@ public struct MapFeature: Sendable {
                 state.searchPage = 1
                 state.hasMoreSearchResults = true
                 state.hasMapMovedSinceSearch = false
+                state.translationToastId = nil
                 return .merge(
                     self.addSearchHistoryEffect(keyword: keyword),
                     self.searchEffect(keyword: keyword),
@@ -210,19 +224,21 @@ public struct MapFeature: Sendable {
                 return .none
 
             case .onAppear:
+                state.isAutoTranslateSearchEnabled = self.autoTranslateSearchUseCase.isEnabled()
                 guard state.hasLoadedInitial == false else { return .none }
                 state.hasLoadedInitial = true
                 state.locationStatus = self.locationUseCase.checkAuthorization()
 
+                let toastSubscriptionEffect = self.subscribeToastActionTapEffect()
                 switch state.locationStatus {
                 case .undetermined:
-                    return .send(.requestLocationPermission)
+                    return .merge(toastSubscriptionEffect, .send(.requestLocationPermission))
 
                 case .allowed:
-                    return self.fetchCoordinateEffect()
+                    return .merge(toastSubscriptionEffect, self.fetchCoordinateEffect())
 
                 case .denied:
-                    return .send(.fallbackToSeoul)
+                    return .merge(toastSubscriptionEffect, .send(.fallbackToSeoul))
                 }
 
             case .requestLocationPermission:
@@ -257,7 +273,7 @@ public struct MapFeature: Sendable {
                 if spots.contains(where: { $0.coordinate.isValid }) {
                     state.searchResultFitToken += 1
                 }
-                return .none
+                return self.showTranslationSuggestionIfNeededEffect(&state)
 
             case .subwayResultsResult(let stations):
                 state.subwayResults = stations
@@ -278,6 +294,31 @@ public struct MapFeature: Sendable {
             case .recentSearchesLoaded(let histories):
                 state.recentSearches = histories
                 return .none
+
+            case .translateSearchButtonTapped:
+                guard state.searchQuery.isEmpty == false else {
+                    return self.showEmptyQueryGuideEffect()
+                }
+                state.pendingTranslationQuery = state.searchQuery
+                return .none
+
+            case .toastActionTapReceived(let toastId):
+                guard state.translationToastId == toastId else { return .none }
+                guard state.searchQuery.isEmpty == false else {
+                    return self.showEmptyQueryGuideEffect()
+                }
+                state.pendingTranslationQuery = state.searchQuery
+                return .none
+
+            case .translationResultReceived(let translatedQuery):
+                state.pendingTranslationQuery = nil
+                guard translatedQuery.isEmpty == false else { return .none }
+                state.searchQuery = translatedQuery
+                return .send(.searchSubmitted)
+
+            case .translationFailed:
+                state.pendingTranslationQuery = nil
+                return self.showTranslationFailedEffect()
             }
         }
     }
@@ -289,6 +330,7 @@ private enum CancelID {
     case search
     case subwaySearch
     case resolveStation
+    case toastActionSubscription
 }
 
 // MARK: - Method
@@ -508,6 +550,54 @@ private extension MapFeature {
         .cancellable(id: CancelID.search, cancelInFlight: true)
     }
 
+    /// 검색어가 비어 있는 상태로 번역 버튼(아이콘 또는 Toast 액션)이 눌렸을 때, 조용히 무시하는 대신
+    /// 안내 Toast를 띄운다
+    func showEmptyQueryGuideEffect() -> Effect<Action> {
+        .run { [toastCenter = self.toastCenter] _ in
+            toastCenter.show(ToastItem(
+                message: Strings.Map.translateSearchEmptyQueryGuideMessage,
+                type: .info
+            ))
+        }
+    }
+
+    /// 번역 실패 시 에러 Toast를 띄운다
+    func showTranslationFailedEffect() -> Effect<Action> {
+        .run { [toastCenter = self.toastCenter] _ in
+            toastCenter.show(ToastItem(message: Strings.Map.translateFailedMessage, type: .error))
+        }
+    }
+
+    func subscribeToastActionTapEffect() -> Effect<Action> {
+        .run { [toastCenter = self.toastCenter] send in
+            for await toastId in toastCenter.actionTapEvents {
+                await send(.toastActionTapReceived(toastId))
+            }
+        }
+        .cancellable(id: CancelID.toastActionSubscription, cancelInFlight: true)
+    }
+
+    /// 자동 번역 검색 flag가 켜져 있고, 검색어가 일본어이며, 검색 결과(관광지·지하철역)가 모두 비어 있을 때만
+    /// "한국어로 번역 후 검색" 유도 Toast를 노출한다
+    func showTranslationSuggestionIfNeededEffect(_ state: inout State) -> Effect<Action> {
+        guard state.isAutoTranslateSearchEnabled,
+              state.searchQuery.isEmpty == false,
+              state.searchQuery.containsJapanese,
+              state.searchResults.isEmpty,
+              state.subwayResults.isEmpty else { return .none }
+
+        let toastId = UUID()
+        state.translationToastId = toastId
+        return .run { [toastCenter = self.toastCenter] _ in
+            toastCenter.show(ToastItem(
+                id: toastId,
+                message: Strings.Map.searchResultEmptyTitle,
+                type: .info,
+                actionButtonTitle: Strings.Map.translateAndSearchButtonTitle
+            ))
+        }
+    }
+
     func clampedRadiusMeters(_ radiusMeters: Double) -> Int {
         let clamped = min(
             max(radiusMeters, Double(TouristSpotSearchRadius.minMeters)),
@@ -531,5 +621,7 @@ private extension MapFeature {
         state.activeCategoryRadiusMeters = nil
         state.hasMapMovedSinceSearch = false
         state.isTrackingUserDrag = false
+        state.translationToastId = nil
+        state.pendingTranslationQuery = nil
     }
 }

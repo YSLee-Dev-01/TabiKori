@@ -186,6 +186,14 @@ public extension Strings.Map {
     static let loading = "読み込み中"
     /// 검색 TF 하단 안내 문구 (한국어·영어 검색 권장 + 역명 가타카나 검색 안내 통합)
     static let searchLanguageGuide = "韓国語・英語で検索すると、より正確な結果が得られます。駅名の検索はカタカナのみに対応しています"
+    /// 번역 후 재검색 유도 Toast 액션 버튼 타이틀
+    static let translateAndSearchButtonTitle = "韓国語に翻訳して検索"
+    /// TF 옆 번역 아이콘 버튼 접근성 라벨
+    static let translateSearchButtonAccessibilityLabel = "検索語を韓国語に翻訳して検索"
+    /// 검색어 미입력 상태에서 번역 버튼을 눌렀을 때의 안내 Toast 메시지
+    static let translateSearchEmptyQueryGuideMessage = "日本語を入力してから翻訳ボタンを押してください"
+    /// 번역 실패 시 노출되는 에러 Toast 메시지
+    static let translateFailedMessage = "翻訳に失敗しました。もう一度お試しください"
 }
 
 public extension Strings.Bookmark {
@@ -477,6 +485,13 @@ public extension Strings.Setting {
     static let autoScrollToTodayRowTitle = "今日の日程へ自動移動"
     /// 오늘 날짜 자동 이동 토글 행 설명
     static let autoScrollToTodayRowDescription = "日程詳細を開いたとき、今日に該当する日を自動的に表示します"
+
+    /// 검색 섹션 타이틀
+    static let searchSectionTitle = "検索"
+    /// 자동 번역 검색 토글 행 타이틀
+    static let autoTranslateSearchRowTitle = "自動翻訳検索"
+    /// 자동 번역 검색 토글 행 설명
+    static let autoTranslateSearchRowDescription = "日本語で検索して結果が見つからないとき、韓国語に翻訳して再検索するボタンを表示します"
 
     /// 데이터 초기화 섹션 타이틀
     static let dataResetSectionTitle = "データの初期化"

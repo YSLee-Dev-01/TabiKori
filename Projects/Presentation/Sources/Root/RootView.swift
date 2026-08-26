@@ -40,7 +40,9 @@ public struct RootView: View {
         }
         .tabiToast(
             message: self.store.currentToast?.message,
-            style: self.toastStyle(for: self.store.currentToast?.type)
+            style: self.toastStyle(for: self.store.currentToast?.type),
+            actionButtonTitle: self.store.currentToast?.actionButtonTitle,
+            onActionTapped: { self.store.send(.toastActionButtonTapped) }
         )
     }
 }

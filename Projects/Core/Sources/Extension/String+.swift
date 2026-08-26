@@ -48,4 +48,12 @@ public extension String {
         guard self.count > length else { return self }
         return String(self.prefix(length)) + trailing
     }
+
+    /// 히라가나(぀-ゟ)·가타카나(゠-ヿ)·가타카나 음성 확장(ㇰ-ㇿ) 범위 문자를 포함하는지 판별
+    var containsJapanese: Bool {
+        let japanesePattern = "[\\u3040-\\u309F\\u30A0-\\u30FF\\u31F0-\\u31FF]"
+        guard let japaneseRegex = try? NSRegularExpression(pattern: japanesePattern) else { return false }
+        let range = NSRange(self.startIndex..., in: self)
+        return japaneseRegex.firstMatch(in: self, range: range) != nil
+    }
 }

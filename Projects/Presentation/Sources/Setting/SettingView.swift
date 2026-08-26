@@ -27,6 +27,7 @@ public struct SettingView: View {
             VStack(spacing: 20) {
                 self.gpsSection()
                 self.planDetailSection()
+                self.searchSection()
                 self.dataResetSection()
                 self.etcSection()
             }
@@ -99,6 +100,19 @@ private extension SettingView {
                 isOn: Binding(
                     get: { self.store.isAutoScrollToTodayEnabled },
                     set: { self.store.send(.autoScrollToTodayToggled($0)) }
+                )
+            )
+        }
+    }
+
+    func searchSection() -> some View {
+        SettingSectionCard(title: Strings.Setting.searchSectionTitle) {
+            SettingToggleRow(
+                title: Strings.Setting.autoTranslateSearchRowTitle,
+                description: Strings.Setting.autoTranslateSearchRowDescription,
+                isOn: Binding(
+                    get: { self.store.isAutoTranslateSearchEnabled },
+                    set: { self.store.send(.autoTranslateSearchToggled($0)) }
                 )
             )
         }

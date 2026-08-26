@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+@preconcurrency import Translation
 import UIKit
 
 import ComposableArchitecture
@@ -14,6 +15,11 @@ import Core
 import DesignSystem
 import Domain
 import Resource
+
+/// 검색 텍스트필드/언어 안내멘트의 실제 프레임을 시트 위치 계산에서 공유하기 위한 좌표공간 이름
+private enum MapViewCoordinateSpace {
+    static let root = "MapView.root"
+}
 
 public struct MapView: View {
 
@@ -26,11 +32,26 @@ public struct MapView: View {
     @State private var keyboardHeight: CGFloat = 0
     @State private var lastTappedSpotID: String?
     @State private var isPanelDragging: Bool = false
+    @State private var translationConfiguration: TranslationSession.Configuration?
+    // 검색 텍스트필드/언어 안내멘트의 실제 렌더링 하단 Y좌표(mapRoot 좌표공간 기준). topBarHeight
+    // 같은 집계 높이를 거치지 않고 이 값을 직접 시트 높이 계산에 사용해, 안내멘트가 조건부로
+    // 나타나는 프레임에서 시트 위치가 한 프레임 지연되어 안내멘트를 가리는 문제를 없앤다
+    @State private var searchFieldBottomY: CGFloat = 0
+    @State private var languageGuideBottomY: CGFloat = 0
 
     fileprivate var baseFullHeight: CGFloat { max(0, self.mapContainerHeight - self.topBarHeight) }
     fileprivate var baseHalfHeight: CGFloat { min(self.baseFullHeight, self.mapContainerHeight * 0.42) }
     fileprivate var baseCollapsedHeight: CGFloat { min(self.baseHalfHeight, 140) }
     fileprivate var isKeyboardVisible: Bool { self.keyboardHeight > 0 }
+
+    /// 검색 중(typing) 시트 상단이 위치해야 할 실측 Y좌표. 키보드가 올라와 안내멘트가 노출된 상태라면
+    /// 안내멘트 바로 아래, 그렇지 않다면 검색 텍스트필드 바로 아래를 가리킨다
+    fileprivate var typingPanelTopY: CGFloat {
+        (self.isKeyboardVisible && self.languageGuideBottomY > 0) ? self.languageGuideBottomY : self.searchFieldBottomY
+    }
+    fileprivate var typingFullHeight: CGFloat {
+        self.searchFieldBottomY > 0 ? max(0, self.mapContainerHeight - self.typingPanelTopY) : self.baseFullHeight
+    }
 
     public init(store: StoreOf<MapFeature>) {
         self.store = store
@@ -43,6 +64,7 @@ public struct MapView: View {
                     self.topBar()
                 }
         }
+        .coordinateSpace(name: MapViewCoordinateSpace.root)
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.height
@@ -68,6 +90,14 @@ public struct MapView: View {
         .onChange(of: self.store.mode) { _, mode in
             self.isSearchFieldFocused = mode == .typing
         }
+        // 안내멘트가 사라지는 시점(키보드가 내려가거나 typing 모드를 벗어남)에 이전 측정값이
+        // 남아 typingPanelTopY 계산에 잘못 쓰이지 않도록 즉시 초기화한다
+        .onChange(of: self.store.mode == .typing && self.isKeyboardVisible) { _, isGuideVisible in
+            guard isGuideVisible == false else { return }
+            withAnimation(.tabiStandard) {
+                self.languageGuideBottomY = 0
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { notification in
             guard self.isPanelDragging == false else { return }
             guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
@@ -87,6 +117,30 @@ public struct MapView: View {
             // 마운트 시점의 상태를 한 틱 뒤에 다시 동기화해 이 경우에도 키보드가 올라오게 한다
             DispatchQueue.main.async {
                 self.isSearchFieldFocused = self.store.mode == .typing
+            }
+        }
+        .onChange(of: self.store.pendingTranslationQuery) { _, newValue in
+            guard newValue != nil else { return }
+            // TranslationSession.Configuration은 Equatable이라 동일한 source/target으로 새 인스턴스를 만들어도
+            // 이전 값과 같다고 판단되어 .translationTask가 재실행되지 않는다. 이미 Configuration이 있다면
+            // invalidate()로 명시적으로 무효화해야 동일 언어쌍으로도 번역이 다시 실행된다
+            guard self.translationConfiguration != nil else {
+                self.translationConfiguration = TranslationSession.Configuration(
+                    source: Locale.Language(languageCode: .japanese),
+                    target: Locale.Language(languageCode: .korean)
+                )
+                return
+            }
+            self.translationConfiguration?.invalidate()
+        }
+        .translationTask(self.translationConfiguration) { session in
+            guard let query = self.store.pendingTranslationQuery else { return }
+            do {
+                let response = try await session.translate(query)
+                self.store.send(.translationResultReceived(response.targetText))
+            } catch {
+                AppLogger.view.log(.error, "検索語の翻訳に失敗: \(error.localizedDescription)")
+                self.store.send(.translationFailed)
             }
         }
     }
@@ -264,7 +318,7 @@ private extension MapView {
             stage: self.store.panelStage,
             collapsedHeight: self.baseCollapsedHeight,
             halfHeight: self.baseHalfHeight,
-            fullHeight: self.baseFullHeight,
+            fullHeight: self.store.mode == .typing ? self.typingFullHeight : self.baseFullHeight,
             tabBarHeight: self.tabBarHeight,
             onStageChanged: { stage in self.store.send(.panelDragEnded(stage)) },
             onDismiss: { self.cancelSearch() },
@@ -451,6 +505,10 @@ private extension MapView {
                     )
                     .matchedGeometryEffect(id: "mapSearchField", in: self.searchFieldNamespace)
 
+                    if self.store.showsTranslateSearchButton {
+                        self.translateSearchButton()
+                    }
+
                     self.searchCancelButton()
 
                 case .result:
@@ -466,12 +524,26 @@ private extension MapView {
                 }
             }
             .padding(.horizontal, 20)
+            // 검색 텍스트필드 행의 실제 하단 Y좌표를 직접 측정한다. 키보드가 내려가 있을 때
+            // 시트 상단이 이 위치 바로 아래에 오도록 하는 기준값으로 쓰인다
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                proxy.frame(in: .named(MapViewCoordinateSpace.root)).maxY
+            } action: { newValue in
+                self.searchFieldBottomY = newValue
+            }
 
             // 키보드가 실제로 올라와 검색어를 입력 중일 때만 안내를 노출한다
             if self.store.mode == .typing && self.isKeyboardVisible {
                 self.languageGuideBadge()
                     .padding(.horizontal, 20)
                     .transition(.opacity)
+                    // 안내멘트의 실제 하단 Y좌표를 직접 측정한다. 키보드가 올라와 있을 때
+                    // 시트 상단이 이 위치 바로 아래(안내멘트를 가리지 않고 바로 이어지는 위치)에 오도록 하는 기준값으로 쓰인다
+                    .onGeometryChange(for: CGFloat.self) { proxy in
+                        proxy.frame(in: .named(MapViewCoordinateSpace.root)).maxY
+                    } action: { newValue in
+                        self.languageGuideBottomY = newValue
+                    }
             }
 
             if self.store.mode == .map {
@@ -562,6 +634,13 @@ private extension MapView {
         } label: {
             TabiLabel(title: Strings.Map.searchCancel, style: .bodyM, color: .tabiTextSecondary)
         }
+    }
+
+    func translateSearchButton() -> some View {
+        TabiCircleIconButton(systemName: TabiIcon.translate.rawValue) {
+            self.store.send(.translateSearchButtonTapped)
+        }
+        .accessibilityLabel(Strings.Map.translateSearchButtonAccessibilityLabel)
     }
 
     func categoryChips() -> some View {
