@@ -46,6 +46,7 @@ public struct TabiFestivalRow: View {
                                     .foregroundStyle(TabiColor.tabiTextTertiary)
                             }
                     }
+                    .resizable()
                     .scaledToFill()
                     .frame(width: 64, height: 64)
                     .clipShape(RoundedRectangle(cornerRadius: .tabiRadiusMd))
