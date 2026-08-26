@@ -52,6 +52,20 @@ public struct SettingView: View {
             SettingInfoView(store: store)
                 .presentationDetents([.medium, .large])
         }
+        .sheet(isPresented: Binding(
+            get: { self.store.isMailComposePresented },
+            set: { isPresented in
+                guard isPresented == false else { return }
+                self.store.send(.mailComposeDismissed)
+            }
+        )) {
+            SettingMailComposeView(
+                recipient: SettingEtcItem.contactEmailAddress,
+                subject: Strings.Setting.etcContactTitle,
+                onFinish: { self.store.send(.mailComposeDismissed) }
+            )
+            .ignoresSafeArea()
+        }
         .alert($store.scope(state: \.alert, action: \.alert))
         .onAppear {
             self.store.send(.onAppear)
@@ -117,7 +131,7 @@ private extension SettingView {
     @ViewBuilder
     func etcRow(_ item: SettingEtcItem) -> some View {
         switch item.kind {
-        case .staticText:
+        case .staticText, .mailCompose:
             SettingRow(title: item.title) {
                 self.store.send(.etcRowTapped(item))
             }

@@ -23,6 +23,7 @@ public enum SettingEtcItem: CaseIterable, Identifiable, Equatable {
     public enum Kind: Equatable {
         case staticText(SettingInfoContentType)
         case versionDisplay
+        case mailCompose
         case disabled
     }
 
@@ -43,7 +44,8 @@ public enum SettingEtcItem: CaseIterable, Identifiable, Equatable {
         case .license: return .staticText(.license)
         case .etcInfo: return .staticText(.etcInfo)
         case .version: return .versionDisplay
-        case .privacyPolicy, .contact: return .disabled
+        case .contact: return .mailCompose
+        case .privacyPolicy: return .disabled
         }
     }
 }
@@ -56,4 +58,11 @@ extension SettingEtcItem {
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "-"
         return Strings.Setting.versionTitle(version, build)
     }
+}
+
+// MARK: - Contact
+
+extension SettingEtcItem {
+    /// 문의하기(お問い合わせ) 메일 수신 주소. 시크릿이 아니므로 코드에 직접 사용한다
+    public static let contactEmailAddress = "contact.tabikori@gmail.com"
 }

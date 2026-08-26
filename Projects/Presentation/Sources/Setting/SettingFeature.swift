@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import MessageUI
 import UIKit
 
 import ComposableArchitecture
@@ -20,12 +21,14 @@ public struct SettingFeature: Sendable {
     @Dependency(\.locationUseCase) var locationUseCase
     @Dependency(\.dataResetUseCase) var dataResetUseCase
     @Dependency(\.autoScrollToTodayUseCase) var autoScrollToTodayUseCase
+    @Dependency(\.toastCenter) var toastCenter
 
     @ObservableState
     public struct State: Equatable {
         var locationStatus: LocationAuthorizationStatus = .denied
         var isResetting: Bool = false
         var isAutoScrollToTodayEnabled: Bool = false
+        var isMailComposePresented: Bool = false
         @Presents var infoState: SettingInfoFeature.State?
         @Presents var alert: AlertState<Action.Alert>?
 
@@ -39,6 +42,7 @@ public struct SettingFeature: Sendable {
         case resetRowTapped
         case autoScrollToTodayToggled(Bool)
         case etcRowTapped(SettingEtcItem)
+        case mailComposeDismissed
         case resetResult(Bool)
         case resetCompleted
         case info(PresentationAction<SettingInfoFeature.Action>)
@@ -102,10 +106,23 @@ public struct SettingFeature: Sendable {
                 switch item.kind {
                 case .staticText(let contentType):
                     state.infoState = SettingInfoFeature.State(contentType: contentType)
+                    return .none
+
+                case .mailCompose:
+                    guard MFMailComposeViewController.canSendMail() else {
+                        return .run { [toastCenter = self.toastCenter] _ in
+                            toastCenter.show(ToastItem(message: Strings.Setting.mailNotAvailableMessage, type: .error))
+                        }
+                    }
+                    state.isMailComposePresented = true
+                    return .none
 
                 case .versionDisplay, .disabled:
-                    break
+                    return .none
                 }
+
+            case .mailComposeDismissed:
+                state.isMailComposePresented = false
                 return .none
 
             case .resetResult(true):
