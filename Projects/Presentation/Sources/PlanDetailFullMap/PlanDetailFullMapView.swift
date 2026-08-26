@@ -115,7 +115,14 @@ private extension PlanDetailFullMapView {
 
     func spotCarousel() -> some View {
         VStack(spacing: 8) {
+            // 인디케이터의 미선택 dot은 반투명 흰색이라, 밝은 지도 타일 위에서는 대비가 부족해 거의 보이지
+            // 않는다. glassEffect는 지도 위에서 너무 옅어 여전히 눈에 띄지 않아, 어두운 scrim 캡슐로 대비를 확보한다.
+            // TabiPageIndicator 자체는 PhotoViewer/DetailHeroView 등 배경 없이 쓰이는 다른 화면에서도 재사용되므로,
+            // 공용 컴포넌트를 바꾸지 않고 이 화면 호출부에서만 배경을 추가한다
             TabiPageIndicator(count: self.store.spots.count, currentIndex: self.currentSpotIndex)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.getTabiColor(.tabiScrim).opacity(0.6), in: Capsule())
 
             ScrollView(.horizontal) {
                 HStack(spacing: 12) {
@@ -124,7 +131,7 @@ private extension PlanDetailFullMapView {
                             spot: spot,
                             isSelected: spot.id == self.store.selectedSpotId
                         ) {
-                            self.store.send(.spotSelected(spot.id))
+                            self.store.send(.cardTapped(spot.id))
                         }
                         .id(spot.id)
                     }
@@ -151,6 +158,10 @@ private extension PlanDetailFullMapView {
                 }
             )
             .scrollIndicators(.hidden)
+            // iOS 26부터 ScrollView 가장자리에 기본으로 흐림/디밍 처리되는 scroll edge effect가 자동
+            // 적용되어(Liquid Glass), 지도 위 카드 캐러셀 좌우 가장자리에 의도치 않은 옅은 배경이 보였다.
+            // 이 캐러셀은 카드 자체 배경(TabiColor.tabiSurface)만으로 충분히 구분되므로 가로 방향에서는 끈다
+            .scrollEdgeEffectHidden(true, for: .horizontal)
             .scrollPosition(id: self.$scrolledSpotID, anchor: .leading)
             .scrollTargetBehavior(.viewAligned)
             // 첫 카드는 HStack 앞에 있던 leading padding 덕에 화면 왼쪽 가장자리에서 20pt 떨어져

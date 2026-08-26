@@ -200,6 +200,10 @@ public struct TabBarFeature {
                 )))
                 return .none
 
+            case .path(.element(id: _, action: .planDetailFullMap(.delegate(.spotReselected(let spot))))):
+                state.path.append(.detail(DetailFeature.State(touristSpot: spot.toTouristSpot())))
+                return .none
+
             case .path(.element(id: _, action: .festival(.festivalTapped(let festival)))):
                 state.path.append(.detail(DetailFeature.State(touristSpot: festival.touristSpot)))
                 return .none
