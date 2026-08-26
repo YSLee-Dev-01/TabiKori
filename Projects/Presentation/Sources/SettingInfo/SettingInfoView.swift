@@ -23,7 +23,7 @@ public struct SettingInfoView: View {
     public var body: some View {
         ScrollView {
             TabiLabel(
-                title: self.store.contentType.content,
+                title: self.store.displayedContent,
                 style: .bodyM,
                 color: .tabiTextPrimary,
                 isExpanded: true
@@ -35,6 +35,9 @@ public struct SettingInfoView: View {
                 self.closeButton()
             }
             .padding(.top, 20)
+        }
+        .onAppear {
+            self.store.send(.onAppear)
         }
     }
 }
