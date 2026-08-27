@@ -79,6 +79,7 @@ private extension PlanView {
                     Button(Strings.Plan.editMenuTitle) {
                         self.store.send(.editModeToggleTapped)
                     }
+                    .disabled(self.store.plans.isEmpty)
                     Button(Strings.Plan.importMenuTitle) {
                         self.store.send(.importButtonTapped)
                     }
