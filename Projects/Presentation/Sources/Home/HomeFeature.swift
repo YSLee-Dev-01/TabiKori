@@ -126,6 +126,8 @@ public struct HomeFeature: Sendable {
                 return .merge(locationEffect, exchangeRateEffect, festivalEffect)
 
             case .refreshTriggered:
+                state.locationStatus = self.locationUseCase.checkAuthorization()
+
                 let festivalEffect: Effect<Action>
                 if state.festivals.isEmpty {
                     state.isLoadingFestivals = true
@@ -134,7 +136,13 @@ public struct HomeFeature: Sendable {
                     festivalEffect = .none
                 }
 
-                guard state.currentRegion.isKorea else { return festivalEffect }
+                guard state.currentRegion.isKorea else {
+                    // 위치 권한이 새로 허용됐지만 아직 지역이 반영되지 않은 상태라면, 지역을 즉시 조회해
+                    // 위치모드(주변 정보/여행 플랜)로 전환한다. onAppear와 달리 새로고침은 사용자가 명시적으로
+                    // 요청한 즉시 동작이어야 하므로 지역 조회 전 대기 시간을 두지 않는다
+                    guard state.locationStatus == .allowed else { return festivalEffect }
+                    return .merge(festivalEffect, self.fetchRegionEffect())
+                }
                 return .merge(self.fetchNearbySpotsEffect(), festivalEffect)
 
             case .requestLocationPermission:
@@ -284,6 +292,17 @@ private enum CancelID {
 // MARK: - Method
 
 private extension HomeFeature {
+    func fetchRegionEffect() -> Effect<Action> {
+        .run { [locationUseCase = self.locationUseCase] send in
+            do {
+                let region = try await locationUseCase.fetchCurrentRegion()
+                await send(.regionResult(region))
+            } catch {
+                AppLogger.view.log(.error, "현재 지역 조회 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
     func fetchNearbySpotsEffect() -> Effect<Action> {
         .run { [
             locationUseCase = self.locationUseCase,
