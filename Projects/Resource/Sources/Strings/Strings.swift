@@ -191,7 +191,9 @@ public extension Strings.Map {
     /// TF 옆 번역 아이콘 버튼 접근성 라벨
     static let translateSearchButtonAccessibilityLabel = "検索語を韓国語に翻訳して検索"
     /// 검색어 미입력 상태에서 번역 버튼을 눌렀을 때의 안내 Toast 메시지
-    static let translateSearchEmptyQueryGuideMessage = "日本語を入力してから翻訳ボタンを押してください"
+    static let translateSearchEmptyQueryGuideMessage = "翻訳ボタンをご利用いただくには、日本語で入力していただけますようお願いいたします"
+    /// 검색어가 일본어를 포함하지 않는 상태(예: 한국어 입력)에서 번역 버튼을 눌렀을 때의 안내 Toast 메시지
+    static let translateSearchNonJapaneseInputGuideMessage = "この機能は日本語入力時のみご利用いただけます"
     /// 번역 실패 시 노출되는 에러 Toast 메시지
     static let translateFailedMessage = "翻訳に失敗しました。もう一度お試しください"
 }

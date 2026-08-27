@@ -7,7 +7,6 @@
 //
 
 import SwiftUI
-@preconcurrency import Translation
 import UIKit
 
 import ComposableArchitecture
@@ -32,12 +31,14 @@ public struct MapView: View {
     @State private var keyboardHeight: CGFloat = 0
     @State private var lastTappedSpotID: String?
     @State private var isPanelDragging: Bool = false
-    @State private var translationConfiguration: TranslationSession.Configuration?
     // 검색 텍스트필드/언어 안내멘트의 실제 렌더링 하단 Y좌표(mapRoot 좌표공간 기준). topBarHeight
     // 같은 집계 높이를 거치지 않고 이 값을 직접 시트 높이 계산에 사용해, 안내멘트가 조건부로
     // 나타나는 프레임에서 시트 위치가 한 프레임 지연되어 안내멘트를 가리는 문제를 없앤다
     @State private var searchFieldBottomY: CGFloat = 0
     @State private var languageGuideBottomY: CGFloat = 0
+
+    /// 시트 상단과 기준 뷰(안내멘트/텍스트필드) 하단 사이에 둘 여백
+    private let sheetTopMargin: CGFloat = 10
 
     fileprivate var baseFullHeight: CGFloat { max(0, self.mapContainerHeight - self.topBarHeight) }
     fileprivate var baseHalfHeight: CGFloat { min(self.baseFullHeight, self.mapContainerHeight * 0.42) }
@@ -45,9 +46,11 @@ public struct MapView: View {
     fileprivate var isKeyboardVisible: Bool { self.keyboardHeight > 0 }
 
     /// 검색 중(typing) 시트 상단이 위치해야 할 실측 Y좌표. 키보드가 올라와 안내멘트가 노출된 상태라면
-    /// 안내멘트 바로 아래, 그렇지 않다면 검색 텍스트필드 바로 아래를 가리킨다
+    /// 안내멘트 하단에서 sheetTopMargin만큼, 그렇지 않다면 검색 텍스트필드 하단에서 sheetTopMargin만큼
+    /// 떨어진 위치를 가리킨다
     fileprivate var typingPanelTopY: CGFloat {
-        (self.isKeyboardVisible && self.languageGuideBottomY > 0) ? self.languageGuideBottomY : self.searchFieldBottomY
+        let baseY = (self.isKeyboardVisible && self.languageGuideBottomY > 0) ? self.languageGuideBottomY : self.searchFieldBottomY
+        return baseY > 0 ? baseY + self.sheetTopMargin : baseY
     }
     fileprivate var typingFullHeight: CGFloat {
         self.searchFieldBottomY > 0 ? max(0, self.mapContainerHeight - self.typingPanelTopY) : self.baseFullHeight
@@ -87,6 +90,13 @@ public struct MapView: View {
         .animation(.tabiStandard, value: self.store.mode)
         .animation(.tabiStandard, value: self.store.showsResearchButton)
         .animation(.tabiStandard, value: self.isKeyboardVisible)
+        // typingFullHeight(시트 full 높이)가 참조하는 실측값들이 서로 다른 타이밍(NotificationCenter/
+        // onGeometryChange)에 갱신되며 애니메이션 컨텍스트 없이 스냅되면, 시트가 순간적으로
+        // 아래로 내려갔다 다시 올라오는 것처럼 보일 수 있다. 세 값 모두 명시적으로 애니메이션에 포함시켜
+        // 갱신 타이밍이 달라도 항상 같은 곡선으로 부드럽게 반영되도록 한다
+        .animation(.tabiStandard, value: self.keyboardHeight)
+        .animation(.tabiStandard, value: self.languageGuideBottomY)
+        .animation(.tabiStandard, value: self.searchFieldBottomY)
         .onChange(of: self.store.mode) { _, mode in
             self.isSearchFieldFocused = mode == .typing
         }
@@ -99,6 +109,7 @@ public struct MapView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { notification in
+            print("SHEET_DEBUG keyboardWillChangeFrame isPanelDragging=\(self.isPanelDragging)"); fflush(stdout)
             guard self.isPanelDragging == false else { return }
             guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
             let screenHeight = UIApplication.shared.connectedScenes
@@ -107,6 +118,7 @@ public struct MapView: View {
             self.keyboardHeight = max(0, screenHeight - frame.origin.y)
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            print("SHEET_DEBUG keyboardWillHide isPanelDragging=\(self.isPanelDragging)"); fflush(stdout)
             guard self.isPanelDragging == false else { return }
             self.keyboardHeight = 0
         }
@@ -119,30 +131,11 @@ public struct MapView: View {
                 self.isSearchFieldFocused = self.store.mode == .typing
             }
         }
-        .onChange(of: self.store.pendingTranslationQuery) { _, newValue in
-            guard newValue != nil else { return }
-            // TranslationSession.Configuration은 Equatable이라 동일한 source/target으로 새 인스턴스를 만들어도
-            // 이전 값과 같다고 판단되어 .translationTask가 재실행되지 않는다. 이미 Configuration이 있다면
-            // invalidate()로 명시적으로 무효화해야 동일 언어쌍으로도 번역이 다시 실행된다
-            guard self.translationConfiguration != nil else {
-                self.translationConfiguration = TranslationSession.Configuration(
-                    source: Locale.Language(languageCode: .japanese),
-                    target: Locale.Language(languageCode: .korean)
-                )
-                return
-            }
-            self.translationConfiguration?.invalidate()
-        }
-        .translationTask(self.translationConfiguration) { session in
-            guard let query = self.store.pendingTranslationQuery else { return }
-            do {
-                let response = try await session.translate(query)
-                self.store.send(.translationResultReceived(response.targetText))
-            } catch {
-                AppLogger.view.log(.error, "検索語の翻訳に失敗: \(error.localizedDescription)")
-                self.store.send(.translationFailed)
-            }
-        }
+        .translateSearchTask(
+            pendingQuery: self.store.translateSearch.pendingTranslationQuery,
+            onResult: { self.store.send(.translateSearch(.translationResultReceived($0))) },
+            onFailure: { self.store.send(.translateSearch(.translationFailed)) }
+        )
     }
 }
 
@@ -314,7 +307,8 @@ private extension MapView {
     }
 
     func searchPanel() -> some View {
-        MapSearchPanelView(
+        let _ = { print("SHEET_DEBUG mode=\(self.store.mode) stage=\(self.store.panelStage) kbVisible=\(self.isKeyboardVisible) kbH=\(self.keyboardHeight) isPanelDragging=\(self.isPanelDragging) mapH=\(self.mapContainerHeight) topBarH=\(self.topBarHeight) fieldBottomY=\(self.searchFieldBottomY) guideBottomY=\(self.languageGuideBottomY) topY=\(self.typingPanelTopY) fullH=\(self.typingFullHeight) baseFullH=\(self.baseFullHeight)"); fflush(stdout) }()
+        return MapSearchPanelView(
             stage: self.store.panelStage,
             collapsedHeight: self.baseCollapsedHeight,
             halfHeight: self.baseHalfHeight,
@@ -323,10 +317,14 @@ private extension MapView {
             onStageChanged: { stage in self.store.send(.panelDragEnded(stage)) },
             onDismiss: { self.cancelSearch() },
             onDragStarted: {
+                print("SHEET_DEBUG onDragStarted"); fflush(stdout)
                 self.isPanelDragging = true
                 self.isSearchFieldFocused = false
             },
-            onDragEnded: { self.isPanelDragging = false }
+            onDragEnded: {
+                print("SHEET_DEBUG onDragEnded kbH=\(self.keyboardHeight)"); fflush(stdout)
+                self.isPanelDragging = false
+            }
         ) {
             if self.store.mode == .typing {
                 self.recentSearchContent()
@@ -638,7 +636,7 @@ private extension MapView {
 
     func translateSearchButton() -> some View {
         TabiCircleIconButton(systemName: TabiIcon.translate.rawValue) {
-            self.store.send(.translateSearchButtonTapped)
+            self.store.send(.translateSearch(.translateButtonRequested(query: self.store.searchQuery)))
         }
         .accessibilityLabel(Strings.Map.translateSearchButtonAccessibilityLabel)
     }

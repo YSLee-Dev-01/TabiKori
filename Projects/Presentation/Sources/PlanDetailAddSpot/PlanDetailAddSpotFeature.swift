@@ -23,7 +23,6 @@ public struct PlanDetailAddSpotFeature: Sendable {
     @Dependency(\.travelPlanDetailUseCase) var travelPlanDetailUseCase
     @Dependency(\.subwayStationUseCase) var subwayStationUseCase
     @Dependency(\.naverGeocodingUseCase) var naverGeocodingUseCase
-    @Dependency(\.autoTranslateSearchUseCase) var autoTranslateSearchUseCase
     @Dependency(\.toastCenter) var toastCenter
     @Dependency(\.dismiss) var dismiss
 
@@ -39,11 +38,7 @@ public struct PlanDetailAddSpotFeature: Sendable {
         var subwayResults: [SubwayStation] = []
         var isSearchLoading: Bool = false
         var hasSearched: Bool = false
-        var isAutoTranslateSearchEnabled: Bool = false
-        /// View가 관찰해 Translation 프레임워크로 번역을 실행해야 하는 트리거. 값이 채워지면 View가 번역을 실행하고 결과를 돌려준다
-        var pendingTranslationQuery: String?
-        /// 번역 유도 Toast를 띄웠을 때의 id. ToastCenter의 액션 탭 이벤트가 이 id와 일치할 때만 번역을 트리거한다
-        fileprivate var translationToastId: UUID?
+        var translateSearch: TranslateSearchFeature.State = .init()
         var bookmarks: [Bookmark] = []
         var isBookmarkLoading: Bool = false
         var selectedSpot: TouristSpot? = nil
@@ -113,10 +108,7 @@ public struct PlanDetailAddSpotFeature: Sendable {
         case onAppear
         case tabSelected(State.Tab)
         case searchSubmitted
-        case translateSearchButtonTapped
-        case toastActionTapReceived(UUID)
-        case translationResultReceived(String)
-        case translationFailed
+        case translateSearch(TranslateSearchFeature.Action)
         case spotRowTapped(TouristSpot)
         case subwayStationTapped(SubwayStation)
         case addressSubmitted
@@ -142,11 +134,13 @@ public struct PlanDetailAddSpotFeature: Sendable {
 
     public var body: some Reducer<State, Action> {
         BindingReducer()
+        Scope(state: \.translateSearch, action: \.translateSearch) {
+            TranslateSearchFeature()
+        }
         Reduce { state, action in
             switch action {
             case .onAppear:
-                state.isAutoTranslateSearchEnabled = self.autoTranslateSearchUseCase.isEnabled()
-                return self.subscribeToastActionTapEffect()
+                return .send(.translateSearch(.onAppear))
 
             case .binding(\.searchKeyword):
                 guard state.searchKeyword.isEmpty else { return .none }
@@ -178,8 +172,8 @@ public struct PlanDetailAddSpotFeature: Sendable {
                 guard keyword.isEmpty == false else { return .none }
                 state.isSearchLoading = true
                 state.hasSearched = true
-                state.translationToastId = nil
                 return .merge(
+                    .send(.translateSearch(.reset)),
                     self.searchEffect(keyword: keyword)
                         .cancellable(id: CancelID.search, cancelInFlight: true),
                     self.subwaySearchEffect(keyword: keyword)
@@ -265,32 +259,18 @@ public struct PlanDetailAddSpotFeature: Sendable {
             case .searchResultsResult(let results):
                 state.searchResults = results
                 state.isSearchLoading = false
-                return self.showTranslationSuggestionIfNeededEffect(&state)
+                let hasResults = results.isEmpty == false || state.subwayResults.isEmpty == false
+                return .send(.translateSearch(.searchCompleted(query: state.searchKeyword, hasResults: hasResults)))
 
-            case .translateSearchButtonTapped:
-                guard state.trimmedSearchKeyword.isEmpty == false else {
-                    return self.showEmptyQueryGuideEffect()
-                }
-                state.pendingTranslationQuery = state.trimmedSearchKeyword
-                return .none
+            case .translateSearch(.delegate(.toastActionConfirmed)):
+                return .send(.translateSearch(.translateButtonRequested(query: state.trimmedSearchKeyword)))
 
-            case .toastActionTapReceived(let toastId):
-                guard state.translationToastId == toastId else { return .none }
-                guard state.trimmedSearchKeyword.isEmpty == false else {
-                    return self.showEmptyQueryGuideEffect()
-                }
-                state.pendingTranslationQuery = state.trimmedSearchKeyword
-                return .none
-
-            case .translationResultReceived(let translatedQuery):
-                state.pendingTranslationQuery = nil
-                guard translatedQuery.isEmpty == false else { return .none }
+            case .translateSearch(.delegate(.retranslatedQueryReady(let translatedQuery))):
                 state.searchKeyword = translatedQuery
                 return .send(.searchSubmitted)
 
-            case .translationFailed:
-                state.pendingTranslationQuery = nil
-                return self.showTranslationFailedEffect()
+            case .translateSearch:
+                return .none
 
             case .subwayResultsResult(let stations):
                 state.subwayResults = stations
@@ -355,7 +335,6 @@ private enum CancelID {
     case resolveStation
     case fetchBookmarks
     case addressPreview
-    case toastActionSubscription
 }
 
 // MARK: - Method
@@ -435,54 +414,6 @@ private extension PlanDetailAddSpotFeature {
                 }
                 await send(.bookmarksResult([]))
             }
-        }
-    }
-
-    func subscribeToastActionTapEffect() -> Effect<Action> {
-        .run { [toastCenter = self.toastCenter] send in
-            for await toastId in toastCenter.actionTapEvents {
-                await send(.toastActionTapReceived(toastId))
-            }
-        }
-        .cancellable(id: CancelID.toastActionSubscription, cancelInFlight: true)
-    }
-
-    /// 번역 실패 시 에러 Toast를 띄운다
-    func showTranslationFailedEffect() -> Effect<Action> {
-        .run { [toastCenter = self.toastCenter] _ in
-            toastCenter.show(ToastItem(message: Strings.Map.translateFailedMessage, type: .error))
-        }
-    }
-
-    /// 검색어가 비어 있는 상태로 번역 버튼(아이콘 또는 Toast 액션)이 눌렸을 때, 조용히 무시하는 대신
-    /// 안내 Toast를 띄운다
-    func showEmptyQueryGuideEffect() -> Effect<Action> {
-        .run { [toastCenter = self.toastCenter] _ in
-            toastCenter.show(ToastItem(
-                message: Strings.Map.translateSearchEmptyQueryGuideMessage,
-                type: .info
-            ))
-        }
-    }
-
-    /// 자동 번역 검색 flag가 켜져 있고, 검색어가 일본어이며, 검색 결과(관광지·지하철역)가 모두 비어 있을 때만
-    /// "한국어로 번역 후 검색" 유도 Toast를 노출한다
-    func showTranslationSuggestionIfNeededEffect(_ state: inout State) -> Effect<Action> {
-        guard state.isAutoTranslateSearchEnabled,
-              state.searchKeyword.isEmpty == false,
-              state.searchKeyword.containsJapanese,
-              state.searchResults.isEmpty,
-              state.subwayResults.isEmpty else { return .none }
-
-        let toastId = UUID()
-        state.translationToastId = toastId
-        return .run { [toastCenter = self.toastCenter] _ in
-            toastCenter.show(ToastItem(
-                id: toastId,
-                message: Strings.Map.searchResultEmptyTitle,
-                type: .info,
-                actionButtonTitle: Strings.Map.translateAndSearchButtonTitle
-            ))
         }
     }
 
