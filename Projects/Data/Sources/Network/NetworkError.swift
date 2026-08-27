@@ -28,23 +28,23 @@ extension NetworkError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .timeout:
-            return "네트워크 연결 시간이 초과되었습니다"
+            return "ネットワーク接続がタイムアウトしました"
         case .cancelled:
-            return "요청이 취소되었습니다"
+            return "リクエストがキャンセルされました"
         case .invalidURL:
-            return "잘못된 요청 주소입니다"
+            return "リクエストのアドレスが正しくありません"
         case .decodingError:
-            return "데이터를 처리하는 중 오류가 발생했습니다"
+            return "データの処理中にエラーが発生しました"
         case .serverError:
-            return "서버에 문제가 발생했습니다\n잠시 후 다시 시도해 주세요"
+            return "サーバーに問題が発生しました\nしばらくしてからもう一度お試しください"
         case .clientError:
-            return "요청 처리 중 오류가 발생했습니다"
+            return "リクエストの処理中にエラーが発生しました"
         case .networkError:
-            return "네트워크 연결 상태를 확인해 주세요"
+            return "ネットワーク接続状態をご確認ください"
         case .apiError:
-            return "데이터를 불러오는 중 오류가 발생했습니다"
+            return "データの読み込み中にエラーが発生しました"
         case .unknown:
-            return "알 수 없는 오류가 발생했습니다"
+            return "不明なエラーが発生しました"
         }
     }
 }

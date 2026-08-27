@@ -22,15 +22,15 @@ extension TabiError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .apiFailed:
-            return "서버 요청에 실패했습니다"
+            return "サーバーリクエストに失敗しました"
         case .dataNotFound:
-            return "요청하신 정보를 찾을 수 없습니다"
+            return "リクエストした情報が見つかりません"
         case .persistenceFailed:
-            return "데이터 저장에 실패했습니다"
+            return "データの保存に失敗しました"
         case .decodingFailed:
-            return "데이터를 처리하는 중 오류가 발생했습니다"
+            return "データの処理中にエラーが発生しました"
         case .encodingFailed:
-            return "데이터를 변환하는 중 오류가 발생했습니다"
+            return "データの変換中にエラーが発生しました"
         }
     }
 }
