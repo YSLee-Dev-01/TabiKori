@@ -52,6 +52,10 @@ private extension DetailInfoRow {
                         isExpanded: true,
                         isUnderlined: self.isLink
                     )
+                    // HStack 끝의 Spacer()와 폭을 다투다 보니 lineLimit(nil)만으로는 줄바꿈이
+                    // 확정되지 않고 값이 한 줄로 압축되며 "…"로 잘리는 경우가 있었다.
+                    // 세로 방향으로만 고정 크기를 강제해 필요한 줄 수만큼 항상 완전히 펼쳐지도록 한다
+                    .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
             }
