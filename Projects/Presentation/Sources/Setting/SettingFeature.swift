@@ -126,6 +126,17 @@ public struct SettingFeature: Sendable {
                     state.isMailComposePresented = true
                     return .none
 
+                case .openURL(let urlString):
+                    return .run { _ in
+                        guard let url = URL(string: urlString) else {
+                            AppLogger.view.log(.error, "설정 링크 URL 생성 실패: \(urlString)")
+                            return
+                        }
+                        await MainActor.run {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+
                 case .versionDisplay, .disabled:
                     return .none
                 }

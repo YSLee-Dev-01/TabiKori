@@ -145,7 +145,7 @@ private extension SettingView {
     @ViewBuilder
     func etcRow(_ item: SettingEtcItem) -> some View {
         switch item.kind {
-        case .staticText, .mailCompose:
+        case .staticText, .mailCompose, .openURL:
             SettingRow(title: item.title) {
                 self.store.send(.etcRowTapped(item))
             }
