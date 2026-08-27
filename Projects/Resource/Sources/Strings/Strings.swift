@@ -533,6 +533,11 @@ public extension Strings.Setting {
     /// 비활성화(TODO) 행 보조 라벨
     static let etcComingSoonLabel = "準備中"
 
+    /// 디버그 섹션 타이틀 (디버그 빌드 전용)
+    static let debugSectionTitle = "デバッグ"
+    /// 테스트 크래시 발생 행 타이틀 (디버그 빌드 전용)
+    static let debugTestCrashRowTitle = "テストクラッシュを発生させる"
+
     /// 데이터 출처 안내 본문
     static let dataSourceContent = "本アプリは韓国観光公社 多言語観光情報サービス(EngService2)、NAVER 地図・Geocoding API、為替レートAPIの情報を利用しています。"
     /// 오픈소스 라이선스 안내 본문. 각 라이브러리명 + 라이센스 종류 + 저작권 고지(GitHub license API/LICENSE 파일 기준 확인)

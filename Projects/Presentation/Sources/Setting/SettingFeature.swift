@@ -45,6 +45,7 @@ public struct SettingFeature: Sendable {
         case autoScrollToTodayToggled(Bool)
         case autoTranslateSearchToggled(Bool)
         case etcRowTapped(SettingEtcItem)
+        case testCrashRowTapped
         case mailComposeDismissed
         case resetResult(Bool)
         case resetCompleted
@@ -140,6 +141,12 @@ public struct SettingFeature: Sendable {
                 case .versionDisplay, .disabled:
                     return .none
                 }
+
+            case .testCrashRowTapped:
+                #if DEBUG
+                AppLogger.triggerTestCrash()
+                #endif
+                return .none
 
             case .mailComposeDismissed:
                 state.isMailComposePresented = false

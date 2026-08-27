@@ -30,6 +30,9 @@ public struct SettingView: View {
                 self.searchSection()
                 self.dataResetSection()
                 self.etcSection()
+                #if DEBUG
+                self.debugSection()
+                #endif
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
@@ -141,6 +144,16 @@ private extension SettingView {
             }
         }
     }
+
+    #if DEBUG
+    func debugSection() -> some View {
+        SettingSectionCard(title: Strings.Setting.debugSectionTitle) {
+            SettingRow(title: Strings.Setting.debugTestCrashRowTitle) {
+                self.store.send(.testCrashRowTapped)
+            }
+        }
+    }
+    #endif
 
     @ViewBuilder
     func etcRow(_ item: SettingEtcItem) -> some View {
