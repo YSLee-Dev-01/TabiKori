@@ -65,9 +65,12 @@ struct MapSearchPanelView<Content: View>: View {
         self.fullHeight + self.extraBottomBleed
     }
 
-    /// 박스가 늘어난 만큼(extraBottomBleed) 더 아래로 내려야 박스 상단 위치가 기존과 동일하게 유지된다
+    /// 박스는 top-aligned 프레임(.frame(alignment: .top))에 배치되므로, extraBottomBleed만큼 키운
+    /// boxHeight는 상단 위치를 그대로 둔 채 하단으로만 늘어난다. 여기에 extraBottomBleed를 다시 더하면
+    /// 박스 상단이 그만큼 아래로 밀려나 시트 top과 안내멘트/텍스트필드 사이에 의도하지 않은 간격이 생기므로
+    /// 더하지 않는다
     private var hiddenOffset: CGFloat {
-        max(0, self.fullHeight - self.currentHeight) + self.extraBottomBleed
+        max(0, self.fullHeight - self.currentHeight)
     }
 
     private var dragHandleTotalHeight: CGFloat {

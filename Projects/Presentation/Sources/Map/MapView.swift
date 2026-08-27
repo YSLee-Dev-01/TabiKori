@@ -109,7 +109,6 @@ public struct MapView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { notification in
-            print("SHEET_DEBUG keyboardWillChangeFrame isPanelDragging=\(self.isPanelDragging)"); fflush(stdout)
             guard self.isPanelDragging == false else { return }
             guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
             let screenHeight = UIApplication.shared.connectedScenes
@@ -118,7 +117,6 @@ public struct MapView: View {
             self.keyboardHeight = max(0, screenHeight - frame.origin.y)
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-            print("SHEET_DEBUG keyboardWillHide isPanelDragging=\(self.isPanelDragging)"); fflush(stdout)
             guard self.isPanelDragging == false else { return }
             self.keyboardHeight = 0
         }
@@ -307,8 +305,7 @@ private extension MapView {
     }
 
     func searchPanel() -> some View {
-        let _ = { print("SHEET_DEBUG mode=\(self.store.mode) stage=\(self.store.panelStage) kbVisible=\(self.isKeyboardVisible) kbH=\(self.keyboardHeight) isPanelDragging=\(self.isPanelDragging) mapH=\(self.mapContainerHeight) topBarH=\(self.topBarHeight) fieldBottomY=\(self.searchFieldBottomY) guideBottomY=\(self.languageGuideBottomY) topY=\(self.typingPanelTopY) fullH=\(self.typingFullHeight) baseFullH=\(self.baseFullHeight)"); fflush(stdout) }()
-        return MapSearchPanelView(
+        MapSearchPanelView(
             stage: self.store.panelStage,
             collapsedHeight: self.baseCollapsedHeight,
             halfHeight: self.baseHalfHeight,
@@ -317,14 +314,10 @@ private extension MapView {
             onStageChanged: { stage in self.store.send(.panelDragEnded(stage)) },
             onDismiss: { self.cancelSearch() },
             onDragStarted: {
-                print("SHEET_DEBUG onDragStarted"); fflush(stdout)
                 self.isPanelDragging = true
                 self.isSearchFieldFocused = false
             },
-            onDragEnded: {
-                print("SHEET_DEBUG onDragEnded kbH=\(self.keyboardHeight)"); fflush(stdout)
-                self.isPanelDragging = false
-            }
+            onDragEnded: { self.isPanelDragging = false }
         ) {
             if self.store.mode == .typing {
                 self.recentSearchContent()
