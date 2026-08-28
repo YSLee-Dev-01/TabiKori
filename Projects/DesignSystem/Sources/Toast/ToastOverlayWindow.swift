@@ -22,15 +22,6 @@ final class PassThroughWindow: UIWindow {
     }
 }
 
-/// Toast 콘텐츠의 실제 렌더링 프레임을 오버레이 윈도우로 전달하기 위한 `PreferenceKey`
-private struct ToastFramePreferenceKey: PreferenceKey {
-    static let defaultValue: CGRect = .zero
-
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
-        value = nextValue()
-    }
-}
-
 /// 오버레이 윈도우의 루트에 표시되는 실제 SwiftUI 콘텐츠
 ///
 /// Toast가 없을 때는 아무것도 그리지 않아 `hitFrame`이 `.zero`가 되고, 오버레이 윈도우 전체가 터치를 통과시킨다
@@ -52,18 +43,26 @@ private struct ToastOverlayContent: View {
                     onActionTapped: self.onActionTapped
                 )
                 .padding(.horizontal, 20)
+                // GeometryReader + PreferenceKey 조합은 .transition() 애니메이션과 함께 쓰이면
+                // 삽입 시점의 frame(간혹 {0,0})만 한 번 보고된 뒤 실제 레이아웃이 끝나도 다시 갱신되지
+                // 않는 경우가 있다. onGeometryChange는 레이아웃이 바뀔 때마다 안정적으로 다시 호출된다.
+                // 반드시 아래의 .padding(.bottom, 100)보다 먼저(안쪽에) 붙여야 한다 — padding은 여백만큼
+                // 뷰 자신의 frame도 함께 확장시키므로, 순서가 바뀌면 실제 카드보다 훨씬 아래(빈 여백 구간,
+                // 바로 밑의 탭바 영역)까지 hitFrame이 잡혀 탭바 터치를 막아버린다
+                .onGeometryChange(for: CGRect.self, of: { $0.frame(in: .global) }) { frame in
+                    self.onFrameChanged(frame)
+                }
                 .padding(.bottom, 100)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
-                .background(
-                    GeometryReader { proxy in
-                        Color.clear.preference(key: ToastFramePreferenceKey.self, value: proxy.frame(in: .global))
-                    }
-                )
             }
         }
         .animation(.tabiSpring, value: self.message)
-        .onPreferenceChange(ToastFramePreferenceKey.self) { frame in
-            self.onFrameChanged(frame)
+        // .onGeometryChange는 TabiToast 서브뷰에 직접 붙어 있어, message가 nil이 되어 그 서브뷰가
+        // 트리에서 사라지면 더 이상 호출되지 않는다(마지막 frame 값이 그대로 남아 하단 탭바 등의
+        // 터치를 계속 막아버림). message가 nil로 바뀌는 시점을 직접 감지해 hitFrame을 리셋한다
+        .onChange(of: self.message) { _, newValue in
+            guard newValue == nil else { return }
+            self.onFrameChanged(.zero)
         }
         .onDisappear {
             self.onFrameChanged(.zero)
