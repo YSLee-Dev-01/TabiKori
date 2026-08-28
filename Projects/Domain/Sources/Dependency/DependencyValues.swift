@@ -120,4 +120,9 @@ extension DependencyValues {
         get {self[SettingInfoUseCaseDependencyKey.self]}
         set {self[SettingInfoUseCaseDependencyKey.self] = newValue}
     }
+
+    public var analyticsCenter: AnalyticsCenterProtocol {
+        get {self[AnalyticsCenterDependencyKey.self]}
+        set {self[AnalyticsCenterDependencyKey.self] = newValue}
+    }
 }
