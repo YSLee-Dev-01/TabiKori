@@ -18,6 +18,7 @@ import Domain
 public struct KoreanPhraseListFeature: Sendable {
 
     @Dependency(\.koreanPhraseUseCase) var koreanPhraseUseCase
+    @Dependency(\.analyticsCenter) var analyticsCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -71,6 +72,7 @@ public struct KoreanPhraseListFeature: Sendable {
                 return .none
 
             case .phraseRowTapped(let phrase):
+                self.analyticsCenter.log(.koreanPhraseViewed(phraseId: phrase.id))
                 OrientationLock.shared.setMask(.landscape)
                 state.phraseDetailState = KoreanPhraseDetailFeature.State(phrase: phrase)
                 return .none

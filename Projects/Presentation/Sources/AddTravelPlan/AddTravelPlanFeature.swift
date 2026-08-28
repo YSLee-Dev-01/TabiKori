@@ -20,6 +20,7 @@ public struct AddTravelPlanFeature: Sendable {
 
     @Dependency(\.travelPlanUseCase) var travelPlanUseCase
     @Dependency(\.dismiss) var dismiss
+    @Dependency(\.analyticsCenter) var analyticsCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -106,6 +107,7 @@ public struct AddTravelPlanFeature: Sendable {
                 return self.saveEffect(plan: plan)
 
             case .saveResult(true):
+                self.analyticsCenter.log(.travelPlanCreated)
                 return .none
 
             case .saveResult(false):

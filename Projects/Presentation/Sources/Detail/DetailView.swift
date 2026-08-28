@@ -82,6 +82,9 @@ struct DetailView: View {
                             Image(systemName: "square.and.arrow.up")
                         }
                         .tint(Color.getTabiColor(.tabiPrimary))
+                        .simultaneousGesture(TapGesture().onEnded {
+                            self.store.send(.shareButtonTapped)
+                        })
                     } else {
                         Image(systemName: "square.and.arrow.up")
                             .foregroundStyle(Color.getTabiColor(.tabiTextTertiary))

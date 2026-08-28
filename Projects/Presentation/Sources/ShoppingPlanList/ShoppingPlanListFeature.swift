@@ -17,6 +17,7 @@ import Domain
 public struct ShoppingPlanListFeature: Sendable {
 
     @Dependency(\.shoppingPlanItemUseCase) var shoppingPlanItemUseCase
+    @Dependency(\.analyticsCenter) var analyticsCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -76,6 +77,7 @@ public struct ShoppingPlanListFeature: Sendable {
                 guard let index = state.items.firstIndex(where: { $0.id == id }) else { return .none }
                 let previous = state.items[index].isChecked
                 state.items[index].isChecked.toggle()
+                self.analyticsCenter.log(.shoppingItemChecked)
                 return self.updateCheckedEffect(
                     planId: state.plan.id,
                     itemId: id,

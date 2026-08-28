@@ -22,6 +22,7 @@ public struct MapFeature: Sendable {
     @Dependency(\.searchHistoryUseCase) var searchHistoryUseCase
     @Dependency(\.subwayStationUseCase) var subwayStationUseCase
     @Dependency(\.toastCenter) var toastCenter
+    @Dependency(\.analyticsCenter) var analyticsCenter
 
     private let searchPageSize = 50
     private let minimumLoadingDuration: TimeInterval = 0.2
@@ -101,6 +102,7 @@ public struct MapFeature: Sendable {
                 return .none
 
             case .searchFieldTapped:
+                self.analyticsCenter.log(.mapSearchSheetOpened)
                 state.mode = .typing
                 state.panelStage = .full
                 return .merge(.send(.translateSearch(.onAppear)), self.fetchRecentSearchesEffect())
@@ -183,7 +185,8 @@ public struct MapFeature: Sendable {
                 state.hasMapMovedSinceSearch = false
                 return self.categoryResearchEffect(category: category, coordinate: resolvedCoordinate, radiusMeters: resolvedRadiusMeters)
 
-            case .searchResultTapped:
+            case .searchResultTapped(let spot):
+                self.analyticsCenter.log(.mapMarkerTapped(category: spot.contentType.rawValue))
                 return .none
 
             case .subwayStationTapped(let station):

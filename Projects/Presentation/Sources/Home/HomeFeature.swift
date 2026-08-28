@@ -23,6 +23,7 @@ public struct HomeFeature: Sendable {
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
     @Dependency(\.festivalUseCase) var festivalUseCase
     @Dependency(\.travelPlanUseCase) var travelPlanUseCase
+    @Dependency(\.analyticsCenter) var analyticsCenter
 
     private let nearbySpotRadiusMeters = TouristSpotSearchRadius.nearbyMeters
     private let festivalListLimit = 10
@@ -235,6 +236,7 @@ public struct HomeFeature: Sendable {
                 return .none
 
             case .categoryTapped(let category):
+                self.analyticsCenter.log(.homeCategorySelected(category: category.rawValue))
                 return .run { [locationUseCase = self.locationUseCase] send in
                     do {
                         let coordinate = try await locationUseCase.fetchCurrentCoordinate()
@@ -277,6 +279,7 @@ public struct HomeFeature: Sendable {
                 return .none
 
             case .moveToToolBoxButtonTapped:
+                self.analyticsCenter.log(.currencyWidgetTapped)
                 return .none
             }
         }

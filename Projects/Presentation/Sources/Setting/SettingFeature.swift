@@ -23,6 +23,7 @@ public struct SettingFeature: Sendable {
     @Dependency(\.autoScrollToTodayUseCase) var autoScrollToTodayUseCase
     @Dependency(\.autoTranslateSearchUseCase) var autoTranslateSearchUseCase
     @Dependency(\.toastCenter) var toastCenter
+    @Dependency(\.analyticsCenter) var analyticsCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -71,11 +72,13 @@ public struct SettingFeature: Sendable {
             case .autoScrollToTodayToggled(let isEnabled):
                 state.isAutoScrollToTodayEnabled = isEnabled
                 self.autoScrollToTodayUseCase.setEnabled(isEnabled)
+                self.analyticsCenter.log(.autoScrollTodayToggled(enabled: isEnabled))
                 return .none
 
             case .autoTranslateSearchToggled(let isEnabled):
                 state.isAutoTranslateSearchEnabled = isEnabled
                 self.autoTranslateSearchUseCase.setEnabled(isEnabled)
+                self.analyticsCenter.log(.autoTranslateSearchToggled(enabled: isEnabled))
                 return .none
 
             case .gpsRowTapped:
@@ -107,6 +110,7 @@ public struct SettingFeature: Sendable {
 
             case .alert(.presented(.resetConfirmed)):
                 state.isResetting = true
+                self.analyticsCenter.log(.dataResetConfirmed)
                 return self.resetAllEffect()
 
             case .alert:

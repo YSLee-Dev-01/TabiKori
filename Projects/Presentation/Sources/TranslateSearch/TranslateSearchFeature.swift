@@ -25,6 +25,7 @@ public struct TranslateSearchFeature: Sendable {
 
     @Dependency(\.autoTranslateSearchUseCase) var autoTranslateSearchUseCase
     @Dependency(\.toastCenter) var toastCenter
+    @Dependency(\.analyticsCenter) var analyticsCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -88,9 +89,11 @@ public struct TranslateSearchFeature: Sendable {
 
             case .toastActionTapReceived(let toastId):
                 guard state.translationToastId == toastId else { return .none }
+                self.analyticsCenter.log(.autoTranslateSearchUsed)
                 return .send(.delegate(.toastActionConfirmed))
 
             case .searchCompleted(let query, let hasResults):
+                self.analyticsCenter.log(.searchPerformed(hasResult: hasResults))
                 guard state.isAutoTranslateSearchEnabled,
                       query.isEmpty == false,
                       query.containsJapanese,

@@ -25,6 +25,7 @@ public struct PlanDetailFeature: Sendable {
     @Dependency(\.autoScrollToTodayUseCase) var autoScrollToTodayUseCase
     @Dependency(\.toastCenter) var toastCenter
     @Dependency(\.dismiss) var dismiss
+    @Dependency(\.analyticsCenter) var analyticsCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -326,6 +327,7 @@ public struct PlanDetailFeature: Sendable {
                 return .none
 
             case .planDeleteResult(true):
+                self.analyticsCenter.log(.travelPlanDeleted)
                 return .run { [dismiss = self.dismiss] _ in await dismiss() }
 
             case .planDeleteResult(false):
@@ -341,6 +343,7 @@ public struct PlanDetailFeature: Sendable {
                 return .none
 
             case .addSpot(.presented(.spotAdded)):
+                self.analyticsCenter.log(.planSpotAdded(source: "plan_search"))
                 state.addSpotState = nil
                 return self.fetchTravelPlanDetailEffect(id: state.plan.id)
 
@@ -367,6 +370,7 @@ public struct PlanDetailFeature: Sendable {
                 return .none
 
             case .timeEdit(.presented(.timeSaved)):
+                self.analyticsCenter.log(.planTimeEdited)
                 state.timeEditState = nil
                 return self.fetchTravelPlanDetailEffect(id: state.plan.id)
 
@@ -377,6 +381,7 @@ public struct PlanDetailFeature: Sendable {
                 return self.removePlanEffect(planId: state.plan.id)
 
             case .alert(.presented(.exportConfirmed)):
+                self.analyticsCenter.log(.itineraryShared(planId: state.plan.id.uuidString))
                 state.isShareSheetPresented = true
                 return .none
 

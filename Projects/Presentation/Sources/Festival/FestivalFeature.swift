@@ -32,6 +32,7 @@ public struct FestivalFeature: Sendable {
 
     @Dependency(\.festivalUseCase) var festivalUseCase
     @Dependency(\.toastCenter) var toastCenter
+    @Dependency(\.analyticsCenter) var analyticsCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -76,6 +77,7 @@ public struct FestivalFeature: Sendable {
                 return self.searchEffect(state: state)
 
             case .binding(\.endDate):
+                self.analyticsCenter.log(.festivalFilterApplied(dateRangeSpecified: state.endDate != nil))
                 state.loadState = .loading
                 return self.searchEffect(state: state)
 
@@ -107,7 +109,8 @@ public struct FestivalFeature: Sendable {
                 state.loadState = .loading
                 return self.searchEffect(state: state)
 
-            case .festivalTapped:
+            case .festivalTapped(let festival):
+                self.analyticsCenter.log(.festivalDetailViewed(festivalId: festival.touristSpot.id))
                 return .none
 
             case .retryButtonTapped:

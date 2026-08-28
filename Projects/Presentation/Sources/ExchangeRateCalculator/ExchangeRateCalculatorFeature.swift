@@ -17,6 +17,7 @@ import Domain
 public struct ExchangeRateCalculatorFeature: Sendable {
 
     @Dependency(\.exchangeRateUseCase) var exchangeRateUseCase
+    @Dependency(\.analyticsCenter) var analyticsCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -44,12 +45,14 @@ public struct ExchangeRateCalculatorFeature: Sendable {
             case .binding(\.krwAmountText):
                 if let krw = Double(state.krwAmountText) {
                     state.jpyAmountText = String(format: "%.1f", krw * state.krwToJPYRate)
+                    self.analyticsCenter.log(.exchangeCalculated)
                 }
                 return .none
 
             case .binding(\.jpyAmountText):
                 if let jpy = Double(state.jpyAmountText), state.krwToJPYRate != 0 {
                     state.krwAmountText = String(format: "%.0f", jpy / state.krwToJPYRate)
+                    self.analyticsCenter.log(.exchangeCalculated)
                 }
                 return .none
 

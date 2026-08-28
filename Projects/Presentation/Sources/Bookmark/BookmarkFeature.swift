@@ -16,6 +16,7 @@ import Domain
 public struct BookmarkFeature: Sendable {
 
     @Dependency(\.bookmarkUseCase) var bookmarkUseCase
+    @Dependency(\.analyticsCenter) var analyticsCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -78,6 +79,7 @@ public struct BookmarkFeature: Sendable {
                 return .none
 
             case .deleteSwiped(let contentId):
+                self.analyticsCenter.log(.bookmarkRemoved)
                 state.bookmarks.removeAll { $0.id == contentId }
                 return self.removeBookmarkEffect(contentId: contentId)
 

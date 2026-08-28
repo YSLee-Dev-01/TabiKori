@@ -34,6 +34,7 @@ public struct DetailFeature {
     @Dependency(\.naverMapUseCase) var naverMapUseCase
     @Dependency(\.bookmarkUseCase) var bookmarkUseCase
     @Dependency(\.toastCenter) var toastCenter
+    @Dependency(\.analyticsCenter) var analyticsCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -92,6 +93,7 @@ public struct DetailFeature {
         case mapSearchButtonTapped
         case routeDirectionsButtonTapped
         case addToItineraryButtonTapped
+        case shareButtonTapped
         case retryButtonTapped
         case detailResult(TouristSpotDetail)
         case detailFailed
@@ -112,6 +114,7 @@ public struct DetailFeature {
             case .onAppear:
                 guard state.hasStartedLoading == false else { return .none }
                 state.hasStartedLoading = true
+                self.analyticsCenter.log(.touristSpotViewed(spotId: state.touristSpot.id))
 
                 if state.touristSpot.shouldSkipRemoteDetail {
                     state.isLoading = false
@@ -139,15 +142,21 @@ public struct DetailFeature {
             case .saveButtonTapped:
                 if state.isSaved {
                     state.isSaved = false
+                    self.analyticsCenter.log(.spotBookmarkRemoved(spotId: state.touristSpot.id))
                     return self.removeBookmarkEffect(contentId: state.touristSpot.id)
                         .cancellable(id: CancelID.bookmarkToggle, cancelInFlight: true)
                 } else {
                     state.isSaved = true
+                    self.analyticsCenter.log(.spotBookmarked(spotId: state.touristSpot.id))
                     return self.addBookmarkEffect(spot: state.touristSpot, address: state.detail.address)
                         .cancellable(id: CancelID.bookmarkToggle, cancelInFlight: true)
                 }
 
             case .photoCellTapped:
+                return .none
+
+            case .shareButtonTapped:
+                self.analyticsCenter.log(.spotShared(spotId: state.touristSpot.id))
                 return .none
 
             case .mapSearchButtonTapped:
@@ -227,6 +236,7 @@ public struct DetailFeature {
                 return .none
 
             case .addToItinerary(.presented(.spotAdded)):
+                self.analyticsCenter.log(.planSpotAdded(source: "spot_detail"))
                 state.addToItineraryState = nil
                 return .none
 

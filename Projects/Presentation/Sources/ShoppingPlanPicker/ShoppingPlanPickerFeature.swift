@@ -21,6 +21,7 @@ public struct ShoppingPlanPickerFeature: Sendable {
     @Dependency(\.travelPlanUseCase) var travelPlanUseCase
     @Dependency(\.shoppingPlanItemUseCase) var shoppingPlanItemUseCase
     @Dependency(\.dismiss) var dismiss
+    @Dependency(\.analyticsCenter) var analyticsCenter
 
     @ObservableState
     public struct State: Equatable {
@@ -132,6 +133,7 @@ public struct ShoppingPlanPickerFeature: Sendable {
                 return .none
 
             case .savedToPlan:
+                self.analyticsCenter.log(.shoppingPlanCreated)
                 return .run { [dismiss = self.dismiss] _ in await dismiss() }
             }
         }
