@@ -38,6 +38,9 @@ public struct RootView: View {
         .onAppear {
             self.store.send(.onAppear)
         }
+        .onOpenURL { url in
+            self.store.send(.openURLReceived(url))
+        }
         .tabiToast(
             message: self.store.currentToast?.message,
             style: self.toastStyle(for: self.store.currentToast?.type),

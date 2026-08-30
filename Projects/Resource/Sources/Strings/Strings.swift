@@ -26,6 +26,7 @@ public enum Strings {
     public enum ToolBar {}
     public enum KoreanPhrase {}
     public enum Shopping {}
+    public enum Widget {}
 }
 
 public extension Strings.Common {
@@ -672,4 +673,26 @@ public extension Strings.Shopping {
     static let overwriteAlertTitle = "お買い物リストを上書きしますか？"
     /// 플랜 저장 시 덮어쓰기 확인 알림 메시지
     static let overwriteAlertMessage = "この旅程には既にお買い物リストが保存されています。上書きすると、チェック状態を含む既存のリストは削除されます。"
+}
+
+public extension Strings.Widget {
+    /// 플랜 위젯 갤러리 표시명
+    static let planDisplayName = "旅程"
+    /// 플랜 위젯 갤러리 설명
+    static let planDescription = "直近の旅行日程をホーム画面で確認できます"
+    /// 플랜 위젯 - 오늘 시작 표기
+    static let planStartsToday = "今日から"
+    /// 플랜 위젯 - 디데이 표기 (%d: 남은 일수)
+    nonisolated(unsafe) static let planDaysUntilStart: ((Int) -> String) = {
+        "あと\($0)日"
+    }
+    /// 플랜 위젯 - 빈 상태 문구 (등록된 일정 없음)
+    static let planEmptyTitle = "予定された日程がありません"
+
+    /// 한국어 사전 위젯 갤러리 표시명
+    static let phraseDisplayName = "簡単な韓国語"
+    /// 한국어 사전 위젯 갤러리 설명
+    static let phraseDescription = "旅行で使える韓国語フレーズをホーム画面で確認できます"
+    /// 한국어 사전 위젯 - 빈 상태 문구 (등록된 문구 없음)
+    static let phraseEmptyTitle = "表示できるフレーズがありません"
 }

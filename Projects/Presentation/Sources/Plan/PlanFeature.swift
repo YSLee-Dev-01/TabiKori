@@ -24,6 +24,7 @@ public struct PlanFeature: Sendable {
     @Dependency(\.shoppingPlanItemUseCase) var shoppingPlanItemUseCase
     @Dependency(\.toolBarItemUseCase) var toolBarItemUseCase
     @Dependency(\.toastCenter) var toastCenter
+    @Dependency(\.widgetSnapshotStore) var widgetSnapshotStore
 
     @ObservableState
     public struct State: Equatable {
@@ -117,7 +118,10 @@ public struct PlanFeature: Sendable {
             case .plansResult(let plans):
                 state.plans = plans
                 state.isLoading = false
-                return self.fetchSpotCountsEffect(plans: plans)
+                return .merge(
+                    self.fetchSpotCountsEffect(plans: plans),
+                    self.syncWidgetSnapshotEffect(plans: plans)
+                )
 
             case .spotCountsResult(let counts):
                 state.spotCounts = counts
@@ -126,7 +130,7 @@ public struct PlanFeature: Sendable {
             case .planDeleted(let id):
                 state.plans.removeAll { $0.id == id }
                 state.spotCounts.removeValue(forKey: id)
-                return .none
+                return self.syncWidgetSnapshotEffect(plans: state.plans)
 
             case .importFileSelected(let url):
                 guard let url else { return .none }
@@ -172,7 +176,7 @@ public struct PlanFeature: Sendable {
                     state.plans[index] = plan
                 }
                 state.editPlanState = nil
-                return .none
+                return self.syncWidgetSnapshotEffect(plans: state.plans)
 
             case .editPlan:
                 return .none
@@ -218,6 +222,10 @@ private extension PlanFeature {
             }
         }
         .cancellable(id: CancelID.fetchPlans, cancelInFlight: true)
+    }
+
+    func syncWidgetSnapshotEffect(plans: [TravelPlan]) -> Effect<Action> {
+        WidgetSnapshotSync.syncPlanSnapshotEffect(plans: plans, widgetSnapshotStore: self.widgetSnapshotStore)
     }
 
     func fetchSpotCountsEffect(plans: [TravelPlan]) -> Effect<Action> {

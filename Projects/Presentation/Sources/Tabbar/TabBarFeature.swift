@@ -8,6 +8,7 @@
 
 import Foundation
 import ComposableArchitecture
+import Core
 import Domain
 import Resource
 
@@ -31,6 +32,8 @@ public struct TabBarFeature {
 
     public enum Action: Equatable {
         case tabSelected(AppTab)
+        case deepLinkReceived(WidgetDeepLink)
+        case deepLinkPlanResolved(TravelPlan?)
         case home(HomeFeature.Action)
         case map(MapFeature.Action)
         case plan(PlanFeature.Action)
@@ -38,6 +41,8 @@ public struct TabBarFeature {
         case toolbox(ToolBarFeature.Action)
         case path(StackActionOf<StackPath>)
     }
+
+    @Dependency(\.travelPlanUseCase) var travelPlanUseCase
 
     public init() {}
 
@@ -62,6 +67,38 @@ public struct TabBarFeature {
             switch action {
             case .tabSelected(let tab):
                 state.selectedTab = tab
+                return .none
+
+            case .deepLinkReceived(.koreanPhraseList):
+                state.selectedTab = .toolbox
+                if case .koreanPhraseList = state.path.last {
+                    return .none
+                }
+                state.path.append(.koreanPhraseList(KoreanPhraseListFeature.State()))
+                return .none
+
+            case .deepLinkReceived(.planDetail(let id)):
+                state.selectedTab = .plan
+                return .run { [travelPlanUseCase = self.travelPlanUseCase] send in
+                    do {
+                        let plans = try await travelPlanUseCase.fetch()
+                        await send(.deepLinkPlanResolved(plans.first { $0.id == id }))
+                    } catch {
+                        AppLogger.view.log(.error, "위젯 딥링크 일정 조회 실패: \(error.localizedDescription)")
+                        await send(.deepLinkPlanResolved(nil))
+                    }
+                }
+                .cancellable(id: CancelID.deepLinkPlanFetch, cancelInFlight: true)
+
+            case .deepLinkPlanResolved(let plan):
+                guard let plan else {
+                    AppLogger.view.log(.error, "위젯 딥링크로 전달된 일정을 찾을 수 없음")
+                    return .none
+                }
+                if case .planDetail(let detailState) = state.path.last, detailState.plan.id == plan.id {
+                    return .none
+                }
+                state.path.append(.planDetail(PlanDetailFeature.State(plan: plan, initialDayIndex: plan.todayDayIndex ?? 0)))
                 return .none
 
             case .home(.nearbySpotTapped(let spot)):
@@ -222,4 +259,10 @@ public struct TabBarFeature {
         }
         .forEach(\.path, action: \.path)
     }
+}
+
+// MARK: - CancelID
+
+private enum CancelID {
+    case deepLinkPlanFetch
 }

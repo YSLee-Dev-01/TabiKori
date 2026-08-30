@@ -9,6 +9,7 @@
 import Foundation
 
 import ComposableArchitecture
+import Core
 import Domain
 
 @Reducer
@@ -31,11 +32,15 @@ public struct RootFeature {
         case toastQueueAdvanced
         case toastDismissed
         case toastActionButtonTapped
+        case openURLReceived(URL)
         case tabBar(TabBarFeature.Action)
     }
 
     @Dependency(\.onboardingUseCase) var onboardingUsecase
     @Dependency(\.toastCenter) var toastCenter
+    @Dependency(\.travelPlanUseCase) var travelPlanUseCase
+    @Dependency(\.koreanPhraseUseCase) var koreanPhraseUseCase
+    @Dependency(\.widgetSnapshotStore) var widgetSnapshotStore
 
     public init() {}
 
@@ -44,7 +49,7 @@ public struct RootFeature {
             switch action {
             case .onAppear:
                 let onboardingEffect: Effect<Action> = state.tabBarState == nil ? .send(.onboardingChecking) : .none
-                return .merge(onboardingEffect, self.subscribeToastEffect())
+                return .merge(onboardingEffect, self.subscribeToastEffect(), self.syncWidgetSnapshotEffect())
 
             case .onboardingChecking:
                 if onboardingUsecase.isCompleted() {
@@ -78,6 +83,13 @@ public struct RootFeature {
                     self.notifyToastActionTappedEffect(id: toastId),
                     .send(.toastDismissed)
                 )
+
+            case .openURLReceived(let url):
+                guard state.tabBarState != nil, let link = WidgetDeepLink(url: url) else {
+                    AppLogger.view.log(.error, "위젯 딥링크 처리 불가: \(url)")
+                    return .none
+                }
+                return .send(.tabBar(.deepLinkReceived(link)))
 
             case .tabBar:
                 return .none
@@ -120,5 +132,13 @@ private extension RootFeature {
         .run { [toastCenter = self.toastCenter] _ in
             toastCenter.notifyActionTapped(id: id)
         }
+    }
+
+    func syncWidgetSnapshotEffect() -> Effect<Action> {
+        WidgetSnapshotSync.syncAllSnapshotsEffect(
+            travelPlanUseCase: self.travelPlanUseCase,
+            koreanPhraseUseCase: self.koreanPhraseUseCase,
+            widgetSnapshotStore: self.widgetSnapshotStore
+        )
     }
 }
