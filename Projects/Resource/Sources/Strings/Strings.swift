@@ -636,6 +636,34 @@ public extension Strings.KoreanPhrase {
     static let copyMenuTitle = "コピー"
     /// 문구 셀 롱프레스 메뉴 - 크게보기
     static let viewLargeMenuTitle = "拡大表示"
+    /// 목록 화면 - 커스텀 문구 Section 헤더
+    static let customSectionHeader = "追加したフレーズ"
+    /// 목록 화면 - 기본 제공 문구 Section 헤더
+    static let defaultSectionHeader = "基本フレーズ"
+    /// 목록 화면 - "+" 버튼 accessibilityLabel
+    static let addButtonAccessibilityLabel = "フレーズを追加"
+    /// 입력 폼 화면 타이틀
+    static let addFormTitle = "フレーズを追加"
+    /// 입력 폼 - 한국어 필드 라벨
+    static let koreanFieldLabel = "韓国語"
+    /// 입력 폼 - 한국어 필드 플레이스홀더
+    static let koreanFieldPlaceholder = "韓国語を入力してください"
+    /// 입력 폼 - 일본어 필드 라벨
+    static let japaneseFieldLabel = "日本語"
+    /// 입력 폼 - 일본어 필드 플레이스홀더
+    static let japaneseFieldPlaceholder = "日本語を入力してください"
+    /// 입력 폼 - 발음 필드 라벨(선택)
+    static let pronunciationFieldLabel = "発音（任意）"
+    /// 입력 폼 - 발음 필드 플레이스홀더
+    static let pronunciationFieldPlaceholder = "発音を入力してください（任意）"
+    /// 입력 폼 - 번역 버튼 타이틀
+    static let translateButtonTitle = "翻訳"
+    /// 입력 폼 - 저장 버튼 타이틀
+    static let saveButtonTitle = "保存"
+    /// 번역 실패 토스트 메시지
+    static let translationFailedToast = "翻訳に失敗しました"
+    /// 일본어 미입력 상태에서 번역 시도 시 안내 토스트 메시지
+    static let translationEmptyJapaneseToast = "日本語を入力してから翻訳してください"
 }
 
 public extension Strings.Shopping {
