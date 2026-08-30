@@ -125,4 +125,9 @@ extension DependencyValues {
         get {self[AnalyticsCenterDependencyKey.self]}
         set {self[AnalyticsCenterDependencyKey.self] = newValue}
     }
+
+    public var widgetSnapshotStore: WidgetSnapshotStoreProtocol {
+        get {self[WidgetSnapshotStoreDependencyKey.self]}
+        set {self[WidgetSnapshotStoreDependencyKey.self] = newValue}
+    }
 }
