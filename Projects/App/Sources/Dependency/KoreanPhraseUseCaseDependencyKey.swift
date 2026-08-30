@@ -14,6 +14,6 @@ import Data
 
 extension KoreanPhraseUseCaseDependencyKey: @retroactive DependencyKey {
     public static var liveValue: KoreanPhraseUseCaseProtocol {
-        KoreanPhraseUseCase(repository: KoreanPhraseRepository())
+        KoreanPhraseUseCase(repository: KoreanPhraseRepository(), customRepository: CustomKoreanPhraseRepository())
     }
 }
