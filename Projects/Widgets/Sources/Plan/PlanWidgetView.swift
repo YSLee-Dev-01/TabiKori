@@ -41,7 +41,7 @@ private extension PlanWidgetView {
     func smallContent(_ item: PlanWidgetSnapshotItem) -> some View {
         VStack(alignment: .leading, spacing: WidgetStyle.contentSpacing) {
             Text(item.emoji)
-                .font(.system(size: 28))
+                .font(.system(size: 24))
 
             Spacer(minLength: 0)
 
@@ -49,17 +49,22 @@ private extension PlanWidgetView {
                 .font(WidgetFont.pretendard(.semiBold, size: 15))
                 .foregroundStyle(Color.getTabiColor(.tabiTextPrimary))
                 .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(self.badgeTitle(item))
                 .font(WidgetFont.pretendard(size: 12))
                 .foregroundStyle(Color.getTabiColor(.tabiTextSecondary))
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(WidgetStyle.contentPadding)
     }
 
     func mediumContent(_ item: PlanWidgetSnapshotItem) -> some View {
-        HStack(alignment: .top, spacing: WidgetStyle.contentSpacing * 2) {
+        HStack(alignment: .center, spacing: WidgetStyle.contentSpacing * 2) {
             Text(item.emoji)
                 .font(.system(size: 36))
 
@@ -67,20 +72,27 @@ private extension PlanWidgetView {
                 Text(item.title)
                     .font(WidgetFont.pretendard(.semiBold, size: 16))
                     .foregroundStyle(Color.getTabiColor(.tabiTextPrimary))
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 Text(item.regionTitle)
                     .font(WidgetFont.pretendard(size: 13))
                     .foregroundStyle(Color.getTabiColor(.tabiTextSecondary))
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 Text(self.badgeTitle(item))
                     .font(WidgetFont.pretendard(.semiBold, size: 13))
                     .foregroundStyle(Color.getTabiColor(.tabiPrimary))
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding(WidgetStyle.contentPadding)
     }
 
