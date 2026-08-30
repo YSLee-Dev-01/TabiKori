@@ -46,16 +46,9 @@ public enum SettingEtcItem: CaseIterable, Identifiable, Equatable {
         case .etcInfo: return .staticText(.etcInfo)
         case .version: return .versionDisplay
         case .contact: return .mailCompose
-        case .privacyPolicy: return .openURL(Self.privacyPolicyURLString)
+        case .privacyPolicy: return .openURL(TabiURL.privacyPolicy)
         }
     }
-}
-
-// MARK: - Privacy Policy
-
-extension SettingEtcItem {
-    /// 개인정보 처리방침 페이지 URL
-    public static let privacyPolicyURLString = "https://carnelian-gateway-8a5.notion.site/3c8937a1cf2080b79cece01350c5da81?pvs=74"
 }
 
 // MARK: - App Version
