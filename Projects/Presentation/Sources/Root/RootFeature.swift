@@ -18,6 +18,7 @@ public struct RootFeature {
     @ObservableState
     public struct State: Equatable {
         var tabBarState: TabBarFeature.State? = nil
+        var onboardingState: OnboardingFeature.State? = nil
         var toastQueue: [ToastItem] = []
         var currentToast: ToastItem? = nil
 
@@ -27,13 +28,13 @@ public struct RootFeature {
     public enum Action: Equatable {
         case onAppear
         case onboardingChecking
-        case testBtnTapped
         case toastEventReceived(ToastItem)
         case toastQueueAdvanced
         case toastDismissed
         case toastActionButtonTapped
         case openURLReceived(URL)
         case tabBar(TabBarFeature.Action)
+        case onboarding(OnboardingFeature.Action)
     }
 
     @Dependency(\.onboardingUseCase) var onboardingUsecase
@@ -54,12 +55,18 @@ public struct RootFeature {
             case .onboardingChecking:
                 if onboardingUsecase.isCompleted() {
                     state.tabBarState = .init()
+                } else {
+                    state.onboardingState = .init()
                 }
                 return .none
 
-            case .testBtnTapped:
-                onboardingUsecase.markAsCompleted()
-                return .send(.onboardingChecking)
+            case .onboarding(.delegate(.completed)):
+                if onboardingUsecase.isCompleted() == false {
+                    AppLogger.core.log(.error, "온보딩 완료 저장 실패")
+                }
+                state.onboardingState = nil
+                state.tabBarState = .init()
+                return .none
 
             case .toastEventReceived(let item):
                 state.toastQueue.append(item)
@@ -93,10 +100,16 @@ public struct RootFeature {
 
             case .tabBar:
                 return .none
+
+            case .onboarding:
+                return .none
             }
         }
         .ifLet(\.tabBarState, action: \.tabBar) {
             TabBarFeature()
+        }
+        .ifLet(\.onboardingState, action: \.onboarding) {
+            OnboardingFeature()
         }
     }
 }

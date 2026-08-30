@@ -11,7 +11,6 @@ import SwiftUI
 import ComposableArchitecture
 import Domain
 import DesignSystem
-import Resource
 
 public struct RootView: View {
 
@@ -25,14 +24,10 @@ public struct RootView: View {
         Group {
             if let tabBarStore = self.store.scope(state: \.tabBarState, action: \.tabBar) {
                 TabBarView(store: tabBarStore)
+            } else if let onboardingStore = self.store.scope(state: \.onboardingState, action: \.onboarding) {
+                OnboardingView(store: onboardingStore)
             } else {
-                #if DEBUG
-                Button {
-                    self.store.send(.testBtnTapped)
-                } label: {
-                    Text(Strings.Root.onboardingCompleteButton)
-                }
-                #endif
+                EmptyView()
             }
         }
         .onAppear {
