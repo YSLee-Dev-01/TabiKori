@@ -15,10 +15,12 @@ public struct TabiPageIndicator: View {
 
     private let count: Int
     private let currentIndex: Int
+    private let inactiveColor: Color
 
-    public init(count: Int, currentIndex: Int) {
+    public init(count: Int, currentIndex: Int, inactiveColor: Color = .white.opacity(0.6)) {
         self.count = count
         self.currentIndex = currentIndex
+        self.inactiveColor = inactiveColor
     }
 
     public var body: some View {
@@ -41,7 +43,7 @@ private extension TabiPageIndicator {
             .fill(
                 isSelected
                     ? Color.getTabiColor(.tabiPrimary)
-                    : Color.white.opacity(0.6)
+                    : self.inactiveColor
             )
             .frame(
                 width: isSelected ? 6 : 5,
