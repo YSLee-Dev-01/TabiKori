@@ -13,7 +13,8 @@ Projects/
 ├── Data/            # Repository 구현체, 네트워킹, DTO
 ├── DesignSystem/    # 공용 UI 컴포넌트
 ├── Resource/        # 문자열/컬러/폰트/이미지 에셋
-└── Core/            # 로거 등 전역 유틸리티 (최하위 레이어)
+├── Core/            # 로거 등 전역 유틸리티 (최하위 레이어)
+└── Widgets/         # 홈 화면 WidgetKit 익스텐션 (.appExtension)
 ```
 
 ## 모듈 의존성
@@ -27,9 +28,11 @@ Projects/
 | `Data` | `Domain`, `Core`, `Resource` |
 | `Domain` | `Core` |
 | `DesignSystem` | `Core`, `Resource` |
+| `Widgets` | `Domain`, `Core`, `Resource` |
 | `Core` / `Resource` | 없음 (최하위) |
 
 - `Domain`은 `Data`를 참조하지 않음 — 실제 구현체 조립은 항상 `App`에서만 수행
+- `Widgets`는 `Data`/`DesignSystem`을 참조하지 않음 — 위젯 익스텐션에 Firebase/SwiftData/NMapsMap 등 무거운 SDK가 링크되는 것을 막기 위함. 앱과의 데이터 공유는 App Group(`Core.AppGroup.identifier`) 기반 스냅샷(`Domain/Sources/UseCase/Widget/WidgetSnapshotStore.swift`)으로만 수행
 - 새 모듈 간 의존이 필요하면 코드에서 바로 import하지 말고 `DependencyInformation.swift`부터 수정
 
 ---
@@ -111,6 +114,7 @@ Presentation/Sources/
 - 화면 하나 = `Presentation/{FeatureName}/` 폴더 하나
 - 서브 뷰는 재사용 여부와 무관하게 `Sub/`에 위치 (해당 화면에서만 쓰는 것이 기본 전제)
 - 다른 화면에서도 재사용해야 하는 컴포넌트로 판단되면 `DesignSystem/`으로 승격
+- 예외: `Widget/`은 화면이 아닌 위젯 스냅샷 동기화 헬퍼(`WidgetSnapshotSync.swift`) 전용 폴더
 
 ## DesignSystem/
 
@@ -167,6 +171,24 @@ Core/Sources/
 └── Logger/
     └── AppLogger.swift            # AppLogger.{network,core,view}
 ```
+
+## Widgets/
+
+```
+Widgets/Sources/
+├── TabiWidgetBundle.swift         # @main WidgetBundle, 위젯 목록 등록
+├── {WidgetName}/
+│   ├── {Name}WidgetEntry.swift    # TimelineEntry
+│   ├── {Name}TimelineProvider.swift
+│   ├── {Name}WidgetView.swift
+│   └── Tabi{Name}Widget.swift     # StaticConfiguration
+└── Style/
+    └── WidgetStyle.swift          # 위젯 전용 폰트/여백 (DesignSystem 미의존이라 직접 정의)
+```
+
+- `Data`/`DesignSystem`을 링크하지 않으므로 TCA Feature 패턴을 따르지 않음(TimelineProvider가 컨트롤러 역할)
+- 위젯이 표시할 데이터는 `Domain`의 스냅샷 모델(`{Name}WidgetSnapshot`)을 App Group 저장소(`WidgetSnapshotStore`)에서 읽기만 함 — Firebase/SwiftData 직접 접근 금지
+- 앱 쪽 스냅샷 기록 로직은 `Presentation/Sources/Widget/WidgetSnapshotSync.swift`에 위치
 
 ---
 

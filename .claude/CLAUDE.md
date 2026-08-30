@@ -38,7 +38,7 @@ tuist generate
 
 ### 모듈 구성
 
-`Projects/{App, Domain, Data, Core, DesignSystem, Presentation, Resource}` — 의존성 방향은 `Tuist/ProjectDescriptionHelpers/Dependency/DependencyInformation.swift`가 source of truth
+`Projects/{App, Domain, Data, Core, DesignSystem, Presentation, Resource, Widgets}` — 의존성 방향은 `Tuist/ProjectDescriptionHelpers/Dependency/DependencyInformation.swift`가 source of truth
 
 - **App** — 앱 진입점, DI 조립(각 UseCase의 `liveValue` 등록)
 - **Presentation** — 화면(Feature) 계층, TCA + SwiftUI
@@ -47,6 +47,7 @@ tuist generate
 - **Core** — 로거 등 앱 전역 유틸리티, 다른 모든 모듈이 의존 가능한 최하위 레이어
 - **DesignSystem** — 공용 UI 컴포넌트
 - **Resource** — 문자열/컬러/폰트/이미지 에셋
+- **Widgets** — 홈 화면 WidgetKit 익스텐션(`.appExtension`). `Domain`/`Core`/`Resource`에만 의존하며 `Data`/`DesignSystem`은 링크하지 않음(Firebase/NMapsMap 등 무거운 SDK가 위젯 바이너리에 들어가지 않도록). App과 App Group(`group.com.yslee.tabikori`)으로 데이터를 공유
 
 세부 하위 폴더 규칙은 `.claude/rules/folder-structure.md` 참조
 
