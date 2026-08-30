@@ -42,6 +42,6 @@ private extension SettingInfoRepository {
             throw TabiError.dataNotFound
         }
 
-        return content
+        return content.replacingOccurrences(of: "\\n", with: "\n")
     }
 }
