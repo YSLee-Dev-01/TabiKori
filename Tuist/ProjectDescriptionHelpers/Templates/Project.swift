@@ -15,6 +15,7 @@ public extension Project {
         hasResource: Bool,
         infoPlist: InfoPlist = .file(path: .relativeToRoot("Tuist/Config/Info.plist")),
         xcconfig: Path? = nil,
+        entitlements: Entitlements? = nil,
         scripts: [TargetScript] = []
     ) -> Project {
         let debugScheme = Scheme.makeScheme(
@@ -44,6 +45,7 @@ public extension Project {
                     dependencies: DependencyInformation.dependencies(name: name),
                     infoPlist: infoPlist,
                     xcconfig: xcconfig,
+                    entitlements: entitlements,
                     scripts: scripts
                 )
             ],

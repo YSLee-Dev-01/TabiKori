@@ -7,6 +7,7 @@ let project = Project.makeProject(
     hasResource: true,
     infoPlist: .file(path: .relativeToRoot("Projects/App/Info.plist")),
     xcconfig: .relativeToRoot("Projects/Data/Sources/Secret.xcconfig"),
+    entitlements: Environment.appGroupEntitlements,
     scripts: [
         .post(
             script: "\"${SRCROOT}/../../Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run\"",

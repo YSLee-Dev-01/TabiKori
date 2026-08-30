@@ -16,6 +16,7 @@ public extension Target {
         dependencies: [TargetDependency],
         infoPlist: InfoPlist = .file(path: .relativeToRoot("Tuist/Config/Info.plist")),
         xcconfig: Path? = nil,
+        entitlements: Entitlements? = nil,
         scripts: [TargetScript] = []
     ) -> Target {
         return Target.target(
@@ -29,6 +30,7 @@ public extension Target {
             infoPlist: infoPlist,
             sources: ["Sources/**"],
             resources: hasResource ? ["Resources/**"] : nil,
+            entitlements: entitlements,
             scripts: scripts,
             dependencies: dependencies,
             settings: Settings.defaultTargetSettings(xcconfig: xcconfig)
