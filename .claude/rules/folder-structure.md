@@ -145,6 +145,7 @@ Resource/
 │   ├── Color/TabiColor.swift
 │   ├── Image/TabiImage.swift
 │   ├── Strings/Strings.swift
+│   ├── Constant/                      # 앱 전역 공용 상수(외부 URL 등), 여러 모듈에서 공용 참조 (예: TabiURL.swift)
 │   └── Data/                          # 로컬 번들 리소스(JSON 등)의 Bundle.module 접근자 (예: SubwayStationResource.swift)
 └── Resources/
     ├── Assets.xcassets/
@@ -157,6 +158,7 @@ Resource/
 | 문자열 | `Resource/Sources/Strings/Strings.swift` |
 | 컬러 (코드 접근용) | `Resource/Sources/Color/TabiColor.swift` (+ `Assets.xcassets/Colors`) |
 | 이미지 (코드 접근용) | `Resource/Sources/Image/TabiImage.swift` (+ `Assets.xcassets/Images`) |
+| 공용 외부 URL 상수 | `Resource/Sources/Constant/TabiURL.swift` |
 | 폰트 파일 | `Resource/Resources/Fonts/` |
 | 로컬 번들 리소스(JSON 등) | 원본은 `Resource/Resources/{FeatureName}/`, 접근자는 `Resource/Sources/Data/{Name}Resource.swift` (`Bundle.module`로 바이트만 전달, 파싱은 Data 모듈이 담당 — `Data`가 `Resource`에 의존) |
 

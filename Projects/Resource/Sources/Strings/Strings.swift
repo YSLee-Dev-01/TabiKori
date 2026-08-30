@@ -10,7 +10,7 @@ import Foundation
 
 public enum Strings {
     public enum Common {}
-    public enum Root {}
+    public enum Onboarding {}
     public enum Tabbar {}
     public enum Home {}
     public enum Region {}
@@ -59,9 +59,41 @@ public extension Strings.Common {
     static let subwaySearchEnterGuide = "Enterキーで検索してください"
 }
 
-public extension Strings.Root {
-    /// 온보딩 완료 버튼 (임시 테스트용, DEBUG 전용)
-    static let onboardingCompleteButton = "オンボーディング完了ボタン"
+public extension Strings.Onboarding {
+    /// 홈 체험 스텝 제목
+    static let homeStepTitle = "ホームでできること"
+    /// 홈 체험 스텝 설명
+    static let homeStepDescription = "近くのスポットやおすすめ情報を一目で確認できます"
+    /// 지도 체험 스텝 제목
+    static let mapStepTitle = "地図でスポットを探そう"
+    /// 지도 체험 스텝 설명
+    static let mapStepDescription = "地図上で観光スポットを検索し、位置を確認できます"
+    /// 일정 체험 스텝 제목
+    static let planStepTitle = "旅行日程を管理しよう"
+    /// 일정 체험 스텝 설명
+    static let planStepDescription = "作成した旅行日程を一覧で管理できます"
+    /// 일정상세 체험 스텝 제목
+    static let planDetailStepTitle = "日程の詳細を確認しよう"
+    /// 일정상세 체험 스텝 설명
+    static let planDetailStepDescription = "日ごとのスポットと時間をタイムラインで確認できます"
+    /// 약관동의 스텝 제목
+    static let agreementStepTitle = "利用を開始する前に"
+    /// 약관동의 스텝 설명
+    static let agreementStepDescription = "プライバシーポリシーをご確認の上、同意してください"
+    /// 다음 버튼
+    static let nextButtonTitle = "次へ"
+    /// 시작하기 버튼
+    static let startButtonTitle = "始める"
+    /// 개인정보처리방침 보기 버튼
+    static let viewPrivacyPolicyButtonTitle = "プライバシーポリシーを見る"
+    /// 개인정보처리방침 동의 체크박스 라벨
+    static let privacyPolicyAgreementLabel = "プライバシーポリシーに同意します"
+    /// 웹뷰 열람 전 안내 문구
+    static let privacyPolicyUnviewedGuide = "プライバシーポリシーを確認すると同意できます"
+    /// 개인정보처리방침 웹뷰 시트 타이틀
+    static let privacyPolicyWebViewTitle = "プライバシーポリシー"
+    /// 웹뷰 로드 실패 설명 문구
+    static let privacyPolicyLoadFailedDescription = "通信状態を確認してもう一度お試しください"
 }
 
 public extension Strings.Home {
