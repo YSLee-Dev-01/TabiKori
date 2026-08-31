@@ -121,30 +121,20 @@ private extension PlanView {
         if !plans.isEmpty {
             Section {
                 ForEach(plans) { plan in
-                    PlanCardView(
-                        plan: plan,
-                        spotCount: self.store.spotCounts[plan.id] ?? 0,
-                        onTapped: {
-                            if self.store.isEditing {
-                                self.store.send(.planEditCellTapped(plan: plan))
-                            } else {
-                                self.store.send(.planTapped(plan: plan))
+                    self.planCard(plan)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
+                        .listRowSeparator(.hidden)
+                        // 브라우징 중에는 항상 동일한 커스텀 스와이프 삭제("削除" + tabiPrimary tint)를 노출한다.
+                        // 편집모드(.onDelete 기반 네이티브 좌측 "-" 버튼)가 활성화되면 List가 자체적으로
+                        // 이 swipeActions 대신 네이티브 편집 컨트롤을 보여주므로 별도 조건 분기가 필요 없다
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                self.store.send(.planDeleteButtonTapped(id: plan.id))
+                            } label: {
+                                Text(Strings.Common.delete)
                             }
+                            .tint(Color.getTabiColor(.tabiPrimary))
                         }
-                    )
-                    .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
-                    .listRowSeparator(.hidden)
-                    // 브라우징 중에는 항상 동일한 커스텀 스와이프 삭제("削除" + tabiPrimary tint)를 노출한다.
-                    // 편집모드(.onDelete 기반 네이티브 좌측 "-" 버튼)가 활성화되면 List가 자체적으로
-                    // 이 swipeActions 대신 네이티브 편집 컨트롤을 보여주므로 별도 조건 분기가 필요 없다
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button(role: .destructive) {
-                            self.store.send(.planDeleteButtonTapped(id: plan.id))
-                        } label: {
-                            Text(Strings.Common.delete)
-                        }
-                        .tint(Color.getTabiColor(.tabiPrimary))
-                    }
                 }
                 .onDelete { indexSet in
                     for index in indexSet {
@@ -155,5 +145,38 @@ private extension PlanView {
                 TabiLabel(title: section.title, style: .bodyMBold, color: .tabiTextPrimary)
             }
         }
+    }
+
+    @ViewBuilder
+    func planCard(_ plan: TravelPlan) -> some View {
+        let card = PlanCardView(
+            plan: plan,
+            spotCount: self.store.spotCounts[plan.id] ?? 0,
+            onTapped: {
+                if self.store.isEditing {
+                    self.store.send(.planEditCellTapped(plan: plan))
+                } else {
+                    self.store.send(.planTapped(plan: plan))
+                }
+            }
+        )
+
+        if plan.id == self.firstDisplayedPlanId {
+            card.onboardingHighlight("planCard")
+        } else {
+            card
+        }
+    }
+}
+
+// MARK: - Method
+
+private extension PlanView {
+    /// 목록에서 가장 먼저 렌더링되는 카드(진행중 → 예정 → 지난 순 첫 항목)의 id.
+    /// 온보딩 코치마크가 "첫 번째 일정 카드"를 하이라이트할 때 이 값을 기준으로 대상을 찾는다
+    var firstDisplayedPlanId: UUID? {
+        self.store.ongoingPlans.first?.id
+            ?? self.store.upcomingPlans.first?.id
+            ?? self.store.pastPlans.first?.id
     }
 }

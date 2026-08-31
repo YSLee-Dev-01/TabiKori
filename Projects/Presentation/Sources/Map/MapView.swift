@@ -23,6 +23,10 @@ private enum MapViewCoordinateSpace {
 public struct MapView: View {
 
     @Bindable private var store: StoreOf<MapFeature>
+    /// 지도 배경(TabiMapView)을 교체 가능한 주입 지점. 기본값(nil)에서는 기존과 동일하게 실제
+    /// NaverMap SDK(TabiMapView)가 렌더링된다. 온보딩 체험 화면처럼 실제 지도 타일 네트워크 호출
+    /// 없이 정적 배경만 보여줘야 하는 경우에만 대체 뷰를 주입한다
+    private let mapBackgroundOverride: AnyView?
     @FocusState private var isSearchFieldFocused: Bool
     @Namespace private var searchFieldNamespace
     @State private var mapContainerHeight: CGFloat = 0
@@ -56,8 +60,9 @@ public struct MapView: View {
         self.searchFieldBottomY > 0 ? max(0, self.mapContainerHeight - self.typingPanelTopY) : self.baseFullHeight
     }
 
-    public init(store: StoreOf<MapFeature>) {
+    public init(store: StoreOf<MapFeature>, mapBackgroundOverride: AnyView? = nil) {
         self.store = store
+        self.mapBackgroundOverride = mapBackgroundOverride
     }
 
     public var body: some View {
@@ -98,7 +103,11 @@ public struct MapView: View {
         .animation(.tabiStandard, value: self.languageGuideBottomY)
         .animation(.tabiStandard, value: self.searchFieldBottomY)
         .onChange(of: self.store.mode) { _, mode in
-            self.isSearchFieldFocused = mode == .typing
+            // Home 검색바 경유 진입처럼 탭 전환과 mode 변경이 같은 트랜잭션에서 겹치면,
+            // MapView가 TabView 상에 아직 올라오기 전이라 포커스 요청이 무시될 수 있어 한 틱 미룬다
+            DispatchQueue.main.async {
+                self.isSearchFieldFocused = mode == .typing
+            }
         }
         // 안내멘트가 사라지는 시점(키보드가 내려가거나 typing 모드를 벗어남)에 이전 측정값이
         // 남아 typingPanelTopY 계산에 잘못 쓰이지 않도록 즉시 초기화한다
@@ -241,34 +250,38 @@ private extension MapView {
                 .fill(TabiColor.tabiBackground)
                 .ignoresSafeArea()
 
-            Group {
-                if self.store.hasResolvedInitialCenter {
-                    TabiMapView(
-                        centerLatitude: self.store.centerLatitude,
-                        centerLongitude: self.store.centerLongitude,
-                        markers: self.store.searchResults.compactMap(\.toMapMarker),
-                        isClusteringEnabled: false,
-                        showsLocationButton: self.store.showsUserLocation,
-                        followsUserLocation: false,
-                        bottomContentInset: self.tabBarHeight,
-                        boundsFitToken: self.store.searchResultFitToken,
-                        onMapTapped: { _, _ in },
-                        onMarkerTapped: { id in
-                            guard let spot = self.store.searchResults.first(where: { $0.id == id }) else { return }
-                            self.selectSearchResult(spot)
-                        },
-                        onMapDragged: {
-                            withAnimation(.tabiStandard) {
-                                _ = self.store.send(.mapDragged)
+            if let mapBackgroundOverride = self.mapBackgroundOverride {
+                mapBackgroundOverride
+            } else {
+                Group {
+                    if self.store.hasResolvedInitialCenter {
+                        TabiMapView(
+                            centerLatitude: self.store.centerLatitude,
+                            centerLongitude: self.store.centerLongitude,
+                            markers: self.store.searchResults.compactMap(\.toMapMarker),
+                            isClusteringEnabled: false,
+                            showsLocationButton: self.store.showsUserLocation,
+                            followsUserLocation: false,
+                            bottomContentInset: self.tabBarHeight,
+                            boundsFitToken: self.store.searchResultFitToken,
+                            onMapTapped: { _, _ in self.isSearchFieldFocused = false },
+                            onMarkerTapped: { id in
+                                guard let spot = self.store.searchResults.first(where: { $0.id == id }) else { return }
+                                self.selectSearchResult(spot)
+                            },
+                            onMapDragged: {
+                                withAnimation(.tabiStandard) {
+                                    _ = self.store.send(.mapDragged)
+                                }
+                            },
+                            onCameraIdle: { latitude, longitude, radiusMeters in
+                                self.store.send(.mapCenterChanged(Coordinate(latitude: latitude, longitude: longitude), radiusMeters: radiusMeters))
                             }
-                        },
-                        onCameraIdle: { latitude, longitude, radiusMeters in
-                            self.store.send(.mapCenterChanged(Coordinate(latitude: latitude, longitude: longitude), radiusMeters: radiusMeters))
-                        }
-                    )
-                    .ignoresSafeArea()
-                } else {
-                    ProgressView()
+                        )
+                        .ignoresSafeArea()
+                    } else {
+                        ProgressView()
+                    }
                 }
             }
         }
@@ -434,14 +447,12 @@ private extension MapView {
                             Divider()
                                 .padding(.horizontal, 16)
                         }
-                        MapSearchResultRowView(spot: spot) {
-                            self.selectSearchResult(spot)
-                        }
-                        .id(spot.id)
-                        .onAppear {
-                            guard spot.id == self.store.searchResults.last?.id else { return }
-                            self.store.send(.searchNextPageTriggered)
-                        }
+                        self.searchResultRow(spot, isFirst: index == 0 && self.store.subwayResults.isEmpty)
+                            .id(spot.id)
+                            .onAppear {
+                                guard spot.id == self.store.searchResults.last?.id else { return }
+                                self.store.send(.searchNextPageTriggered)
+                            }
                     }
 
                     if self.store.isSearchNextPageLoading {
@@ -672,6 +683,19 @@ private extension MapView {
         .buttonStyle(TabiPressStyle())
     }
 
+    @ViewBuilder
+    func searchResultRow(_ spot: TouristSpot, isFirst: Bool) -> some View {
+        let row = MapSearchResultRowView(spot: spot) {
+            self.selectSearchResult(spot)
+        }
+
+        if isFirst {
+            row.onboardingHighlight("mapSearchResult")
+        } else {
+            row
+        }
+    }
+
     func selectSearchResult(_ spot: TouristSpot) {
         self.lastTappedSpotID = spot.id
         self.store.send(.searchResultTapped(spot))
@@ -689,8 +713,13 @@ private extension MapView {
     func cancelSearch() {
         self.lastTappedSpotID = nil
         self.isSearchFieldFocused = false
-        withAnimation(.tabiStandard) {
-            _ = self.store.send(.searchCancelTapped)
+        // half → collapsed 드래그처럼 포커스 해제와 동시에 mode 변경으로 검색 패널(텍스트필드 포함)이
+        // 통째로 unmount되면, 포커스 해제가 실제로 반영되기 전에 텍스트필드가 사라져 키보드가 내려가지
+        // 않고 남는 경우가 있어 패널 제거를 한 틱 미뤄 포커스 해제가 먼저 반영되도록 한다
+        DispatchQueue.main.async {
+            withAnimation(.tabiStandard) {
+                _ = self.store.send(.searchCancelTapped)
+            }
         }
     }
 }

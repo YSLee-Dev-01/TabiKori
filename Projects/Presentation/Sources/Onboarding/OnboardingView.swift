@@ -14,7 +14,7 @@ import Resource
 
 public struct OnboardingView: View {
 
-    @Bindable private var store: StoreOf<OnboardingFeature>
+    private let store: StoreOf<OnboardingFeature>
 
     public init(store: StoreOf<OnboardingFeature>) {
         self.store = store
@@ -22,16 +22,31 @@ public struct OnboardingView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            TabView(selection: self.$store.currentStepIndex.sending(\.pageSelected)) {
-                ForEach(self.store.visibleSteps) { step in
-                    self.stepView(step)
-                        .tag(step.rawValue)
+            self.stepView(self.store.currentStep)
+                .id(self.store.currentStep)
+                .transition(.opacity)
+        }
+        .animation(.tabiStandard, value: self.store.currentStep)
+        .overlayPreferenceValue(OnboardingHighlightAnchorKey.self) { anchors in
+            GeometryReader { proxy in
+                if let anchor = anchors[self.store.currentCoachMark.anchorKey] {
+                    OnboardingSpotlightOverlay(
+                        highlightRect: proxy[anchor],
+                        containerSize: proxy.size,
+                        coachMark: self.store.currentCoachMark
+                    )
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .animation(.tabiStandard, value: self.store.currentStepIndex)
-
-            self.bottomBar()
+            .ignoresSafeArea()
+        }
+        .overlay(alignment: .bottom) {
+            TabiPageIndicator(
+                count: OnboardingStep.allCases.count,
+                currentIndex: self.store.currentStep.rawValue,
+                inactiveColor: Color.getTabiColor(.tabiBorder)
+            )
+            .padding(.bottom, 16)
+            .allowsHitTesting(false)
         }
         .sheet(isPresented: Binding(
             get: { self.store.isPolicyWebViewPresented },
@@ -52,56 +67,35 @@ private extension OnboardingView {
     func stepView(_ step: OnboardingStep) -> some View {
         switch step {
         case .home:
-            OnboardingHomeStepView(
-                selectedCategory: self.store.homeSelectedCategory,
+            OnboardingHomeHostView(
                 onCategoryTapped: { self.store.send(.homeCategoryTapped($0)) }
             )
 
         case .map:
-            OnboardingMapStepView()
+            OnboardingMapHostView(
+                onSearchResultTapped: { self.store.send(.mapSearchResultTapped) }
+            )
 
         case .plan:
-            OnboardingPlanStepView()
+            OnboardingPlanHostView(
+                onPlanTapped: { self.store.send(.planCardTapped) }
+            )
 
         case .planDetail:
-            OnboardingPlanDetailStepView(
-                selectedDayIndex: self.store.planDetailSelectedDayIndex,
+            OnboardingPlanDetailHostView(
                 onDayTapped: { self.store.send(.planDetailDayTapped($0)) }
             )
 
         case .agreement:
             OnboardingAgreementStepView(
+                currentCoachMark: self.store.currentCoachMark,
                 hasViewedPolicy: self.store.hasViewedPolicy,
                 isAgreed: self.store.isAgreed,
                 onViewPolicyTapped: { self.store.send(.policyViewButtonTapped) },
-                onCheckBoxTapped: { self.store.send(.agreementCheckBoxTapped) }
+                onCheckBoxTapped: { self.store.send(.agreementCheckBoxTapped) },
+                onStartTapped: { self.store.send(.startButtonTapped) }
             )
         }
-    }
-
-    func bottomBar() -> some View {
-        VStack(spacing: 16) {
-            TabiPageIndicator(
-                count: OnboardingStep.allCases.count,
-                currentIndex: self.store.currentStepIndex,
-                inactiveColor: Color.getTabiColor(.tabiBorder)
-            )
-
-            TabiButton(
-                self.store.currentStep.isLast ? Strings.Onboarding.startButtonTitle : Strings.Onboarding.nextButtonTitle,
-                style: .primary,
-                isExpanded: true
-            ) {
-                if self.store.currentStep.isLast {
-                    self.store.send(.startButtonTapped)
-                } else {
-                    self.store.send(.nextButtonTapped)
-                }
-            }
-            .disabled(self.store.currentStep.isLast && self.store.isAgreed == false)
-        }
-        .padding(.horizontal, 20)
-        .padding(.bottom, 16)
     }
 
     func policyWebViewSheet() -> some View {

@@ -38,8 +38,4 @@ enum OnboardingStep: Int, CaseIterable, Identifiable {
         case .agreement: return Strings.Onboarding.agreementStepDescription
         }
     }
-
-    var isLast: Bool {
-        self == .agreement
-    }
 }

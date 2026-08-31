@@ -464,6 +464,7 @@ fileprivate extension HomeView {
                 }
             }
             .scrollIndicators(.hidden)
+            .onboardingHighlight("homeCategory")
         }
     }
 

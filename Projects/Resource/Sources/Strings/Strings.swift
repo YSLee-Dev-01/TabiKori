@@ -80,8 +80,6 @@ public extension Strings.Onboarding {
     static let agreementStepTitle = "利用を開始する前に"
     /// 약관동의 스텝 설명
     static let agreementStepDescription = "プライバシーポリシーをご確認の上、同意してください"
-    /// 다음 버튼
-    static let nextButtonTitle = "次へ"
     /// 시작하기 버튼
     static let startButtonTitle = "始める"
     /// 개인정보처리방침 보기 버튼
@@ -94,6 +92,20 @@ public extension Strings.Onboarding {
     static let privacyPolicyWebViewTitle = "プライバシーポリシー"
     /// 웹뷰 로드 실패 설명 문구
     static let privacyPolicyLoadFailedDescription = "通信状態を確認してもう一度お試しください"
+    /// 홈 카테고리 칩 유도 코치마크 문구
+    static let homeCategoryCoachMark = "カテゴリーをタップしてみましょう"
+    /// 지도 검색 결과 카드 유도 코치마크 문구
+    static let mapSearchResultCoachMark = "気になるスポットをタップしてみましょう"
+    /// 일정 카드 유도 코치마크 문구
+    static let planCardCoachMark = "日程をタップしてみましょう"
+    /// 일정상세 Day 칩 유도 코치마크 문구
+    static let planDetailDayChipCoachMark = "他の日もタップしてみましょう"
+    /// 약관동의 정책 보기 버튼 유도 코치마크 문구
+    static let agreementPolicyCoachMark = "プライバシーポリシーを確認してみましょう"
+    /// 약관동의 체크박스 유도 코치마크 문구
+    static let agreementCheckBoxCoachMark = "チェックボックスをタップしてみましょう"
+    /// 약관동의 시작하기 버튼 유도 코치마크 문구
+    static let agreementStartCoachMark = "「始める」をタップして完了しましょう"
 }
 
 public extension Strings.Home {

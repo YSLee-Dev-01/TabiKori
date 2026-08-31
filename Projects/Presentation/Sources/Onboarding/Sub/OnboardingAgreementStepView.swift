@@ -12,15 +12,18 @@ import DesignSystem
 import Resource
 
 struct OnboardingAgreementStepView: View {
+    let currentCoachMark: OnboardingCoachMark
     let hasViewedPolicy: Bool
     let isAgreed: Bool
     let onViewPolicyTapped: () -> Void
     let onCheckBoxTapped: () -> Void
+    let onStartTapped: () -> Void
 
     var body: some View {
         OnboardingStepFrame(
             title: OnboardingStep.agreement.title,
-            description: OnboardingStep.agreement.description
+            description: OnboardingStep.agreement.description,
+            scrollTarget: self.currentCoachMark
         ) {
             VStack(alignment: .leading, spacing: 20) {
                 TabiButton(
@@ -29,6 +32,7 @@ struct OnboardingAgreementStepView: View {
                     isExpanded: true,
                     action: self.onViewPolicyTapped
                 )
+                .onboardingHighlight(OnboardingCoachMark.agreementPolicyButton)
 
                 VStack(alignment: .leading, spacing: 8) {
                     OnboardingAgreementCheckBox(
@@ -36,6 +40,7 @@ struct OnboardingAgreementStepView: View {
                         isChecked: self.isAgreed,
                         onTapped: self.onCheckBoxTapped
                     )
+                    .onboardingHighlight(OnboardingCoachMark.agreementCheckBox)
 
                     if self.hasViewedPolicy == false {
                         TabiLabel(
@@ -45,6 +50,15 @@ struct OnboardingAgreementStepView: View {
                         )
                     }
                 }
+
+                TabiButton(
+                    Strings.Onboarding.startButtonTitle,
+                    style: .primary,
+                    isExpanded: true,
+                    action: self.onStartTapped
+                )
+                .disabled(self.isAgreed == false)
+                .onboardingHighlight(OnboardingCoachMark.agreementStartButton)
             }
         }
     }

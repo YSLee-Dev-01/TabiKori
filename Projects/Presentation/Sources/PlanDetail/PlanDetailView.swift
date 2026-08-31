@@ -257,13 +257,8 @@ private extension PlanDetailView {
             ScrollView(.horizontal) {
                 HStack(spacing: 8) {
                     ForEach(Array(plan.dayDates.enumerated()), id: \.offset) { offset, _ in
-                        TabiChip(
-                            Strings.Plan.dayChipTitle(offset + 1),
-                            isSelected: self.store.selectedDayIndex == offset
-                        ) {
-                            self.handleDayChipTapped(offset)
-                        }
-                        .id(offset)
+                        self.dayChip(offset)
+                            .id(offset)
                     }
                 }
                 // TabiChip 미선택 상태의 overlay stroke는 캡슐 경계에 걸쳐 그려져 상하로 0.5pt씩
@@ -288,6 +283,25 @@ private extension PlanDetailView {
                     proxy.scrollTo(newIndex, anchor: .center)
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    func dayChip(_ offset: Int) -> some View {
+        let chip = TabiChip(
+            Strings.Plan.dayChipTitle(offset + 1),
+            isSelected: self.store.selectedDayIndex == offset
+        ) {
+            self.handleDayChipTapped(offset)
+        }
+
+        // 온보딩 코치마크는 둘째 날(index 1) 칩을 하이라이트해, 첫째 날 외의 날짜도 탭해서
+        // 전환할 수 있음을 보여준다. 프로덕션 화면에서는 항상 부착되지만 온보딩 화면 밖에서는
+        // 아무도 이 anchorPreference 값을 읽지 않으므로 동작에 영향이 없다
+        if offset == 1 {
+            chip.onboardingHighlight("planDetailDayChip")
+        } else {
+            chip
         }
     }
 
