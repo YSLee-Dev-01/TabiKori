@@ -260,6 +260,12 @@ public extension Strings.Bookmark {
     static let emptyTitle = "保存したスポットがありません"
     /// 빈 상태 설명
     static let emptyDescription = "気になるスポットのハートを押して保存してみましょう"
+    /// 목록 로드 실패 설명
+    static let loadFailedDescription = "リストを読み込めませんでした"
+    /// 카테고리 필터 결과 0건 제목
+    static let filteredEmptyTitle = "該当するスポットがありません"
+    /// 카테고리 필터 결과 0건 설명
+    static let filteredEmptyDescription = "他のカテゴリーを選択してみてください"
 }
 
 public extension Strings.Plan {

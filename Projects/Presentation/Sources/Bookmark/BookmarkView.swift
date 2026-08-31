@@ -57,11 +57,29 @@ private extension BookmarkView {
                             .frame(maxWidth: .infinity)
                             .listRowInsets(EdgeInsets())
                             .listRowSeparator(.hidden)
+                    } else if self.store.hasLoadFailed {
+                        TabiRetryableEmptyState(description: Strings.Bookmark.loadFailedDescription) {
+                            self.store.send(.onAppear)
+                        }
+                        .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
                     } else if self.store.filteredBookmarks.isEmpty {
-                        BookmarkEmptyState()
+                        if self.store.selectedCategory != nil {
+                            TabiEmptyState(
+                                systemImageName: "line.3.horizontal.decrease.circle",
+                                title: Strings.Bookmark.filteredEmptyTitle,
+                                description: Strings.Bookmark.filteredEmptyDescription
+                            )
                             .frame(height: max(proxy.size.height - self.headerHeight, 0))
                             .listRowInsets(EdgeInsets())
                             .listRowSeparator(.hidden)
+                        } else {
+                            BookmarkEmptyState()
+                                .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                                .listRowInsets(EdgeInsets())
+                                .listRowSeparator(.hidden)
+                        }
                     } else {
                         ForEach(self.store.filteredBookmarks) { bookmark in
                             TabiSpotRow(

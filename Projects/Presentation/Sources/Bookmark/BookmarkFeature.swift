@@ -23,6 +23,7 @@ public struct BookmarkFeature: Sendable {
         var bookmarks: [Bookmark] = []
         var selectedCategory: CategoryType?
         var isLoading: Bool = false
+        var hasLoadFailed: Bool = false
         var isEditing: Bool = false
         @Presents var addCustomPlaceState: AddCustomPlaceFeature.State?
 
@@ -42,6 +43,7 @@ public struct BookmarkFeature: Sendable {
         case editCellTapped(TouristSpot)
         case deleteSwiped(contentId: String)
         case bookmarksResult([Bookmark])
+        case bookmarksFailed
         case addCustomPlaceButtonTapped
         case addCustomPlace(PresentationAction<AddCustomPlaceFeature.Action>)
     }
@@ -53,6 +55,7 @@ public struct BookmarkFeature: Sendable {
             switch action {
             case .onAppear:
                 state.isLoading = true
+                state.hasLoadFailed = false
                 return self.fetchBookmarksEffect()
 
             case .editModeToggleTapped:
@@ -86,6 +89,12 @@ public struct BookmarkFeature: Sendable {
             case .bookmarksResult(let bookmarks):
                 state.bookmarks = bookmarks
                 state.isLoading = false
+                state.hasLoadFailed = false
+                return .none
+
+            case .bookmarksFailed:
+                state.isLoading = false
+                state.hasLoadFailed = true
                 return .none
 
             case .addCustomPlaceButtonTapped:
@@ -116,7 +125,7 @@ private extension BookmarkFeature {
                 await send(.bookmarksResult(bookmarks))
             } catch {
                 AppLogger.view.log(.error, "북마크 목록 조회 실패: \(error.localizedDescription)")
-                await send(.bookmarksResult([]))
+                await send(.bookmarksFailed)
             }
         }
     }
