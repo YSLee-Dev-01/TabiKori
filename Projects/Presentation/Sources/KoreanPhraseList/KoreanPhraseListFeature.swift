@@ -19,6 +19,7 @@ public struct KoreanPhraseListFeature: Sendable {
 
     @Dependency(\.koreanPhraseUseCase) var koreanPhraseUseCase
     @Dependency(\.analyticsCenter) var analyticsCenter
+    @Dependency(\.widgetSnapshotStore) var widgetSnapshotStore
 
     @ObservableState
     public struct State: Equatable {
@@ -78,7 +79,10 @@ public struct KoreanPhraseListFeature: Sendable {
                 state.phrases = phrases
                 state.isLoading = false
                 state.hasLoadFailed = false
-                return .none
+                return WidgetSnapshotSync.syncPhraseSnapshotEffect(
+                    phrases: phrases,
+                    widgetSnapshotStore: self.widgetSnapshotStore
+                )
 
             case .phrasesFailed:
                 state.isLoading = false

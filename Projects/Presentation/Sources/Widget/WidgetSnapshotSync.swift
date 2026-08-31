@@ -61,6 +61,16 @@ enum WidgetSnapshotSync {
         }
     }
 
+    /// 이미 메모리에 있는 `phrases`로 위젯 스냅샷만 갱신한다 (KoreanPhraseListFeature 등 데이터를 이미 들고 있는 화면용)
+    static func syncPhraseSnapshotEffect<Action>(
+        phrases: [KoreanPhrase],
+        widgetSnapshotStore: WidgetSnapshotStoreProtocol
+    ) -> Effect<Action> {
+        return .run { _ in
+            widgetSnapshotStore.savePhraseSnapshot(self.phraseSnapshot(from: phrases))
+        }
+    }
+
     /// 앱 실행 시점처럼 플랜/문구를 직접 조회해서 위젯 스냅샷을 갱신한다. 실패는 로깅 후 무시(기존 스냅샷 유지)
     static func syncAllSnapshotsEffect<Action>(
         travelPlanUseCase: TravelPlanUseCaseProtocol,

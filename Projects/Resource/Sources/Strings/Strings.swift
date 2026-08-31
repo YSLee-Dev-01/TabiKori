@@ -755,4 +755,6 @@ public extension Strings.Widget {
     static let phraseDescription = "旅行で使える韓国語フレーズをホーム画面で確認できます"
     /// 한국어 사전 위젯 - 빈 상태 문구 (등록된 문구 없음)
     static let phraseEmptyTitle = "表示できるフレーズがありません"
+    /// 한국어 사전 위젯 - 미디엄 사이즈 좌측 국기 이모지
+    static let phraseFlagEmoji = "🇰🇷"
 }

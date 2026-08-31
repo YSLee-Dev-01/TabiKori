@@ -15,11 +15,13 @@ public enum WidgetKind {
 
 public enum WidgetDeepLink: Equatable, Sendable {
     case planDetail(UUID)
+    case planAdd
     case koreanPhraseList
 
     private enum Constant {
         static let scheme = "tabikori"
         static let planHost = "plan"
+        static let planAddHost = "planAdd"
         static let koreanPhraseHost = "koreanPhrase"
     }
 
@@ -31,6 +33,9 @@ public enum WidgetDeepLink: Equatable, Sendable {
         case .planDetail(let id):
             components.host = Constant.planHost
             components.path = "/\(id.uuidString)"
+
+        case .planAdd:
+            components.host = Constant.planAddHost
 
         case .koreanPhraseList:
             components.host = Constant.koreanPhraseHost
@@ -48,6 +53,9 @@ public enum WidgetDeepLink: Equatable, Sendable {
             let idString = components.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
             guard let id = UUID(uuidString: idString) else { return nil }
             self = .planDetail(id)
+
+        case Constant.planAddHost:
+            self = .planAdd
 
         case Constant.koreanPhraseHost:
             self = .koreanPhraseList

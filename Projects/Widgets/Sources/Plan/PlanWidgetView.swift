@@ -31,7 +31,7 @@ struct PlanWidgetView: View {
         .containerBackground(for: .widget) {
             Color.getTabiColor(.tabiBackground)
         }
-        .widgetURL(self.entry.item.map { WidgetDeepLink.planDetail($0.id).url } ?? nil)
+        .widgetURL(self.entry.item.map { WidgetDeepLink.planDetail($0.id).url } ?? WidgetDeepLink.planAdd.url)
     }
 }
 
@@ -55,8 +55,7 @@ private extension PlanWidgetView {
             Text(self.badgeTitle(item))
                 .font(WidgetFont.pretendard(size: 12))
                 .foregroundStyle(Color.getTabiColor(.tabiTextSecondary))
-                .lineLimit(2)
-                .multilineTextAlignment(.leading)
+                .lineLimit(1)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -76,21 +75,19 @@ private extension PlanWidgetView {
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text(item.regionTitle)
+                Text("\(item.regionTitle) · \(Strings.Plan.durationBadge(item.dayCount))")
                     .font(WidgetFont.pretendard(size: 13))
                     .foregroundStyle(Color.getTabiColor(.tabiTextSecondary))
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
-
-                Text(self.badgeTitle(item))
-                    .font(WidgetFont.pretendard(.semiBold, size: 13))
-                    .foregroundStyle(Color.getTabiColor(.tabiPrimary))
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            Spacer(minLength: 0)
+            Text(self.badgeTitle(item))
+                .font(WidgetFont.pretendard(.bold, size: 24))
+                .foregroundStyle(Color.getTabiColor(.tabiPrimary))
+                .lineLimit(1)
+                .fixedSize()
+                .layoutPriority(1)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .padding(WidgetStyle.contentPadding)

@@ -55,22 +55,27 @@ private extension PhraseWidgetView {
     }
 
     func mediumContent(_ phrase: PhraseWidgetSnapshotItem) -> some View {
-        VStack(alignment: .leading, spacing: WidgetStyle.contentSpacing) {
-            Text(phrase.korean)
-                .font(WidgetFont.pretendard(.semiBold, size: 20))
-                .foregroundStyle(Color.getTabiColor(.tabiTextPrimary))
-                .lineLimit(1)
+        HStack(alignment: .center, spacing: WidgetStyle.contentSpacing * 2) {
+            Text(Strings.Widget.phraseFlagEmoji)
+                .font(.system(size: 36))
 
-            Text(phrase.japanese)
-                .font(WidgetFont.pretendard(size: 15))
-                .foregroundStyle(Color.getTabiColor(.tabiTextSecondary))
-                .lineLimit(1)
-
-            if let pronunciation = phrase.pronunciation, !pronunciation.isEmpty {
-                Text(pronunciation)
-                    .font(WidgetFont.pretendard(size: 13))
-                    .foregroundStyle(Color.getTabiColor(.tabiTextTertiary))
+            VStack(alignment: .leading, spacing: WidgetStyle.contentSpacing) {
+                Text(phrase.korean)
+                    .font(WidgetFont.pretendard(.semiBold, size: 20))
+                    .foregroundStyle(Color.getTabiColor(.tabiTextPrimary))
                     .lineLimit(1)
+
+                Text(phrase.japanese)
+                    .font(WidgetFont.pretendard(size: 15))
+                    .foregroundStyle(Color.getTabiColor(.tabiTextSecondary))
+                    .lineLimit(1)
+
+                if let pronunciation = phrase.pronunciation, !pronunciation.isEmpty {
+                    Text(pronunciation)
+                        .font(WidgetFont.pretendard(size: 13))
+                        .foregroundStyle(Color.getTabiColor(.tabiTextTertiary))
+                        .lineLimit(1)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

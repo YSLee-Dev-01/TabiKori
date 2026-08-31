@@ -77,6 +77,11 @@ public struct TabBarFeature {
                 state.path.append(.koreanPhraseList(KoreanPhraseListFeature.State()))
                 return .none
 
+            case .deepLinkReceived(.planAdd):
+                state.selectedTab = .plan
+                state.planState.addPlanState = AddTravelPlanFeature.State()
+                return .none
+
             case .deepLinkReceived(.planDetail(let id)):
                 state.selectedTab = .plan
                 return .run { [travelPlanUseCase = self.travelPlanUseCase] send in

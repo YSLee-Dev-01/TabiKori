@@ -12,7 +12,7 @@ import WidgetKit
 import Domain
 
 struct PhraseTimelineProvider: TimelineProvider {
-    private static let rotationInterval: TimeInterval = 30 * 60
+    private static let rotationInterval: TimeInterval = 10 * 60
     private static let entryCount = 48
 
     private let store: WidgetSnapshotStoreProtocol
