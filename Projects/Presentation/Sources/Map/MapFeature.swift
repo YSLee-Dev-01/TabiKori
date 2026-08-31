@@ -222,9 +222,17 @@ public struct MapFeature: Sendable {
 
             case .onAppear:
                 let translateSearchOnAppearEffect: Effect<Action> = .send(.translateSearch(.onAppear))
-                guard state.hasLoadedInitial == false else { return translateSearchOnAppearEffect }
-                state.hasLoadedInitial = true
+                let previousLocationStatus = state.locationStatus
                 state.locationStatus = self.locationUseCase.checkAuthorization()
+
+                guard state.hasLoadedInitial == false else {
+                    // 설정 앱에서 위치 권한을 새로 허용하고 돌아온 경우, 서울 폴백에 고착되지 않도록 좌표를 다시 조회한다
+                    guard previousLocationStatus != .allowed, state.locationStatus == .allowed else {
+                        return translateSearchOnAppearEffect
+                    }
+                    return .merge(translateSearchOnAppearEffect, self.fetchCoordinateEffect())
+                }
+                state.hasLoadedInitial = true
 
                 switch state.locationStatus {
                 case .undetermined:
