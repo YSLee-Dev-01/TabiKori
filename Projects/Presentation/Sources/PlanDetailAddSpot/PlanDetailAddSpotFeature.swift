@@ -314,6 +314,15 @@ public struct PlanDetailAddSpotFeature: Sendable {
 
             case .saveFailed:
                 state.isSaving = false
+                state.alert = AlertState {
+                    TextState(Strings.Plan.saveFailedAlertTitle)
+                } actions: {
+                    ButtonState {
+                        TextState(Strings.Plan.alertConfirm)
+                    }
+                } message: {
+                    TextState(Strings.Plan.saveFailedAlertMessage)
+                }
                 return .none
 
             case .spotAdded:

@@ -11,6 +11,7 @@ import Foundation
 import ComposableArchitecture
 import Core
 import Domain
+import Resource
 
 /// 플랜에 저장된 준비물 체크리스트 화면. 항목 체크/해제는 낙관적으로 갱신 후 실패 시 되돌린다
 @Reducer
@@ -31,6 +32,7 @@ public struct PlanToolBarFeature: Sendable {
         var editSnapshot: [ToolBarPlanItem]?
         var isSaving: Bool = false
         fileprivate var hasStartedLoading: Bool = false
+        @Presents var alert: AlertState<Action.Alert>?
 
         public init(plan: TravelPlan) {
             self.plan = plan
@@ -55,6 +57,9 @@ public struct PlanToolBarFeature: Sendable {
         case checkUpdateFailed(id: UUID, previous: Bool)
         case addItemFailed(id: UUID)
         case editSaveResult([ToolBarPlanItem]?)
+        case alert(PresentationAction<Alert>)
+
+        public enum Alert: Equatable {}
     }
 
     public init() {}
@@ -64,6 +69,9 @@ public struct PlanToolBarFeature: Sendable {
         Reduce { state, action in
             switch action {
             case .binding:
+                return .none
+
+            case .alert:
                 return .none
 
             case .onAppear:
@@ -172,10 +180,21 @@ public struct PlanToolBarFeature: Sendable {
                     state.items = items
                     state.editSnapshot = nil
                     state.isEditing = false
+                } else {
+                    state.alert = AlertState {
+                        TextState(Strings.Plan.saveFailedAlertTitle)
+                    } actions: {
+                        ButtonState {
+                            TextState(Strings.Plan.alertConfirm)
+                        }
+                    } message: {
+                        TextState(Strings.Plan.saveFailedAlertMessage)
+                    }
                 }
                 return .none
             }
         }
+        .ifLet(\.$alert, action: \.alert)
     }
 }
 

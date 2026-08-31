@@ -11,6 +11,7 @@ import Foundation
 import ComposableArchitecture
 import Core
 import Domain
+import Resource
 
 /// PlanDetail 편집모드에서 스팟 행을 탭하면 여는 바텀시트. 시작/종료 시각을 수정해 저장한다
 @Reducer
@@ -30,6 +31,7 @@ public struct PlanDetailTimeEditFeature: Sendable {
         var endTime: Date
         var isTimeUnset: Bool
         var isSaving: Bool = false
+        @Presents var alert: AlertState<Action.Alert>?
 
         public init(planId: UUID, planTitle: String, dayTitle: String, dateTitle: String, spot: TravelPlanDetailSpot) {
             self.planId = planId
@@ -64,6 +66,9 @@ public struct PlanDetailTimeEditFeature: Sendable {
         case saveButtonTapped
         case saveFailed
         case timeSaved
+        case alert(PresentationAction<Alert>)
+
+        public enum Alert: Equatable {}
     }
 
     public init() {}
@@ -73,6 +78,9 @@ public struct PlanDetailTimeEditFeature: Sendable {
         Reduce { state, action in
             switch action {
             case .binding:
+                return .none
+
+            case .alert:
                 return .none
 
             case .closeButtonTapped:
@@ -90,12 +98,22 @@ public struct PlanDetailTimeEditFeature: Sendable {
 
             case .saveFailed:
                 state.isSaving = false
+                state.alert = AlertState {
+                    TextState(Strings.Plan.saveFailedAlertTitle)
+                } actions: {
+                    ButtonState {
+                        TextState(Strings.Plan.alertConfirm)
+                    }
+                } message: {
+                    TextState(Strings.Plan.saveFailedAlertMessage)
+                }
                 return .none
 
             case .timeSaved:
                 return .none
             }
         }
+        .ifLet(\.$alert, action: \.alert)
     }
 }
 

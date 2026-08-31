@@ -39,6 +39,7 @@ struct PlanDetailTimeEditView: View {
         }
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
+        .alert($store.scope(state: \.alert, action: \.alert))
     }
 }
 

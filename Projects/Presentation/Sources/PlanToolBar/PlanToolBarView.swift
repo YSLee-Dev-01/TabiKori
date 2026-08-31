@@ -74,6 +74,7 @@ public struct PlanToolBarView: View {
         .onAppear {
             self.store.send(.onAppear)
         }
+        .alert($store.scope(state: \.alert, action: \.alert))
     }
 }
 

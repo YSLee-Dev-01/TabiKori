@@ -11,6 +11,7 @@ import Foundation
 import ComposableArchitecture
 import Core
 import Domain
+import Resource
 
 /// 관광지 상세에서 "旅程に追加" 버튼을 눌렀을 때 열리는 하단 sheet.
 /// Step 1(일정 → 날짜 선택)과 Step 2(시작/종료 시각 입력)를 같은 sheet 안에서 전환한다.
@@ -38,6 +39,7 @@ public struct AddToItineraryFeature: Sendable {
         var endTime: Date = Date()
         var isTimeUnset: Bool = false
         fileprivate var existingDetail: TravelPlanDetail? = nil
+        @Presents var alert: AlertState<Action.Alert>?
 
         public init(touristSpot: TouristSpot, address: String) {
             self.touristSpot = touristSpot
@@ -71,6 +73,9 @@ public struct AddToItineraryFeature: Sendable {
         case existingDetailResult(TravelPlanDetail?)
         case saveFailed
         case spotAdded
+        case alert(PresentationAction<Alert>)
+
+        public enum Alert: Equatable {}
     }
 
     public init() {}
@@ -80,6 +85,9 @@ public struct AddToItineraryFeature: Sendable {
         Reduce { state, action in
             switch action {
             case .binding:
+                return .none
+
+            case .alert:
                 return .none
 
             case .onAppear:
@@ -152,12 +160,22 @@ public struct AddToItineraryFeature: Sendable {
 
             case .saveFailed:
                 state.isSaving = false
+                state.alert = AlertState {
+                    TextState(Strings.Plan.saveFailedAlertTitle)
+                } actions: {
+                    ButtonState {
+                        TextState(Strings.Plan.alertConfirm)
+                    }
+                } message: {
+                    TextState(Strings.Plan.saveFailedAlertMessage)
+                }
                 return .none
 
             case .spotAdded:
                 return .none
             }
         }
+        .ifLet(\.$alert, action: \.alert)
     }
 }
 
