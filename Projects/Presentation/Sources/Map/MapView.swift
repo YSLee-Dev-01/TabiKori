@@ -106,7 +106,11 @@ public struct MapView: View {
             // Home 검색바 경유 진입처럼 탭 전환과 mode 변경이 같은 트랜잭션에서 겹치면,
             // MapView가 TabView 상에 아직 올라오기 전이라 포커스 요청이 무시될 수 있어 한 틱 미룬다
             DispatchQueue.main.async {
-                self.isSearchFieldFocused = mode == .typing
+                if mode == .typing {
+                    self.isSearchFieldFocused = true
+                } else {
+                    self.dismissKeyboard()
+                }
             }
         }
         // 안내멘트가 사라지는 시점(키보드가 내려가거나 typing 모드를 벗어남)에 이전 측정값이
@@ -264,12 +268,13 @@ private extension MapView {
                             followsUserLocation: false,
                             bottomContentInset: self.tabBarHeight,
                             boundsFitToken: self.store.searchResultFitToken,
-                            onMapTapped: { _, _ in self.isSearchFieldFocused = false },
+                            onMapTapped: { _, _ in self.dismissKeyboard() },
                             onMarkerTapped: { id in
                                 guard let spot = self.store.searchResults.first(where: { $0.id == id }) else { return }
                                 self.selectSearchResult(spot)
                             },
                             onMapDragged: {
+                                self.dismissKeyboard()
                                 withAnimation(.tabiStandard) {
                                     _ = self.store.send(.mapDragged)
                                 }
@@ -328,7 +333,7 @@ private extension MapView {
             onDismiss: { self.cancelSearch() },
             onDragStarted: {
                 self.isPanelDragging = true
-                self.isSearchFieldFocused = false
+                self.dismissKeyboard()
             },
             onDragEnded: { self.isPanelDragging = false }
         ) {
@@ -712,7 +717,7 @@ private extension MapView {
 private extension MapView {
     func cancelSearch() {
         self.lastTappedSpotID = nil
-        self.isSearchFieldFocused = false
+        self.dismissKeyboard()
         // half → collapsed 드래그처럼 포커스 해제와 동시에 mode 변경으로 검색 패널(텍스트필드 포함)이
         // 통째로 unmount되면, 포커스 해제가 실제로 반영되기 전에 텍스트필드가 사라져 키보드가 내려가지
         // 않고 남는 경우가 있어 패널 제거를 한 틱 미뤄 포커스 해제가 먼저 반영되도록 한다
@@ -721,5 +726,13 @@ private extension MapView {
                 _ = self.store.send(.searchCancelTapped)
             }
         }
+    }
+
+    /// FocusState만으로 키보드를 내리면, 사용자가 TextField를 직접 눌러 재포커스한 이후 재시도할 때
+    /// SwiftUI의 focus 동기화가 어긋나 실제 소프트웨어 키보드가 내려가지 않는 경우가 있다.
+    /// UIKit 레벨에서 first responder를 직접 해제해 이 경우에도 항상 안정적으로 키보드가 내려가도록 한다
+    func dismissKeyboard() {
+        self.isSearchFieldFocused = false
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
