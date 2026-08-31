@@ -19,31 +19,23 @@ struct OnboardingWelcomeStepView: View {
     let onStartTapped: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 8) {
             Spacer()
 
-            LottieView(animation: .named("Congratulations", bundle: ResourceResources.bundle))
-                .playing(loopMode: .loop)
-                .resizable()
-                .frame(width: 220, height: 220)
-
-            VStack(spacing: 8) {
-                TabiLabel(
-                    title: Strings.Onboarding.welcomeTitle,
-                    style: .titleL,
-                    color: .tabiTextPrimary,
-                    alignment: .center,
-                    isExpanded: true
-                )
-                TabiLabel(
-                    title: Strings.Onboarding.welcomeDescription,
-                    style: .bodyM,
-                    color: .tabiTextSecondary,
-                    alignment: .center,
-                    isExpanded: true
-                )
-            }
-            .padding(.horizontal, 20)
+            TabiLabel(
+                title: Strings.Onboarding.welcomeTitle,
+                style: .titleL,
+                color: .tabiTextPrimary,
+                alignment: .center,
+                isExpanded: true
+            )
+            TabiLabel(
+                title: Strings.Onboarding.welcomeDescription,
+                style: .bodyM,
+                color: .tabiTextSecondary,
+                alignment: .center,
+                isExpanded: true
+            )
 
             Spacer()
 
@@ -53,10 +45,24 @@ struct OnboardingWelcomeStepView: View {
                 isExpanded: true,
                 action: self.onStartTapped
             )
-            .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
+        .padding(.horizontal, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TabiColor.tabiBackground)
+        .background {
+            // 배경(로티 애니메이션)만 세이프에어리어를 무시해 화면 전체를 덮고,
+            // 전경(텍스트/버튼)은 세이프에어리어 안쪽에 그대로 위치시켜 하단 버튼이 홈 인디케이터 위로 밀리지 않게 한다
+            GeometryReader { proxy in
+                ZStack {
+                    Color.getTabiColor(.tabiBackground)
+
+                    LottieView(animation: .named("Congratulations", bundle: ResourceResources.bundle))
+                        .playing(loopMode: .loop)
+                        .resizable()
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                }
+            }
+            .ignoresSafeArea()
+        }
     }
 }
