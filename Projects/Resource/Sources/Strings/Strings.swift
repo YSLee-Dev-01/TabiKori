@@ -106,6 +106,12 @@ public extension Strings.Onboarding {
     static let agreementCheckBoxCoachMark = "チェックボックスをタップしてみましょう"
     /// 약관동의 시작하기 버튼 유도 코치마크 문구
     static let agreementStartCoachMark = "「始める」をタップして完了しましょう"
+    /// 온보딩 웰컴 스텝 제목
+    static let welcomeTitle = "タビコリをインストールしていただき、\nありがとうございます🎉"
+    /// 온보딩 웰컴 스텝 설명
+    static let welcomeDescription = "さっそく使い方をご案内します"
+    /// 온보딩 웰컴 스텝 시작 버튼
+    static let welcomeButtonTitle = "使い方を見てみる"
 }
 
 public extension Strings.Home {

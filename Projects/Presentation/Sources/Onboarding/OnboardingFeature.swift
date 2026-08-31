@@ -19,6 +19,7 @@ public struct OnboardingFeature: Sendable {
 
     @ObservableState
     public struct State: Equatable {
+        var hasSeenWelcome: Bool = false
         var currentCoachMark: OnboardingCoachMark = .homeCategory
         var hasViewedPolicy: Bool = false
         var isAgreed: Bool = false
@@ -36,6 +37,7 @@ public struct OnboardingFeature: Sendable {
     }
 
     public enum Action: Equatable {
+        case welcomeButtonTapped
         case homeCategoryTapped(CategoryType)
         case mapSearchResultTapped
         case planCardTapped
@@ -59,6 +61,10 @@ public struct OnboardingFeature: Sendable {
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
+            case .welcomeButtonTapped:
+                state.hasSeenWelcome = true
+                return .none
+
             case .homeCategoryTapped(let category):
                 guard state.currentCoachMark == .homeCategory else { return .none }
                 state.homeSelectedCategory = category
@@ -78,7 +84,6 @@ public struct OnboardingFeature: Sendable {
                 return self.advanceEffect()
 
             case .policyViewButtonTapped:
-                guard state.currentCoachMark == .agreementPolicyButton else { return .none }
                 state.isPolicyWebViewPresented = true
                 return .none
 
@@ -86,8 +91,7 @@ public struct OnboardingFeature: Sendable {
                 state.isPolicyWebViewPresented = false
                 state.hasViewedPolicy = true
                 state.isPolicyLoadFailed = false
-                guard state.currentCoachMark == .agreementPolicyButton else { return .none }
-                return .send(.coachMarkAdvanced)
+                return .none
 
             case .policyRetryTapped:
                 state.policyReloadTrigger += 1
@@ -95,12 +99,12 @@ public struct OnboardingFeature: Sendable {
                 return .none
 
             case .agreementCheckBoxTapped:
-                guard state.currentCoachMark == .agreementCheckBox, state.hasViewedPolicy else { return .none }
+                guard state.hasViewedPolicy else { return .none }
                 state.isAgreed = true
-                return self.advanceEffect()
+                return .none
 
             case .startButtonTapped:
-                guard state.currentCoachMark == .agreementStartButton, state.isAgreed else { return .none }
+                guard state.isAgreed else { return .none }
                 self.onboardingUseCase.markAsCompleted()
                 return .send(.delegate(.completed))
 

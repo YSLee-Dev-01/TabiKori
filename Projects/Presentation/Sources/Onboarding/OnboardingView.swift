@@ -21,6 +21,34 @@ public struct OnboardingView: View {
     }
 
     public var body: some View {
+        Group {
+            if self.store.hasSeenWelcome == false {
+                OnboardingWelcomeStepView(onStartTapped: { self.store.send(.welcomeButtonTapped) })
+                    .transition(.opacity)
+            } else {
+                self.coachMarkFlow()
+                    .transition(.opacity)
+            }
+        }
+        .animation(.tabiStandard, value: self.store.hasSeenWelcome)
+        .sheet(isPresented: Binding(
+            get: { self.store.isPolicyWebViewPresented },
+            set: { isPresented in
+                guard isPresented == false else { return }
+                self.store.send(.policyWebViewDismissed)
+            }
+        )) {
+            self.policyWebViewSheet()
+        }
+    }
+}
+
+// MARK: - View
+
+private extension OnboardingView {
+    /// 웰컴 스텝 이후의 코치마크 기반 체험 흐름(홈~약관동의). 약관동의 스텝은 순서 강제 없이 자유롭게
+    /// 누를 수 있도록 스포트라이트/툴팁 가이드를 표시하지 않는다
+    func coachMarkFlow() -> some View {
         VStack(spacing: 0) {
             self.stepView(self.store.currentStep)
                 .id(self.store.currentStep)
@@ -29,7 +57,8 @@ public struct OnboardingView: View {
         .animation(.tabiStandard, value: self.store.currentStep)
         .overlayPreferenceValue(OnboardingHighlightAnchorKey.self) { anchors in
             GeometryReader { proxy in
-                if let anchor = anchors[self.store.currentCoachMark.anchorKey] {
+                if self.store.currentStep != .agreement,
+                   let anchor = anchors[self.store.currentCoachMark.anchorKey] {
                     OnboardingSpotlightOverlay(
                         highlightRect: proxy[anchor],
                         containerSize: proxy.size,
@@ -48,21 +77,8 @@ public struct OnboardingView: View {
             .padding(.bottom, 16)
             .allowsHitTesting(false)
         }
-        .sheet(isPresented: Binding(
-            get: { self.store.isPolicyWebViewPresented },
-            set: { isPresented in
-                guard isPresented == false else { return }
-                self.store.send(.policyWebViewDismissed)
-            }
-        )) {
-            self.policyWebViewSheet()
-        }
     }
-}
 
-// MARK: - View
-
-private extension OnboardingView {
     @ViewBuilder
     func stepView(_ step: OnboardingStep) -> some View {
         switch step {
@@ -88,7 +104,6 @@ private extension OnboardingView {
 
         case .agreement:
             OnboardingAgreementStepView(
-                currentCoachMark: self.store.currentCoachMark,
                 hasViewedPolicy: self.store.hasViewedPolicy,
                 isAgreed: self.store.isAgreed,
                 onViewPolicyTapped: { self.store.send(.policyViewButtonTapped) },
