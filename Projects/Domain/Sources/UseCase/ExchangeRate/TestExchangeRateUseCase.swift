@@ -15,6 +15,10 @@ public final class TestExchangeRateUseCase: ExchangeRateUseCaseProtocol, @unchec
     public var krwToJPYRate: Double = 0.1073
     public var updatedAt: Date = Date()
 
+    // MARK: - Init
+
+    public init() {}
+
     // MARK: - Method
 
     public func fetchKRWToJPYRate() async throws -> KRWToJPYRate {
