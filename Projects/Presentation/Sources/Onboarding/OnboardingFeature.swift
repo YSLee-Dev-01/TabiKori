@@ -100,7 +100,7 @@ public struct OnboardingFeature: Sendable {
 
             case .agreementCheckBoxTapped:
                 guard state.hasViewedPolicy else { return .none }
-                state.isAgreed = true
+                state.isAgreed.toggle()
                 return .none
 
             case .startButtonTapped:
