@@ -113,12 +113,14 @@ private extension ShoppingPlanListView {
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
                     .swipeActions(edge: .trailing) {
-                        Button(role: .destructive) {
-                            self.deleteItem(id: $item.wrappedValue.id)
-                        } label: {
-                            Label(Strings.Common.delete, systemImage: "trash")
+                        if self.store.isEditing == false {
+                            Button(role: .destructive) {
+                                self.deleteItem(id: $item.wrappedValue.id)
+                            } label: {
+                                Label(Strings.Common.delete, systemImage: "trash")
+                            }
+                            .tint(Color.getTabiColor(.tabiPrimary))
                         }
-                        .tint(Color.getTabiColor(.tabiPrimary))
                     }
                 }
 
