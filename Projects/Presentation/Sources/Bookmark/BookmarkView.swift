@@ -69,16 +69,24 @@ private extension BookmarkView {
                             TabiEmptyState(
                                 systemImageName: "line.3.horizontal.decrease.circle",
                                 title: Strings.Bookmark.filteredEmptyTitle,
-                                description: Strings.Bookmark.filteredEmptyDescription
+                                description: Strings.Bookmark.filteredEmptyDescription,
+                                style: .card
                             )
+                            .padding(.horizontal, 20)
                             .frame(height: max(proxy.size.height - self.headerHeight, 0))
                             .listRowInsets(EdgeInsets())
                             .listRowSeparator(.hidden)
                         } else {
-                            BookmarkEmptyState()
-                                .frame(height: max(proxy.size.height - self.headerHeight, 0))
-                                .listRowInsets(EdgeInsets())
-                                .listRowSeparator(.hidden)
+                            TabiEmptyState(
+                                systemImageName: "heart.slash",
+                                title: Strings.Bookmark.emptyTitle,
+                                description: Strings.Bookmark.emptyDescription,
+                                style: .card
+                            )
+                            .padding(.horizontal, 20)
+                            .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
                         }
                     } else {
                         ForEach(self.store.filteredBookmarks) { bookmark in
