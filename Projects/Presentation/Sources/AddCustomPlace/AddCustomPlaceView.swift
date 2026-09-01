@@ -319,7 +319,8 @@ private extension AddCustomPlaceView {
         if self.store.trimmedSearchQuery.isEmpty {
             TabiEmptyState(
                 systemImageName: "magnifyingglass",
-                description: Strings.Map.searchEmptyDescription
+                description: Strings.Map.searchEmptyDescription,
+                style: .card
             )
             .frame(maxWidth: .infinity)
         } else if self.store.isSearchLoading {
@@ -329,14 +330,16 @@ private extension AddCustomPlaceView {
         } else if self.store.hasSearched == false {
             TabiEmptyState(
                 systemImageName: "magnifyingglass",
-                description: Strings.Map.searchEmptyDescription
+                description: Strings.Map.searchEmptyDescription,
+                style: .card
             )
             .frame(maxWidth: .infinity)
         } else if self.store.searchStationResults.isEmpty, self.store.searchResults.isEmpty {
             TabiEmptyState(
                 systemImageName: "mappin.slash",
                 title: Strings.Map.searchResultEmptyTitle,
-                description: Strings.Map.searchResultEmptyDescription
+                description: Strings.Map.searchResultEmptyDescription,
+                style: .card
             )
             .frame(maxWidth: .infinity)
         } else {
