@@ -22,13 +22,21 @@ public struct SettingInfoView: View {
 
     public var body: some View {
         ScrollView {
-            TabiLabel(
-                title: self.store.displayedContent,
-                style: .bodyM,
-                color: .tabiTextPrimary,
-                isExpanded: true
-            )
-            .padding(20)
+            switch self.store.loadState {
+            case .loading:
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 24)
+
+            case .loaded(let content), .fallback(let content):
+                TabiLabel(
+                    title: content,
+                    style: .bodyM,
+                    color: .tabiTextPrimary,
+                    isExpanded: true
+                )
+                .padding(20)
+            }
         }
         .safeAreaBar(edge: .top) {
             TabiNavigationBar(title: self.store.contentType.title) {
