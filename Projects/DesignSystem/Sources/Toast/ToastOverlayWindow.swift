@@ -81,6 +81,10 @@ private struct ToastOverlayContent: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             self.keyboardHeight = 0
         }
+        // UIHostingController가 자체적으로 키보드 세이프에어리어를 반영해 이 뷰를 한 번 더 밀어올리는데,
+        // 위의 keyboardHeight 패딩과 중첩되어 토스트가 실제 키보드 높이의 두 배 가까이 튀어 오르는 문제가 있었다.
+        // 시스템 자동 키보드 회피를 끄고 keyboardHeight 계산값 하나로만 위치를 제어한다
+        .ignoresSafeArea(.keyboard, edges: .bottom)
     }
 }
 
