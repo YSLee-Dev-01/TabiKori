@@ -40,6 +40,11 @@ struct PhraseWidgetView: View {
 private extension PhraseWidgetView {
     func smallContent(_ phrase: PhraseWidgetSnapshotItem) -> some View {
         VStack(alignment: .leading, spacing: WidgetStyle.contentSpacing) {
+            Text(Strings.Widget.phraseFlagEmoji)
+                .font(.system(size: 24))
+
+            Spacer(minLength: 0)
+
             Text(phrase.korean)
                 .font(WidgetFont.pretendard(.semiBold, size: 17))
                 .foregroundStyle(Color.getTabiColor(.tabiTextPrimary))
