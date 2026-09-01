@@ -32,6 +32,9 @@ private struct ToastOverlayContent: View {
     let onActionTapped: (() -> Void)?
     let onFrameChanged: (CGRect) -> Void
 
+    /// 키보드가 올라와 있는 동안 하단 여백을 키보드 높이만큼 늘려, 토스트가 키보드에 가려지지 않게 한다
+    @State private var keyboardHeight: CGFloat = 0
+
     var body: some View {
         VStack {
             Spacer()
@@ -52,11 +55,12 @@ private struct ToastOverlayContent: View {
                 .onGeometryChange(for: CGRect.self, of: { $0.frame(in: .global) }) { frame in
                     self.onFrameChanged(frame)
                 }
-                .padding(.bottom, 100)
+                .padding(.bottom, self.keyboardHeight > 0 ? self.keyboardHeight + 12 : 100)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .animation(.tabiSpring, value: self.message)
+        .animation(.tabiSpring, value: self.keyboardHeight)
         // .onGeometryChange는 TabiToast 서브뷰에 직접 붙어 있어, message가 nil이 되어 그 서브뷰가
         // 트리에서 사라지면 더 이상 호출되지 않는다(마지막 frame 값이 그대로 남아 하단 탭바 등의
         // 터치를 계속 막아버림). message가 nil로 바뀌는 시점을 직접 감지해 hitFrame을 리셋한다
@@ -66,6 +70,16 @@ private struct ToastOverlayContent: View {
         }
         .onDisappear {
             self.onFrameChanged(.zero)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { notification in
+            guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
+            let screenHeight = UIApplication.shared.connectedScenes
+                .compactMap { ($0 as? UIWindowScene)?.screen.bounds.height }
+                .first ?? UIScreen.main.bounds.height
+            self.keyboardHeight = max(0, screenHeight - frame.origin.y)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            self.keyboardHeight = 0
         }
     }
 }
