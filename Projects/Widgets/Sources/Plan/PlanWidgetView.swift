@@ -32,6 +32,7 @@ struct PlanWidgetView: View {
             Color.getTabiColor(.tabiBackground)
         }
         .widgetURL(self.entry.item.map { WidgetDeepLink.planDetail($0.id).url } ?? WidgetDeepLink.planAdd.url)
+        .dynamicTypeSize(.large)
     }
 }
 
@@ -56,6 +57,7 @@ private extension PlanWidgetView {
                 .font(WidgetFont.pretendard(size: 12))
                 .foregroundStyle(Color.getTabiColor(.tabiTextSecondary))
                 .lineLimit(1)
+                .minimumScaleFactor(0.6)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -78,7 +80,8 @@ private extension PlanWidgetView {
                 Text("\(item.regionTitle) · \(Strings.Plan.durationBadge(item.dayCount))")
                     .font(WidgetFont.pretendard(size: 13))
                     .foregroundStyle(Color.getTabiColor(.tabiTextSecondary))
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
@@ -86,7 +89,7 @@ private extension PlanWidgetView {
                 .font(WidgetFont.pretendard(.bold, size: 24))
                 .foregroundStyle(Color.getTabiColor(.tabiPrimary))
                 .lineLimit(1)
-                .fixedSize()
+                .minimumScaleFactor(0.5)
                 .layoutPriority(1)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
