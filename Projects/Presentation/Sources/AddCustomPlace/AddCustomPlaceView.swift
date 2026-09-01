@@ -28,25 +28,21 @@ public struct AddCustomPlaceView: View {
     }
 
     public var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                self.tabBar()
+        VStack(alignment: .leading, spacing: 24) {
+            self.tabBar()
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
 
-                if self.store.selectedTab == .custom {
-                    self.categorySection()
-                    self.titleField()
-                    self.bottomSection()
-                } else {
-                    self.searchTabContent()
-                }
+            if self.store.selectedTab == .custom {
+                self.customTabContent()
+            } else {
+                self.searchTabContent()
             }
-            .padding(20)
-            .animation(.tabiStandard, value: self.store.isSubwayMode)
-            .animation(.tabiStandard, value: self.store.subwayResults)
-            .animation(.tabiStandard, value: self.store.matchedStation)
-            .animation(.tabiStandard, value: self.store.selectedTab)
         }
-        .scrollDismissesKeyboard(.immediately)
+        .animation(.tabiStandard, value: self.store.isSubwayMode)
+        .animation(.tabiStandard, value: self.store.subwayResults)
+        .animation(.tabiStandard, value: self.store.matchedStation)
+        .animation(.tabiStandard, value: self.store.selectedTab)
         .safeAreaBar(edge: .top) {
             TabiNavigationBar(title: Strings.AddCustomPlace.screenTitle) {
                 self.closeButton()
@@ -110,6 +106,20 @@ private extension AddCustomPlaceView {
         AddCustomPlaceTabBar(selectedTab: self.store.selectedTab) { tab in
             self.store.send(.tabSelected(tab))
         }
+    }
+
+    /// 커스텀 탭 콘텐츠 전용 스크롤 컨테이너. 검색 탭과 스크롤 영역을 분리해 서로의 레이아웃에 영향을 주지 않도록 한다
+    func customTabContent() -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                self.categorySection()
+                self.titleField()
+                self.bottomSection()
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
+        }
+        .scrollDismissesKeyboard(.immediately)
     }
 
     func categorySection() -> some View {
@@ -267,8 +277,17 @@ private extension AddCustomPlaceView {
             self.searchField()
             TabiLabel(title: Strings.Map.searchLanguageGuide, style: .captionM, color: .tabiTextSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            self.searchResultsSection()
+
+            // 검색 결과 리스트는 상단 검색창/안내 문구와 분리된 자체 ScrollView에 둔다.
+            // 화면 전체를 하나의 ScrollView로 감쌀 경우, 검색 중 키보드가 열린 상태에서 스크롤을 시작하면
+            // `scrollDismissesKeyboard`로 인한 키보드 dismiss와 리스트 relayout이 같은 ScrollView 안에서
+            // 동시에 발생해 결과 리스트가 순간적으로 사라지는 렌더링 문제가 있었다
+            ScrollView {
+                self.searchResultsSection()
+            }
         }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 20)
     }
 
     func searchField() -> some View {

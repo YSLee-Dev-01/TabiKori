@@ -54,6 +54,7 @@ public struct AddCustomPlaceFeature: Sendable {
         var translateSearch: TranslateSearchFeature.State = .init()
         fileprivate var searchPage: Int = 1
         fileprivate var hasMoreSearchResults: Bool = true
+        fileprivate var lastSubmittedSearchQuery: String?
 
         @Presents var alert: AlertState<Action.Alert>?
 
@@ -276,6 +277,11 @@ public struct AddCustomPlaceFeature: Sendable {
             case .searchSubmitted:
                 guard state.trimmedSearchQuery.isEmpty == false else { return .none }
                 let keyword = state.trimmedSearchQuery
+                // 검색어 변경 없이 동일한 검색어로 다시 제출된 경우, 결과가 이미 표시된 상태(hasSearched)라면
+                // 결과 초기화·로딩 인디케이터·재요청 없이 그대로 유지한다. 검색어가 바뀌면 `.binding(\.searchQuery)`에서
+                // hasSearched가 false로 리셋되므로, 이 가드는 오직 "완전히 동일한 검색어 재제출"만 걸러낸다
+                guard state.hasSearched == false || keyword != state.lastSubmittedSearchQuery else { return .none }
+                state.lastSubmittedSearchQuery = keyword
                 state.searchResults = []
                 state.searchStationResults = []
                 state.isSearchLoading = true
