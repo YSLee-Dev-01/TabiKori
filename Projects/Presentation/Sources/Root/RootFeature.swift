@@ -20,6 +20,7 @@ public struct RootFeature {
         var tabBarState: TabBarFeature.State? = nil
         var onboardingState: OnboardingFeature.State? = nil
         var currentToast: ToastItem? = nil
+        fileprivate var pendingDeepLink: WidgetDeepLink? = nil
 
         public init() {}
     }
@@ -64,7 +65,9 @@ public struct RootFeature {
                 }
                 state.onboardingState = nil
                 state.tabBarState = .init()
-                return .none
+                guard let pendingDeepLink = state.pendingDeepLink else { return .none }
+                state.pendingDeepLink = nil
+                return .send(.tabBar(.deepLinkReceived(pendingDeepLink)))
 
             case .toastEventReceived(let item):
                 state.currentToast = item
@@ -82,8 +85,12 @@ public struct RootFeature {
                 )
 
             case .openURLReceived(let url):
-                guard state.tabBarState != nil, let link = WidgetDeepLink(url: url) else {
+                guard let link = WidgetDeepLink(url: url) else {
                     AppLogger.view.log(.error, "위젯 딥링크 처리 불가: \(url)")
+                    return .none
+                }
+                guard state.tabBarState != nil else {
+                    state.pendingDeepLink = link
                     return .none
                 }
                 return .send(.tabBar(.deepLinkReceived(link)))
