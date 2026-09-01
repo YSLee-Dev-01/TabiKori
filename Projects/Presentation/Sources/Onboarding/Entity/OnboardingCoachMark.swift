@@ -61,6 +61,17 @@ enum OnboardingCoachMark: Int, CaseIterable, Hashable {
         OnboardingCoachMark(rawValue: self.rawValue + 1)
     }
 
+    /// 스포트라이트 노출 전 대기 시간. 뒤에 깔린 화면의 엔트런스/전환 애니메이션이 먼저 정착되도록,
+    /// 해당 애니메이션 근거로 계산한다(관련 없는 스텝은 기존과 동일하게 0으로 즉시 노출)
+    var revealDelay: TimeInterval {
+        switch self {
+        case .homeCategory, .mapSearchResult:
+            return 0.55
+        case .planCard, .planDetailDayChip, .agreementPolicyButton, .agreementCheckBox, .agreementStartButton:
+            return 0
+        }
+    }
+
     /// `OnboardingHighlightAnchorKey`(`[AnyHashable: Anchor<CGRect>]`) 조회에 사용하는 키.
     /// 홈/지도/일정/일정상세 스텝은 실제 프로덕션 뷰(Home/Map/Plan/PlanDetailView)가 `OnboardingCoachMark`
     /// 타입을 몰라도 부착할 수 있도록 문자열 키를 쓰고, 약관동의 스텝은 온보딩 전용 뷰만 사용하므로

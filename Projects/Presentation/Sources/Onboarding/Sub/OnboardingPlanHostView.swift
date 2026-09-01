@@ -21,7 +21,7 @@ struct OnboardingPlanHostView: View {
 
     init(onPlanTapped: @escaping () -> Void) {
         self._store = State(initialValue: Store(
-            initialState: PlanFeature.State(),
+            initialState: Self.makeInitialState(),
             reducer: { OnboardingPlanProgressReducer(onPlanTapped: onPlanTapped) },
             withDependencies: { dependency in
                 let travelPlanUseCase = TestTravelPlanUseCase()
@@ -39,6 +39,21 @@ struct OnboardingPlanHostView: View {
 
     var body: some View {
         PlanView(store: self.store)
+    }
+}
+
+// MARK: - Method
+
+private extension OnboardingPlanHostView {
+    /// 일정 목록·스팟 개수를 이미 로드된 최종 값으로 미리 채워, `onAppear`의 비동기 조회 이펙트를
+    /// 기다리는 동안 로딩 스피너/빈 상태가 잠깐 노출되는 것을 방지한다(더미 데이터이므로 뒤늦게
+    /// 도착하는 이펙트 결과도 동일 값이라 화면 변화가 없다)
+    static func makeInitialState() -> PlanFeature.State {
+        var state = PlanFeature.State()
+        state.plans = OnboardingMock.plans
+        state.spotCounts = [OnboardingMock.plan.id: OnboardingMock.planDetail.spots.count]
+        state.isLoading = false
+        return state
     }
 }
 
