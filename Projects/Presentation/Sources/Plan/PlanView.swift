@@ -100,10 +100,16 @@ private extension PlanView {
                         .listRowInsets(EdgeInsets())
                         .listRowSeparator(.hidden)
                 } else if self.store.plans.isEmpty {
-                    PlanEmptyState()
-                        .frame(height: proxy.size.height)
-                        .listRowInsets(EdgeInsets())
-                        .listRowSeparator(.hidden)
+                    TabiEmptyState(
+                        systemImageName: "calendar.badge.plus",
+                        title: Strings.Plan.emptyTitle,
+                        description: Strings.Plan.emptyDescription,
+                        style: .card
+                    )
+                    .padding(.horizontal, 20)
+                    .frame(height: proxy.size.height)
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
                 } else {
                     self.section(.ongoing, plans: self.store.ongoingPlans)
                     self.section(.upcoming, plans: self.store.upcomingPlans)
