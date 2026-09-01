@@ -152,6 +152,11 @@ public struct TabBarFeature {
                 }
                 return .none
 
+            case .home(.planCreateButtonTapped):
+                state.selectedTab = .plan
+                state.planState.addPlanState = AddTravelPlanFeature.State()
+                return .none
+
             case .home:
                 return .none
 
