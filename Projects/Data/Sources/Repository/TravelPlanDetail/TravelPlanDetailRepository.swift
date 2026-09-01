@@ -71,7 +71,19 @@ extension TravelPlanDetailRepository: TravelPlanDetailRepositoryProtocol {
             )
             descriptor.fetchLimit = 1
             guard let model = try context.fetch(descriptor).first else { return }
+            let dayIndex = model.dayIndex
+
+            let siblingDescriptor = FetchDescriptor<TravelPlanDetailSpotModel>(
+                predicate: #Predicate { $0.planId == planId && $0.dayIndex == dayIndex },
+                sortBy: [SortDescriptor(\.order)]
+            )
+            let siblings = try context.fetch(siblingDescriptor).filter { $0.id != spotId }
+
             context.delete(model)
+            for (newOrder, sibling) in siblings.enumerated() {
+                sibling.order = newOrder
+            }
+
             try context.save()
         } catch {
             AppLogger.core.log(.error, "일정 상세 스팟 삭제 실패: \(error.localizedDescription)")
