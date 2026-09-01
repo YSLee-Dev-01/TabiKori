@@ -16,11 +16,18 @@ public struct TabiPageIndicator: View {
     private let count: Int
     private let currentIndex: Int
     private let inactiveColor: Color
+    private let horizontalPadding: CGFloat
 
-    public init(count: Int, currentIndex: Int, inactiveColor: Color = .white.opacity(0.6)) {
+    public init(
+        count: Int,
+        currentIndex: Int,
+        inactiveColor: Color = .white.opacity(0.6),
+        horizontalPadding: CGFloat = 20
+    ) {
         self.count = count
         self.currentIndex = currentIndex
         self.inactiveColor = inactiveColor
+        self.horizontalPadding = horizontalPadding
     }
 
     public var body: some View {
@@ -30,7 +37,7 @@ public struct TabiPageIndicator: View {
                     self.dot(isSelected: index == self.currentIndex)
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, self.horizontalPadding)
         }
     }
 }

@@ -119,7 +119,7 @@ private extension PlanDetailFullMapView {
             // 않는다. glassEffect는 지도 위에서 너무 옅어 여전히 눈에 띄지 않아, 어두운 scrim 캡슐로 대비를 확보한다.
             // TabiPageIndicator 자체는 PhotoViewer/DetailHeroView 등 배경 없이 쓰이는 다른 화면에서도 재사용되므로,
             // 공용 컴포넌트를 바꾸지 않고 이 화면 호출부에서만 배경을 추가한다
-            TabiPageIndicator(count: self.store.spots.count, currentIndex: self.currentSpotIndex)
+            TabiPageIndicator(count: self.store.spots.count, currentIndex: self.currentSpotIndex, horizontalPadding: 8)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
                 .background(Color.getTabiColor(.tabiScrim).opacity(0.6), in: Capsule())
