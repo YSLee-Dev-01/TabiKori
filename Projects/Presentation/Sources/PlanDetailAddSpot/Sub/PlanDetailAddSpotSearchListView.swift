@@ -19,6 +19,7 @@ struct PlanDetailAddSpotSearchListView: View {
     let isLoading: Bool
     let hasSearched: Bool
     let isAutoTranslateSearchEnabled: Bool
+    let isTranslating: Bool
     let focus: FocusState<Bool>.Binding
     let onSubmit: () -> Void
     let onSpotTapped: (TouristSpot) -> Void
@@ -36,7 +37,11 @@ struct PlanDetailAddSpotSearchListView: View {
                 )
 
                 if self.isAutoTranslateSearchEnabled {
-                    TabiCircleIconButton(systemName: TabiIcon.translate.rawValue) {
+                    TabiButton(
+                        Strings.Map.translateButtonTitle,
+                        style: .ghost,
+                        isLoading: self.isTranslating
+                    ) {
                         self.onTranslateTapped()
                     }
                     .accessibilityLabel(Strings.Map.translateSearchButtonAccessibilityLabel)

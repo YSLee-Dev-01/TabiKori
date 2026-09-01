@@ -129,6 +129,7 @@ private extension PlanDetailAddSpotView {
                     isLoading: self.store.isSearchLoading,
                     hasSearched: self.store.hasSearched,
                     isAutoTranslateSearchEnabled: self.store.translateSearch.isAutoTranslateSearchEnabled,
+                    isTranslating: self.store.translateSearch.pendingTranslationQuery != nil,
                     focus: self.$isSearchFocused,
                     onSubmit: { self.store.send(.searchSubmitted) },
                     onSpotTapped: { self.store.send(.spotRowTapped($0)) },

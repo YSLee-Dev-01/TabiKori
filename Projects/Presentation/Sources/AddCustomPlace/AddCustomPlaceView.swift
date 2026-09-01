@@ -308,7 +308,11 @@ private extension AddCustomPlaceView {
     }
 
     func translateSearchButton() -> some View {
-        TabiCircleIconButton(systemName: TabiIcon.translate.rawValue) {
+        TabiButton(
+            Strings.Map.translateButtonTitle,
+            style: .ghost,
+            isLoading: self.store.translateSearch.pendingTranslationQuery != nil
+        ) {
             self.store.send(.translateSearch(.translateButtonRequested(query: self.store.searchQuery)))
         }
         .accessibilityLabel(Strings.Map.translateSearchButtonAccessibilityLabel)

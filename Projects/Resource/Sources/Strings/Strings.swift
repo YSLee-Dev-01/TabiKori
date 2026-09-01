@@ -239,7 +239,9 @@ public extension Strings.Map {
     static let searchLanguageGuide = "韓国語・英語で検索すると、より正確な結果が得られます。駅名の検索はカタカナのみに対応しています"
     /// 번역 후 재검색 유도 Toast 액션 버튼 타이틀
     static let translateAndSearchButtonTitle = "韓国語に翻訳して検索"
-    /// TF 옆 번역 아이콘 버튼 접근성 라벨
+    /// TF 옆 번역 버튼 타이틀
+    static let translateButtonTitle = "翻訳"
+    /// TF 옆 번역 버튼 접근성 라벨
     static let translateSearchButtonAccessibilityLabel = "検索語を韓国語に翻訳して検索"
     /// 검색어 미입력 상태에서 번역 버튼을 눌렀을 때의 안내 Toast 메시지
     static let translateSearchEmptyQueryGuideMessage = "翻訳ボタンをご利用いただくには、日本語で入力していただけますようお願いいたします"
