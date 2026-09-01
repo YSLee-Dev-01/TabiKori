@@ -30,9 +30,6 @@ public struct SettingView: View {
                 self.searchSection()
                 self.dataResetSection()
                 self.etcSection()
-                #if DEBUG
-                self.debugSection()
-                #endif
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
@@ -69,6 +66,15 @@ public struct SettingView: View {
                 onFinish: { self.store.send(.mailComposeDismissed) }
             )
             .ignoresSafeArea()
+        }
+        .sheet(isPresented: Binding(
+            get: { self.store.isPrivacyWebViewPresented },
+            set: { isPresented in
+                guard isPresented == false else { return }
+                self.store.send(.privacyWebViewDismissed)
+            }
+        )) {
+            self.privacyWebViewSheet()
         }
         .alert($store.scope(state: \.alert, action: \.alert))
         .onAppear {
@@ -145,20 +151,10 @@ private extension SettingView {
         }
     }
 
-    #if DEBUG
-    func debugSection() -> some View {
-        SettingSectionCard(title: Strings.Setting.debugSectionTitle) {
-            SettingRow(title: Strings.Setting.debugTestCrashRowTitle) {
-                self.store.send(.testCrashRowTapped)
-            }
-        }
-    }
-    #endif
-
     @ViewBuilder
     func etcRow(_ item: SettingEtcItem) -> some View {
         switch item.kind {
-        case .staticText, .mailCompose, .openURL:
+        case .staticText, .mailCompose, .openURL, .webView:
             SettingRow(title: item.title) {
                 self.store.send(.etcRowTapped(item))
             }
@@ -168,6 +164,34 @@ private extension SettingView {
 
         case .disabled:
             SettingRow(title: item.title, value: Strings.Setting.etcComingSoonLabel, isDisabled: true)
+        }
+    }
+
+    func privacyWebViewSheet() -> some View {
+        VStack(spacing: 0) {
+            TabiNavigationBar(title: Strings.Onboarding.privacyPolicyWebViewTitle) {
+                TabiCircleIconButton(systemName: "xmark") {
+                    self.store.send(.privacyWebViewDismissed)
+                }
+            }
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+
+            ZStack {
+                TabiWebView(
+                    urlString: TabiURL.privacyPolicy,
+                    reloadTrigger: self.store.privacyPolicyReloadTrigger,
+                    onLoadFailed: { self.store.send(.privacyPolicyLoadFailed) }
+                )
+
+                if self.store.isPrivacyPolicyLoadFailed {
+                    TabiRetryableEmptyState(
+                        description: Strings.Onboarding.privacyPolicyLoadFailedDescription,
+                        onRetry: { self.store.send(.privacyPolicyRetryTapped) }
+                    )
+                    .background(TabiColor.tabiBackground)
+                }
+            }
         }
     }
 

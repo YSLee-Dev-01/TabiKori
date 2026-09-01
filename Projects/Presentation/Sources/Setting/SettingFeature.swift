@@ -32,6 +32,9 @@ public struct SettingFeature: Sendable {
         var isAutoScrollToTodayEnabled: Bool = false
         var isAutoTranslateSearchEnabled: Bool = false
         var isMailComposePresented: Bool = false
+        var isPrivacyWebViewPresented: Bool = false
+        var isPrivacyPolicyLoadFailed: Bool = false
+        var privacyPolicyReloadTrigger: Int = 0
         @Presents var infoState: SettingInfoFeature.State?
         @Presents var alert: AlertState<Action.Alert>?
 
@@ -46,8 +49,10 @@ public struct SettingFeature: Sendable {
         case autoScrollToTodayToggled(Bool)
         case autoTranslateSearchToggled(Bool)
         case etcRowTapped(SettingEtcItem)
-        case testCrashRowTapped
         case mailComposeDismissed
+        case privacyWebViewDismissed
+        case privacyPolicyLoadFailed
+        case privacyPolicyRetryTapped
         case resetResult(Bool)
         case resetCompleted
         case info(PresentationAction<SettingInfoFeature.Action>)
@@ -142,18 +147,31 @@ public struct SettingFeature: Sendable {
                         }
                     }
 
+                case .webView:
+                    state.isPrivacyWebViewPresented = true
+                    return .none
+
                 case .versionDisplay, .disabled:
                     return .none
                 }
 
-            case .testCrashRowTapped:
-                #if DEBUG
-                AppLogger.triggerTestCrash()
-                #endif
-                return .none
-
             case .mailComposeDismissed:
                 state.isMailComposePresented = false
+                return .none
+
+            case .privacyWebViewDismissed:
+                state.isPrivacyWebViewPresented = false
+                state.isPrivacyPolicyLoadFailed = false
+                return .none
+
+            case .privacyPolicyLoadFailed:
+                state.isPrivacyPolicyLoadFailed = true
+                AppLogger.network.log(.error, "설정 개인정보처리방침 웹뷰 로드 실패")
+                return .none
+
+            case .privacyPolicyRetryTapped:
+                state.privacyPolicyReloadTrigger += 1
+                state.isPrivacyPolicyLoadFailed = false
                 return .none
 
             case .resetResult(true):

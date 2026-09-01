@@ -25,6 +25,7 @@ public enum SettingEtcItem: CaseIterable, Identifiable, Equatable {
         case versionDisplay
         case mailCompose
         case openURL(String)
+        case webView(String)
         case disabled
     }
 
@@ -46,7 +47,7 @@ public enum SettingEtcItem: CaseIterable, Identifiable, Equatable {
         case .etcInfo: return .staticText(.etcInfo)
         case .version: return .versionDisplay
         case .contact: return .mailCompose
-        case .privacyPolicy: return .openURL(TabiURL.privacyPolicy)
+        case .privacyPolicy: return .webView(TabiURL.privacyPolicy)
         }
     }
 }

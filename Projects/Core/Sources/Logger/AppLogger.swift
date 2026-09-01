@@ -44,15 +44,6 @@ public struct AppLogger: Sendable {
     }
 }
 
-#if DEBUG
-extension AppLogger {
-    /// Crashlytics 연동 검증용 강제 크래시 트리거. 디버그 빌드의 설정 화면에서만 노출된다
-    public static func triggerTestCrash() {
-        fatalError("Firebase Crashlytics 테스트 크래시")
-    }
-}
-#endif
-
 extension AppLogger {
     private static let subsystem = Bundle.main.bundleIdentifier ?? "com.yslee.tabikori"
     

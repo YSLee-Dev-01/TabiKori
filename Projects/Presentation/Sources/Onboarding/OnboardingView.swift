@@ -15,6 +15,7 @@ import Resource
 public struct OnboardingView: View {
 
     private let store: StoreOf<OnboardingFeature>
+    @State private var isSpotlightReady: Bool = false
 
     public init(store: StoreOf<OnboardingFeature>) {
         self.store = store
@@ -58,6 +59,7 @@ private extension OnboardingView {
         .overlayPreferenceValue(OnboardingHighlightAnchorKey.self) { anchors in
             GeometryReader { proxy in
                 if self.store.currentStep != .agreement,
+                   self.isSpotlightReady,
                    let anchor = anchors[self.store.currentCoachMark.anchorKey] {
                     OnboardingSpotlightOverlay(
                         highlightRect: proxy[anchor],
@@ -66,7 +68,16 @@ private extension OnboardingView {
                     )
                 }
             }
+            .animation(.tabiStandard, value: self.isSpotlightReady)
             .ignoresSafeArea()
+        }
+        // 뒤에 깔린 화면(홈 엔트런스 애니메이션, 지도 시트 전환 등)이 정착되기 전에 스포트라이트가
+        // 먼저 나타나지 않도록, coachMark별 revealDelay만큼 대기한 뒤에만 오버레이를 노출한다
+        .task(id: self.store.currentCoachMark) {
+            self.isSpotlightReady = false
+            try? await Task.sleep(for: .seconds(self.store.currentCoachMark.revealDelay))
+            guard Task.isCancelled == false else { return }
+            self.isSpotlightReady = true
         }
         .overlay(alignment: .bottom) {
             TabiPageIndicator(
@@ -124,7 +135,8 @@ private extension OnboardingView {
             .padding(.bottom, 8)
 
             ZStack {
-                OnboardingPolicyWebView(
+                TabiWebView(
+                    urlString: TabiURL.privacyPolicy,
                     reloadTrigger: self.store.policyReloadTrigger,
                     onLoadFailed: { self.store.send(.policyLoadFailed) }
                 )
