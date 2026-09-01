@@ -19,7 +19,6 @@ public struct RootFeature {
     public struct State: Equatable {
         var tabBarState: TabBarFeature.State? = nil
         var onboardingState: OnboardingFeature.State? = nil
-        var toastQueue: [ToastItem] = []
         var currentToast: ToastItem? = nil
 
         public init() {}
@@ -29,7 +28,6 @@ public struct RootFeature {
         case onAppear
         case onboardingChecking
         case toastEventReceived(ToastItem)
-        case toastQueueAdvanced
         case toastDismissed
         case toastActionButtonTapped
         case openURLReceived(URL)
@@ -69,20 +67,12 @@ public struct RootFeature {
                 return .none
 
             case .toastEventReceived(let item):
-                state.toastQueue.append(item)
-                if state.currentToast == nil {
-                    return .send(.toastQueueAdvanced)
-                }
-                return .none
-
-            case .toastQueueAdvanced:
-                guard state.currentToast == nil, !state.toastQueue.isEmpty else { return .none }
-                state.currentToast = state.toastQueue.removeFirst()
+                state.currentToast = item
                 return self.autoDismissEffect()
 
             case .toastDismissed:
                 state.currentToast = nil
-                return .send(.toastQueueAdvanced)
+                return .none
 
             case .toastActionButtonTapped:
                 guard let toastId = state.currentToast?.id else { return .none }
