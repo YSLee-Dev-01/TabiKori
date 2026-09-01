@@ -28,7 +28,8 @@ struct PlanDetailAddSpotBookmarkListView: View {
                     TabiEmptyState(
                         systemImageName: "heart.slash",
                         title: Strings.Bookmark.emptyTitle,
-                        description: Strings.Bookmark.emptyDescription
+                        description: Strings.Bookmark.emptyDescription,
+                        style: .card
                     )
                     .padding(.horizontal, 20)
                 } else {

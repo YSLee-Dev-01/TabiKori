@@ -77,7 +77,8 @@ private extension PlanDetailAddSpotSearchListView {
         } else if self.hasSearched == false {
             TabiEmptyState(
                 systemImageName: "magnifyingglass",
-                description: Strings.Map.searchEmptyDescription
+                description: Strings.Map.searchEmptyDescription,
+                style: .card
             )
             .padding(.horizontal, 20)
             .padding(.top, 20)
@@ -86,7 +87,8 @@ private extension PlanDetailAddSpotSearchListView {
             TabiEmptyState(
                 systemImageName: "mappin.slash",
                 title: Strings.Map.searchResultEmptyTitle,
-                description: Strings.Map.searchResultEmptyDescription
+                description: Strings.Map.searchResultEmptyDescription,
+                style: .card
             )
             .padding(.horizontal, 20)
             .padding(.top, 20)

@@ -28,6 +28,7 @@ struct AddToItineraryPlanListView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if self.plans.isEmpty {
                 AddToItineraryEmptyState()
+                    .padding(.horizontal, 20)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {

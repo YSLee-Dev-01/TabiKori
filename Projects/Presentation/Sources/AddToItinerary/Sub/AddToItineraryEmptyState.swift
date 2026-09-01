@@ -11,14 +11,13 @@ import SwiftUI
 import DesignSystem
 import Resource
 
-/// 등록된 일정이 없을 때 표시되는 텍스트 전용 빈 상태
+/// 등록된 일정이 없을 때 표시되는 빈 상태
 struct AddToItineraryEmptyState: View {
     var body: some View {
-        TabiLabel(
-            title: Strings.Plan.emptyTitle,
-            style: .bodySBold,
-            color: .tabiTextTertiary,
-            alignment: .center
+        TabiEmptyState(
+            systemImageName: "calendar.badge.plus",
+            description: Strings.Plan.emptyTitle,
+            style: .card
         )
     }
 }
