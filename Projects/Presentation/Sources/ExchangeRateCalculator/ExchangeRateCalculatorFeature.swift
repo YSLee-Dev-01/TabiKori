@@ -24,6 +24,7 @@ public struct ExchangeRateCalculatorFeature: Sendable {
         var krwAmountText: String = "1000"
         var jpyAmountText: String = "0"
         var exchangeRateUpdatedAtTitle: String = ""
+        var hasLoadFailed: Bool = false
         fileprivate var krwToJPYRate: Double = 0
         fileprivate var hasStartedLoading: Bool = false
 
@@ -33,7 +34,9 @@ public struct ExchangeRateCalculatorFeature: Sendable {
     public enum Action: BindableAction, Equatable {
         case binding(BindingAction<State>)
         case onAppear
+        case retryButtonTapped
         case exchangeRateResult(KRWToJPYRate)
+        case exchangeRateLoadFailed
     }
 
     public init() {}
@@ -44,14 +47,14 @@ public struct ExchangeRateCalculatorFeature: Sendable {
             switch action {
             case .binding(\.krwAmountText):
                 if let krw = Double(state.krwAmountText) {
-                    state.jpyAmountText = String(format: "%.1f", krw * state.krwToJPYRate)
+                    state.jpyAmountText = String(format: "%.1f", locale: Locale(identifier: "en_US_POSIX"), krw * state.krwToJPYRate)
                     self.analyticsCenter.log(.exchangeCalculated)
                 }
                 return .none
 
             case .binding(\.jpyAmountText):
                 if let jpy = Double(state.jpyAmountText), state.krwToJPYRate != 0 {
-                    state.krwAmountText = String(format: "%.0f", jpy / state.krwToJPYRate)
+                    state.krwAmountText = String(format: "%.0f", locale: Locale(identifier: "en_US_POSIX"), jpy / state.krwToJPYRate)
                     self.analyticsCenter.log(.exchangeCalculated)
                 }
                 return .none
@@ -62,14 +65,26 @@ public struct ExchangeRateCalculatorFeature: Sendable {
             case .onAppear:
                 guard state.hasStartedLoading == false else { return .none }
                 state.hasStartedLoading = true
+                state.hasLoadFailed = false
+                return self.fetchExchangeRateEffect()
+
+            case .retryButtonTapped:
+                guard state.hasStartedLoading == false else { return .none }
+                state.hasStartedLoading = true
+                state.hasLoadFailed = false
                 return self.fetchExchangeRateEffect()
 
             case .exchangeRateResult(let krwToJPYRate):
                 state.krwToJPYRate = krwToJPYRate.rate
                 state.exchangeRateUpdatedAtTitle = krwToJPYRate.updatedAt.exchangeRateUpdatedAtTitle
                 if let krw = Double(state.krwAmountText) {
-                    state.jpyAmountText = String(format: "%.1f", krw * krwToJPYRate.rate)
+                    state.jpyAmountText = String(format: "%.1f", locale: Locale(identifier: "en_US_POSIX"), krw * krwToJPYRate.rate)
                 }
+                return .none
+
+            case .exchangeRateLoadFailed:
+                state.hasStartedLoading = false
+                state.hasLoadFailed = true
                 return .none
             }
         }
@@ -86,6 +101,7 @@ private extension ExchangeRateCalculatorFeature {
                 await send(.exchangeRateResult(krwToJPYRate))
             } catch {
                 AppLogger.view.log(.error, "환율 조회 실패: \(error.localizedDescription)")
+                await send(.exchangeRateLoadFailed)
             }
         }
     }

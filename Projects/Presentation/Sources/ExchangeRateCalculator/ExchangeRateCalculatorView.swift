@@ -27,13 +27,21 @@ public struct ExchangeRateCalculatorView: View {
     }
 
     public var body: some View {
-        self.calculatorCard()
-            .onTapGesture {
-                self.focusedField = nil
+        Group {
+            if self.store.hasLoadFailed {
+                TabiRetryableEmptyState(description: Strings.RegionSpot.errorDescription) {
+                    self.store.send(.retryButtonTapped)
+                }
+            } else {
+                self.calculatorCard()
             }
-            .onAppear {
-                self.store.send(.onAppear)
-            }
+        }
+        .onTapGesture {
+            self.focusedField = nil
+        }
+        .onAppear {
+            self.store.send(.onAppear)
+        }
     }
 }
 
