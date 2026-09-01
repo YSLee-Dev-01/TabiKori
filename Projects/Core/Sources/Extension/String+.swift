@@ -49,9 +49,9 @@ public extension String {
         return String(self.prefix(length)) + trailing
     }
 
-    /// 히라가나(぀-ゟ)·가타카나(゠-ヿ)·가타카나 음성 확장(ㇰ-ㇿ) 범위 문자를 포함하는지 판별
+    /// 히라가나(぀-ゟ)·가타카나(゠-ヿ)·가타카나 음성 확장(ㇰ-ㇿ)·한자(CJK 통합 한자, 一-鿿) 범위 문자를 포함하는지 판별
     var containsJapanese: Bool {
-        let japanesePattern = "[\\u3040-\\u309F\\u30A0-\\u30FF\\u31F0-\\u31FF]"
+        let japanesePattern = "[\\u3040-\\u309F\\u30A0-\\u30FF\\u31F0-\\u31FF\\u4E00-\\u9FFF]"
         guard let japaneseRegex = try? NSRegularExpression(pattern: japanesePattern) else { return false }
         let range = NSRange(self.startIndex..., in: self)
         return japaneseRegex.firstMatch(in: self, range: range) != nil
