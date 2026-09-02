@@ -369,7 +369,7 @@ private extension MapView {
     }
 
     func searchResultEmptyState() -> some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 10) {
             TabiEmptyState(
                 systemImageName: "mappin.slash",
                 title: Strings.Map.searchResultEmptyTitle,

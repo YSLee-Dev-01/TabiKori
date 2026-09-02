@@ -54,7 +54,7 @@ public extension Strings.Common {
     /// 삭제 (스와이프 액션)
     static let delete = "削除"
     /// 지하철역 검색 시 가타카나 입력 안내 문구
-    static let subwayKatakanaGuide = "한국어 및 가타카나로 검색해주세요."
+    static let subwayKatakanaGuide = "韓国語またはカタカナで検索してください"
     /// 지하철역명 입력 후 검색 안내 문구
     static let subwaySearchEnterGuide = "Enterキーで検索してください"
 }
