@@ -105,7 +105,7 @@ public extension Strings.Onboarding {
     /// 관광지 상세 일정 추가 버튼 유도 코치마크 문구
     static let detailAddButtonCoachMark = "日程に追加できます"
     /// 일정 카드 유도 코치마크 문구
-    static let planCardCoachMark = "日程の詳細が確認できます"
+    static let planCardCoachMark = "日ごとの予定がわかります"
     /// 일정상세 Day 칩 유도 코치마크 문구
     static let planDetailDayChipCoachMark = "日付ごとに確認できます"
     /// 온보딩 웰컴 스텝 제목
