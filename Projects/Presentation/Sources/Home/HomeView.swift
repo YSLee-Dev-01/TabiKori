@@ -689,10 +689,14 @@ fileprivate extension HomeView {
                 .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(valueColor)
             }
+            .layoutPriority(1)
+
             Text(code)
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(TabiColor.tabiTextTertiary)
                 .tracking(0.8)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
         }
         .frame(maxWidth: .infinity)
     }
