@@ -108,12 +108,6 @@ public extension Strings.Onboarding {
     static let planCardCoachMark = "日程の詳細が確認できます"
     /// 일정상세 Day 칩 유도 코치마크 문구
     static let planDetailDayChipCoachMark = "日付ごとに確認できます"
-    /// 약관동의 정책 보기 버튼 유도 코치마크 문구
-    static let agreementPolicyCoachMark = "ポリシー内容を確認できます"
-    /// 약관동의 체크박스 유도 코치마크 문구
-    static let agreementCheckBoxCoachMark = "チェックで同意完了です"
-    /// 약관동의 시작하기 버튼 유도 코치마크 문구
-    static let agreementStartCoachMark = "タップで利用開始できます"
     /// 온보딩 웰컴 스텝 제목
     static let welcomeTitle = "タビコリをインストールしていただき、\nありがとうございます🎉"
     /// 온보딩 웰컴 스텝 설명
