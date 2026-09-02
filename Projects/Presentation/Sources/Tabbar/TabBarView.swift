@@ -34,12 +34,6 @@ public struct TabBarView: View {
                     }
                     .tag(AppTab.home)
 
-                MapView(store: self.store.scope(state: \.mapState, action: \.map))
-                    .tabItem {
-                        Image(systemName: AppTab.map.systemImage)
-                    }
-                    .tag(AppTab.map)
-
                 PlanView(store: self.store.scope(state: \.planState, action: \.plan))
                     .tabItem {
                         Image(systemName: AppTab.plan.systemImage)
@@ -51,6 +45,12 @@ public struct TabBarView: View {
                         Image(systemName: AppTab.bookmark.systemImage)
                     }
                     .tag(AppTab.bookmark)
+                
+                MapView(store: self.store.scope(state: \.mapState, action: \.map))
+                    .tabItem {
+                        Image(systemName: AppTab.map.systemImage)
+                    }
+                    .tag(AppTab.map)
 
                 ToolBarView(store: self.store.scope(state: \.toolboxState, action: \.toolbox))
                     .tabItem {
