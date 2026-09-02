@@ -89,8 +89,9 @@ private extension AddKoreanPhraseView {
                 TabiTextField(placeholder: Strings.KoreanPhrase.japaneseFieldPlaceholder, text: self.$store.japanese)
                 TabiButton(
                     Strings.KoreanPhrase.translateButtonTitle,
-                    style: .ghost,
-                    isLoading: self.store.isTranslating
+                    style: .surface,
+                    isLoading: self.store.isTranslating,
+                    cornerRadius: .tabiRadiusMd
                 ) {
                     self.store.send(.translateButtonTapped)
                 }

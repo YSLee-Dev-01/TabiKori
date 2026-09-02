@@ -21,12 +21,15 @@ public struct TabiButton: View {
         case primary
         case secondary
         case ghost
+        /// TabiTextField/TabiSearchField(.solid)와 동일한 배경(tabiSurface) + 테두리(tabiBorder) 조합
+        case surface
         case glass(on: GlassContext = .surface)
     }
 
     private let title: String
     private let style: Style
     private let icon: Image?
+    private let foregroundColorOverride: TabiColor?
     private let isExpanded: Bool
     private let isLoading: Bool
     private let height: CGFloat?
@@ -34,10 +37,15 @@ public struct TabiButton: View {
     private let action: () -> Void
 
     private var foregroundColor: TabiColor {
+        self.foregroundColorOverride ?? self.styleForegroundColor
+    }
+
+    private var styleForegroundColor: TabiColor {
         switch self.style {
         case .primary: return .tabiOnColor
         case .secondary: return .tabiPrimary
         case .ghost: return .tabiTextPrimary
+        case .surface: return .tabiTextTertiary
         case .glass(on: .surface): return .tabiPrimary
         case .glass(on: .accent): return .tabiSurface
         case .glass(on: .secondary): return .tabiSecondary
@@ -47,20 +55,21 @@ public struct TabiButton: View {
     private var backgroundColor: TabiColor? {
         switch self.style {
         case .primary: return .tabiPrimary
+        case .surface: return .tabiSurface
         case .secondary, .ghost, .glass: return nil
         }
     }
 
     private var horizontalPadding: CGFloat {
         switch self.style {
-        case .primary, .secondary, .glass: return 20
+        case .primary, .secondary, .surface, .glass: return 20
         case .ghost: return 16
         }
     }
 
     private var typographyStyle: TypographyStyle {
         switch self.style {
-        case .primary, .secondary, .glass: return .bodyMBold
+        case .primary, .secondary, .surface, .glass: return .bodyMBold
         case .ghost: return .bodyM
         }
     }
@@ -71,6 +80,7 @@ public struct TabiButton: View {
         _ title: String,
         style: Style,
         icon: Image? = nil,
+        foregroundColor: TabiColor? = nil,
         isExpanded: Bool = false,
         isLoading: Bool = false,
         height: CGFloat? = nil,
@@ -80,6 +90,7 @@ public struct TabiButton: View {
         self.title = title
         self.style = style
         self.icon = icon
+        self.foregroundColorOverride = foregroundColor
         self.isExpanded = isExpanded
         self.isLoading = isLoading
         self.height = height
@@ -152,6 +163,14 @@ private struct TabiButtonBackground: ViewModifier {
                 .overlay {
                     RoundedRectangle(cornerRadius: self.cornerRadius)
                         .stroke(TabiColor.tabiPrimary, lineWidth: 1.5)
+                }
+        case .surface:
+            content
+                .background(self.backgroundColor ?? .tabiSurface)
+                .clipShape(.rect(cornerRadius: self.cornerRadius))
+                .overlay {
+                    RoundedRectangle(cornerRadius: self.cornerRadius)
+                        .stroke(TabiColor.tabiBorder, lineWidth: 1)
                 }
         default:
             content

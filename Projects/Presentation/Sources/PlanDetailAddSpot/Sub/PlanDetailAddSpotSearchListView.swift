@@ -39,8 +39,9 @@ struct PlanDetailAddSpotSearchListView: View {
                 if self.isAutoTranslateSearchEnabled {
                     TabiButton(
                         Strings.Map.translateButtonTitle,
-                        style: .ghost,
-                        isLoading: self.isTranslating
+                        style: .surface,
+                        isLoading: self.isTranslating,
+                        cornerRadius: .tabiRadiusMd
                     ) {
                         self.onTranslateTapped()
                     }

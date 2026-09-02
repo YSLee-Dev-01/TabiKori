@@ -648,8 +648,10 @@ private extension MapView {
     func translateSearchButton() -> some View {
         TabiButton(
             Strings.Map.translateButtonTitle,
-            style: .ghost,
-            isLoading: self.store.translateSearch.pendingTranslationQuery != nil
+            style: .glass(on: .surface),
+            foregroundColor: .tabiTextTertiary,
+            isLoading: self.store.translateSearch.pendingTranslationQuery != nil,
+            cornerRadius: .tabiRadiusMd
         ) {
             self.store.send(.translateSearch(.translateButtonRequested(query: self.store.searchQuery)))
         }
