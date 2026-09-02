@@ -46,24 +46,29 @@ struct OnboardingDetailHostView: View {
 
 // MARK: - OnboardingDetailProgressReducer
 
-/// `DetailFeature`를 그대로 조립하되, `saveButtonTapped`/`addToItineraryButtonTapped` 액션만 옆에서 관찰해
-/// 온보딩 진행 콜백을 호출하는 얇은 래퍼 Reducer. `DetailFeature`의 State/Action/로직은 전혀 변형하지 않는다
+/// `DetailFeature`를 그대로 위임하되, `addToItineraryButtonTapped`만 `DetailFeature`에 전달하지 않고 여기서
+/// 직접 소비해 온보딩 진행 콜백만 호출한다(시트를 프레젠팅했다가 바로 닫으면 전환 애니메이션이 깜빡여서,
+/// 애초에 `addToItineraryState`가 채워지지 않도록 액션 자체를 가로막는다). `saveButtonTapped`를 포함한
+/// 나머지 액션은 전부 `DetailFeature`에 그대로 위임해 로직을 변형하지 않는다
 private struct OnboardingDetailProgressReducer: Reducer {
     let onSaveTapped: () -> Void
     let onAddTapped: () -> Void
 
-    var body: some ReducerOf<DetailFeature> {
-        DetailFeature()
-        Reduce { _, action in
-            switch action {
-            case .saveButtonTapped:
-                self.onSaveTapped()
-            case .addToItineraryButtonTapped:
-                self.onAddTapped()
-            default:
-                break
-            }
+    private let detailFeature = DetailFeature()
+
+    func reduce(into state: inout DetailFeature.State, action: DetailFeature.Action) -> Effect<DetailFeature.Action> {
+        switch action {
+        case .saveButtonTapped:
+            let effect = self.detailFeature.reduce(into: &state, action: action)
+            self.onSaveTapped()
+            return effect
+
+        case .addToItineraryButtonTapped:
+            self.onAddTapped()
             return .none
+
+        default:
+            return self.detailFeature.reduce(into: &state, action: action)
         }
     }
 }

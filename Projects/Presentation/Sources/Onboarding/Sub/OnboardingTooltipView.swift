@@ -44,6 +44,7 @@ private extension OnboardingTooltipView {
         VStack(spacing: 0) {
             if self.tailEdge == .top {
                 self.tail(pointingUp: true)
+                    .offset(x: self.tailOffsetX)
             }
 
             TabiLabel(title: self.text, style: .bodyMBold, color: .tabiOnColor)
@@ -56,6 +57,7 @@ private extension OnboardingTooltipView {
 
             if self.tailEdge == .bottom {
                 self.tail(pointingUp: false)
+                    .offset(x: self.tailOffsetX)
             }
         }
     }
@@ -93,6 +95,18 @@ private extension OnboardingTooltipView {
         self.showsBelow
             ? self.highlightRect.maxY + 12
             : self.highlightRect.minY - 12 - self.containerSize.height
+    }
+
+    /// 말풍선이 화면 경계에 부딪혀 클램프되어도, 꼬리는 항상 강조 대상의 중심(`highlightRect.midX`)을
+    /// 가리키도록 말풍선 로컬 좌표계 기준 위치를 계산한다(말풍선 중앙 대비 오프셋, 모서리 밖으로 나가지
+    /// 않도록 tail 폭의 절반만큼 여백을 둔다)
+    var tailOffsetX: CGFloat {
+        let tailHalfWidth: CGFloat = 8
+        let targetX = min(
+            max(self.highlightRect.midX - self.leftX, tailHalfWidth),
+            self.bubbleWidth - tailHalfWidth
+        )
+        return targetX - self.bubbleWidth / 2
     }
 }
 

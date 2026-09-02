@@ -79,15 +79,6 @@ private extension OnboardingView {
             guard Task.isCancelled == false else { return }
             self.isSpotlightReady = true
         }
-        .overlay(alignment: .bottom) {
-            TabiPageIndicator(
-                count: OnboardingStep.allCases.count,
-                currentIndex: self.store.currentStep.rawValue,
-                inactiveColor: Color.getTabiColor(.tabiBorder)
-            )
-            .padding(.bottom, 16)
-            .allowsHitTesting(false)
-        }
     }
 
     @ViewBuilder
