@@ -97,23 +97,23 @@ public extension Strings.Onboarding {
     /// 웹뷰 로드 실패 설명 문구
     static let privacyPolicyLoadFailedDescription = "通信状態を確認してもう一度お試しください"
     /// 홈 카테고리 칩 유도 코치마크 문구
-    static let homeCategoryCoachMark = "カテゴリーをタップしてみましょう"
+    static let homeCategoryCoachMark = "カテゴリーで絞り込めます"
     /// 지도 검색 결과 카드 유도 코치마크 문구
-    static let mapSearchResultCoachMark = "気になるスポットをタップしてみましょう"
+    static let mapSearchResultCoachMark = "タップで詳細が見られます"
     /// 관광지 상세 저장 버튼 유도 코치마크 문구
-    static let detailSaveButtonCoachMark = "スポットを保存してみましょう"
+    static let detailSaveButtonCoachMark = "タップして保存できます"
     /// 관광지 상세 일정 추가 버튼 유도 코치마크 문구
-    static let detailAddButtonCoachMark = "旅行日程に追加してみましょう"
+    static let detailAddButtonCoachMark = "日程に追加できます"
     /// 일정 카드 유도 코치마크 문구
-    static let planCardCoachMark = "日程をタップしてみましょう"
+    static let planCardCoachMark = "日程の詳細が確認できます"
     /// 일정상세 Day 칩 유도 코치마크 문구
-    static let planDetailDayChipCoachMark = "他の日もタップしてみましょう"
+    static let planDetailDayChipCoachMark = "日付ごとに確認できます"
     /// 약관동의 정책 보기 버튼 유도 코치마크 문구
-    static let agreementPolicyCoachMark = "プライバシーポリシーを確認してみましょう"
+    static let agreementPolicyCoachMark = "ポリシー内容を確認できます"
     /// 약관동의 체크박스 유도 코치마크 문구
-    static let agreementCheckBoxCoachMark = "チェックボックスをタップしてみましょう"
+    static let agreementCheckBoxCoachMark = "チェックで同意完了です"
     /// 약관동의 시작하기 버튼 유도 코치마크 문구
-    static let agreementStartCoachMark = "「始める」をタップして完了しましょう"
+    static let agreementStartCoachMark = "タップで利用開始できます"
     /// 온보딩 웰컴 스텝 제목
     static let welcomeTitle = "タビコリをインストールしていただき、\nありがとうございます🎉"
     /// 온보딩 웰컴 스텝 설명
