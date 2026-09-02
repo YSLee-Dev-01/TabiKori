@@ -27,6 +27,7 @@ struct DetailBottomCTAView: View {
                 self.onSaveTapped()
             }
             .disabled(self.isSaveDisabled)
+            .onboardingHighlight("detailSaveButton")
 
             TabiButton(
                 Strings.Detail.ctaAddToItinerary,
@@ -38,6 +39,7 @@ struct DetailBottomCTAView: View {
             ) {
                 self.onAddToItineraryTapped()
             }
+            .onboardingHighlight("detailAddButton")
         }
         .padding(.horizontal, 20)
     }

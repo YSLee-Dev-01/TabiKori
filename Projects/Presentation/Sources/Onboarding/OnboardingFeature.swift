@@ -40,6 +40,8 @@ public struct OnboardingFeature: Sendable {
         case welcomeButtonTapped
         case homeCategoryTapped(CategoryType)
         case mapSearchResultTapped
+        case detailSaveButtonTapped
+        case detailAddButtonTapped
         case planCardTapped
         case planDetailDayTapped(Int)
         case policyViewButtonTapped
@@ -72,6 +74,14 @@ public struct OnboardingFeature: Sendable {
 
             case .mapSearchResultTapped:
                 guard state.currentCoachMark == .mapSearchResult else { return .none }
+                return self.advanceEffect()
+
+            case .detailSaveButtonTapped:
+                guard state.currentCoachMark == .detailSaveButton else { return .none }
+                return self.advanceEffect()
+
+            case .detailAddButtonTapped:
+                guard state.currentCoachMark == .detailAddButton else { return .none }
                 return self.advanceEffect()
 
             case .planCardTapped:

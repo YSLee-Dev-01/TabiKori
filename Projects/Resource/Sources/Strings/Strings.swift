@@ -68,6 +68,10 @@ public extension Strings.Onboarding {
     static let mapStepTitle = "地図でスポットを探そう"
     /// 지도 체험 스텝 설명
     static let mapStepDescription = "地図上で観光スポットを検索し、位置を確認できます"
+    /// 관광지 상세 체험 스텝 제목
+    static let detailStepTitle = "スポットの詳細を見てみよう"
+    /// 관광지 상세 체험 스텝 설명
+    static let detailStepDescription = "スポットを保存したり、旅行日程に追加できます"
     /// 일정 체험 스텝 제목
     static let planStepTitle = "旅行日程を管理しよう"
     /// 일정 체험 스텝 설명
@@ -96,6 +100,10 @@ public extension Strings.Onboarding {
     static let homeCategoryCoachMark = "カテゴリーをタップしてみましょう"
     /// 지도 검색 결과 카드 유도 코치마크 문구
     static let mapSearchResultCoachMark = "気になるスポットをタップしてみましょう"
+    /// 관광지 상세 저장 버튼 유도 코치마크 문구
+    static let detailSaveButtonCoachMark = "スポットを保存してみましょう"
+    /// 관광지 상세 일정 추가 버튼 유도 코치마크 문구
+    static let detailAddButtonCoachMark = "旅行日程に追加してみましょう"
     /// 일정 카드 유도 코치마크 문구
     static let planCardCoachMark = "日程をタップしてみましょう"
     /// 일정상세 Day 칩 유도 코치마크 문구

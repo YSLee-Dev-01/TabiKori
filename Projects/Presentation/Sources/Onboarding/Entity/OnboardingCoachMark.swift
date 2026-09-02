@@ -14,6 +14,8 @@ import Resource
 enum OnboardingCoachMark: Int, CaseIterable, Hashable {
     case homeCategory
     case mapSearchResult
+    case detailSaveButton
+    case detailAddButton
     case planCard
     case planDetailDayChip
     case agreementPolicyButton
@@ -24,6 +26,7 @@ enum OnboardingCoachMark: Int, CaseIterable, Hashable {
         switch self {
         case .homeCategory: return .home
         case .mapSearchResult: return .map
+        case .detailSaveButton, .detailAddButton: return .detail
         case .planCard: return .plan
         case .planDetailDayChip: return .planDetail
         case .agreementPolicyButton, .agreementCheckBox, .agreementStartButton: return .agreement
@@ -34,6 +37,8 @@ enum OnboardingCoachMark: Int, CaseIterable, Hashable {
         switch self {
         case .homeCategory: return Strings.Onboarding.homeCategoryCoachMark
         case .mapSearchResult: return Strings.Onboarding.mapSearchResultCoachMark
+        case .detailSaveButton: return Strings.Onboarding.detailSaveButtonCoachMark
+        case .detailAddButton: return Strings.Onboarding.detailAddButtonCoachMark
         case .planCard: return Strings.Onboarding.planCardCoachMark
         case .planDetailDayChip: return Strings.Onboarding.planDetailDayChipCoachMark
         case .agreementPolicyButton: return Strings.Onboarding.agreementPolicyCoachMark
@@ -44,7 +49,7 @@ enum OnboardingCoachMark: Int, CaseIterable, Hashable {
 
     var cornerRadius: CGFloat {
         switch self {
-        case .planDetailDayChip: return .tabiRadiusFull
+        case .detailSaveButton, .detailAddButton, .planDetailDayChip: return .tabiRadiusFull
         case .homeCategory, .mapSearchResult, .planCard: return .tabiRadiusLg
         case .agreementPolicyButton, .agreementCheckBox, .agreementStartButton: return .tabiRadiusSm
         }
@@ -67,7 +72,7 @@ enum OnboardingCoachMark: Int, CaseIterable, Hashable {
         switch self {
         case .homeCategory, .mapSearchResult:
             return 0.55
-        case .planCard, .planDetailDayChip, .agreementPolicyButton, .agreementCheckBox, .agreementStartButton:
+        case .detailSaveButton, .detailAddButton, .planCard, .planDetailDayChip, .agreementPolicyButton, .agreementCheckBox, .agreementStartButton:
             return 0
         }
     }
@@ -80,6 +85,8 @@ enum OnboardingCoachMark: Int, CaseIterable, Hashable {
         switch self {
         case .homeCategory: return "homeCategory"
         case .mapSearchResult: return "mapSearchResult"
+        case .detailSaveButton: return "detailSaveButton"
+        case .detailAddButton: return "detailAddButton"
         case .planCard: return "planCard"
         case .planDetailDayChip: return "planDetailDayChip"
         case .agreementPolicyButton, .agreementCheckBox, .agreementStartButton: return self

@@ -58,6 +58,27 @@ enum OnboardingMock {
         ),
     ]
 
+    static let detailSpot = Self.searchResults[0]
+
+    static let detailSpotDetail = TouristSpotDetail(
+        id: Self.detailSpot.id,
+        title: Self.detailSpot.title,
+        contentType: Self.detailSpot.contentType,
+        tel: nil,
+        homepageURLString: nil,
+        imageURLString: nil,
+        address: "서울특별시 종로구 계동길 37",
+        coordinate: .seoulCityHall,
+        overview: "韓国の伝統家屋が立ち並ぶ、歴史あふれる村です"
+    )
+
+    static let detailSpotIntro = TouristSpotIntro.sightseeing(SightseeingIntro(
+        contact: nil, openTime: nil, restDate: nil, parking: nil, openDate: nil,
+        experienceGuide: nil, experienceAgeRange: nil, useSeason: nil, accommodationCount: nil
+    ))
+
+    static let detailSpotImages: [TouristSpotImage] = []
+
     static let plan = TravelPlan(
         id: UUID(),
         title: "ソウル春旅行",

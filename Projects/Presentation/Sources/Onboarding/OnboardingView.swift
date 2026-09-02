@@ -103,6 +103,12 @@ private extension OnboardingView {
                 onSearchResultTapped: { self.store.send(.mapSearchResultTapped) }
             )
 
+        case .detail:
+            OnboardingDetailHostView(
+                onSaveTapped: { self.store.send(.detailSaveButtonTapped) },
+                onAddTapped: { self.store.send(.detailAddButtonTapped) }
+            )
+
         case .plan:
             OnboardingPlanHostView(
                 onPlanTapped: { self.store.send(.planCardTapped) }

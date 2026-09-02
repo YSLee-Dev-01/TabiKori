@@ -13,6 +13,7 @@ import Resource
 enum OnboardingStep: Int, CaseIterable, Identifiable {
     case home
     case map
+    case detail
     case plan
     case planDetail
     case agreement
@@ -23,6 +24,7 @@ enum OnboardingStep: Int, CaseIterable, Identifiable {
         switch self {
         case .home: return Strings.Onboarding.homeStepTitle
         case .map: return Strings.Onboarding.mapStepTitle
+        case .detail: return Strings.Onboarding.detailStepTitle
         case .plan: return Strings.Onboarding.planStepTitle
         case .planDetail: return Strings.Onboarding.planDetailStepTitle
         case .agreement: return Strings.Onboarding.agreementStepTitle
@@ -33,6 +35,7 @@ enum OnboardingStep: Int, CaseIterable, Identifiable {
         switch self {
         case .home: return Strings.Onboarding.homeStepDescription
         case .map: return Strings.Onboarding.mapStepDescription
+        case .detail: return Strings.Onboarding.detailStepDescription
         case .plan: return Strings.Onboarding.planStepDescription
         case .planDetail: return Strings.Onboarding.planDetailStepDescription
         case .agreement: return Strings.Onboarding.agreementStepDescription
