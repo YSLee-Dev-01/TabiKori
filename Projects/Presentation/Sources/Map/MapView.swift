@@ -295,6 +295,9 @@ private extension MapView {
     func recentSearchContent() -> some View {
         Group {
             if self.store.recentSearches.isEmpty {
+                // topBar()가 mode == .typing && isKeyboardVisible일 때 이미 languageGuideBadge()를
+                // 검색창 바로 아래에 노출하므로, 여기서 다시 추가하면 키보드가 올라온 상태에서
+                // 안내 배지가 위·아래 두 곳에 중복 노출된다. 이 상태에는 카드 보더만 적용한다
                 MapRecentSearchPlaceholderView(keyboardHeight: self.keyboardHeight)
             } else {
                 MapRecentSearchListView(

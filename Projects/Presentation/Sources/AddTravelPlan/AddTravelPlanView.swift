@@ -35,7 +35,7 @@ public struct AddTravelPlanView: View {
         }
         .scrollDismissesKeyboard(.immediately)
         .safeAreaBar(edge: .top) {
-            TabiNavigationBar(title: Strings.Plan.addScreenTitle) {
+            TabiNavigationBar(title: Strings.Plan.addScreenTitle, titleStyle: .titleS) {
                 self.closeButton()
             }
             .padding(.top, 20)

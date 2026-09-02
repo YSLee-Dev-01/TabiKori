@@ -24,7 +24,7 @@ struct ShoppingPlanPickerView: View {
     var body: some View {
         self.content()
             .safeAreaBar(edge: .top) {
-                TabiNavigationBar(title: Strings.ToolBar.planPickerTitle) {
+                TabiNavigationBar(title: Strings.ToolBar.planPickerTitle, titleStyle: .titleS) {
                     self.closeButton()
                 }
                 .padding(.top, 26)

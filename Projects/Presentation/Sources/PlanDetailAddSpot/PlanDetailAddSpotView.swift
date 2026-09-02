@@ -146,10 +146,19 @@ private extension PlanDetailAddSpotView {
                     previewFitToken: self.store.addressPreviewFitToken,
                     isGeocoding: self.store.isAddressGeocoding,
                     isConfirmEnabled: self.store.isAddressConfirmEnabled,
+                    isSubwayMode: self.store.isAddressSubwayMode,
+                    isSubwaySearching: self.store.isAddressSubwaySearching,
+                    subwayResults: self.store.addressSubwayResults,
+                    matchedStation: self.store.addressMatchedStation,
+                    isAutoTranslateSearchEnabled: self.store.translateSearch.isAutoTranslateSearchEnabled,
+                    isTranslating: self.store.translateSearch.pendingTranslationQuery != nil,
                     titleFocus: self.$isAddressTitleFocused,
                     addressFocus: self.$isAddressFieldFocused,
                     onAddressSubmit: { self.store.send(.addressSubmitted) },
                     onCategorySelected: { self.store.send(.addressCategorySelected($0)) },
+                    onStationNameSubmit: { self.store.send(.addressStationNameSubmitted) },
+                    onStationTapped: { self.store.send(.addressStationTapped($0)) },
+                    onTranslateTapped: { self.store.send(.translateSearch(.translateButtonRequested(query: self.store.addressTitle))) },
                     onConfirmTapped: { self.store.send(.addressConfirmTapped) }
                 )
 

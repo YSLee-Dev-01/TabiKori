@@ -46,14 +46,22 @@ public struct PlanDetailAddSpotFeature: Sendable {
         var endTime: Date = Date()
         var isTimeUnset: Bool = false
         var isSaving: Bool = false
-        // 주소로 추가 탭
+        // 주소로 추가 탭 (카스텀)
         var addressTitle: String = ""
         var addressInput: String = ""
         var addressSelectedCategory: CategoryType? = nil
         var addressPreviewCoordinate: Coordinate? = nil
         var addressPreviewFitToken: Int = 0
         var isAddressGeocoding: Bool = false
+        var isAddressSubwayMode: Bool = false
+        var isAddressSubwaySearching: Bool = false
+        var addressSubwayResults: [SubwayStation] = []
+        var addressMatchedStation: TouristSpot?
         fileprivate let existingDetail: TravelPlanDetail?
+        /// 현재 대기 중이거나 가장 최근에 요청된 번역이 "検索" 탭(searchKeyword)이 아닌 "カスタム" 탭 지하철 검색(addressTitle)에서
+        /// 시작된 것인지 구분한다. `translateSearch`가 두 탭에서 공유하는 단일 Scope이므로, 번역 결과(`retranslatedQueryReady`)나
+        /// Toast 액션 확인(`toastActionConfirmed`)이 돌아왔을 때 어느 탭의 검색어를 갱신·재검색해야 하는지 이 값으로 판단한다
+        fileprivate var isAddressSubwayTranslateOrigin: Bool = false
         @Presents var alert: AlertState<Action.Alert>?
 
         public init(planId: UUID, dayIndex: Int, date: Date, detail: TravelPlanDetail?) {
@@ -96,6 +104,9 @@ public struct PlanDetailAddSpotFeature: Sendable {
         }
 
         var isAddressConfirmEnabled: Bool {
+            if self.isAddressSubwayMode {
+                return self.addressMatchedStation != nil
+            }
             guard self.addressSelectedCategory != nil else { return false }
             guard self.trimmedAddressTitle.isEmpty == false else { return false }
             guard self.addressPreviewCoordinate != nil else { return false }
@@ -113,6 +124,8 @@ public struct PlanDetailAddSpotFeature: Sendable {
         case subwayStationTapped(SubwayStation)
         case addressSubmitted
         case addressCategorySelected(CategoryType)
+        case addressStationNameSubmitted
+        case addressStationTapped(SubwayStation)
         case addressConfirmTapped
         case backButtonTapped
         case closeButtonTapped
@@ -121,6 +134,8 @@ public struct PlanDetailAddSpotFeature: Sendable {
         case subwayResultsResult([SubwayStation])
         case bookmarksResult([Bookmark])
         case addressPreviewResult(Coordinate)
+        case addressStationSearchResult([SubwayStation])
+        case addressStationResolveResult(TouristSpot?)
         case addressNotFound
         case stationResolveFailed
         case saveFailed
@@ -155,6 +170,14 @@ public struct PlanDetailAddSpotFeature: Sendable {
             case .binding(\.addressInput):
                 state.addressPreviewCoordinate = nil
                 return .none
+
+            case .binding(\.addressTitle):
+                guard state.isAddressSubwayMode else { return .none }
+                state.addressMatchedStation = nil
+                state.addressPreviewCoordinate = nil
+                state.addressSubwayResults = []
+                state.isAddressSubwaySearching = false
+                return .cancel(id: CancelID.addressStationSearch)
 
             case .binding:
                 return .none
@@ -201,12 +224,37 @@ public struct PlanDetailAddSpotFeature: Sendable {
                 return self.addressPreviewEffect(address: state.trimmedAddressInput)
 
             case .addressCategorySelected(let category):
-                state.addressSelectedCategory = category
+                if category == .subway {
+                    guard state.isAddressSubwayMode == false else { return .none }
+                    state.isAddressSubwayMode = true
+                } else {
+                    state.addressSelectedCategory = category
+                    guard state.isAddressSubwayMode else { return .none }
+                    state.isAddressSubwayMode = false
+                }
+                state.addressMatchedStation = nil
+                state.addressPreviewCoordinate = nil
+                state.addressSubwayResults = []
                 return .none
 
+            case .addressStationNameSubmitted:
+                guard state.trimmedAddressTitle.isEmpty == false else { return .none }
+                state.isAddressSubwaySearching = true
+                state.addressSubwayResults = []
+                return self.addressSubwaySearchEffect(keyword: state.trimmedAddressTitle)
+
+            case .addressStationTapped(let station):
+                return self.resolveAddressStationEffect(station: station)
+
             case .addressConfirmTapped:
+                guard state.isAddressConfirmEnabled else { return .none }
+
+                if state.isAddressSubwayMode {
+                    guard let station = state.addressMatchedStation else { return .none }
+                    return .send(.spotRowTapped(station))
+                }
+
                 guard
-                    state.isAddressConfirmEnabled,
                     let category = state.addressSelectedCategory,
                     let coordinate = state.addressPreviewCoordinate
                 else { return .none }
@@ -259,13 +307,33 @@ public struct PlanDetailAddSpotFeature: Sendable {
             case .searchResultsResult(let results):
                 state.searchResults = results
                 state.isSearchLoading = false
+                state.isAddressSubwayTranslateOrigin = false
                 let hasResults = results.isEmpty == false || state.subwayResults.isEmpty == false
                 return .send(.translateSearch(.searchCompleted(query: state.searchKeyword, hasResults: hasResults)))
 
+            case .translateSearch(.translateButtonRequested(let query)):
+                // translateSearch는 "検索" 탭·"カスタム" 탭(지하철) 양쪽이 공유하는 단일 Scope이므로, 실제로 어느 탭의
+                // 검색어가 요청된 것인지를 여기서 판별해 isAddressSubwayTranslateOrigin에 기록해둔다. 아래 두 조건 중
+                // 어느 쪽에도 해당하지 않으면(toastActionConfirmed로부터 재전송된 요청인데, 그사이 사용자가 탭을
+                // 전환해 현재 탭 상태와 query의 출처 탭이 서로 달라진 경우) 기존 값을 그대로 유지해 origin이
+                // 잘못 덮어써지지 않도록 한다
+                let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+                if state.isAddressSubwayMode, trimmedQuery == state.trimmedAddressTitle {
+                    state.isAddressSubwayTranslateOrigin = true
+                } else if state.tab == .search, trimmedQuery == state.trimmedSearchKeyword {
+                    state.isAddressSubwayTranslateOrigin = false
+                }
+                return .none
+
             case .translateSearch(.delegate(.toastActionConfirmed)):
-                return .send(.translateSearch(.translateButtonRequested(query: state.trimmedSearchKeyword)))
+                let query = state.isAddressSubwayTranslateOrigin ? state.trimmedAddressTitle : state.trimmedSearchKeyword
+                return .send(.translateSearch(.translateButtonRequested(query: query)))
 
             case .translateSearch(.delegate(.retranslatedQueryReady(let translatedQuery))):
+                if state.isAddressSubwayTranslateOrigin {
+                    state.addressTitle = translatedQuery
+                    return .send(.addressStationNameSubmitted)
+                }
                 state.searchKeyword = translatedQuery
                 return .send(.searchSubmitted)
 
@@ -274,6 +342,26 @@ public struct PlanDetailAddSpotFeature: Sendable {
 
             case .subwayResultsResult(let stations):
                 state.subwayResults = stations
+                return .none
+
+            case .addressStationSearchResult(let stations):
+                state.isAddressSubwaySearching = false
+                state.addressSubwayResults = stations
+                guard state.isAddressSubwayMode else { return .none }
+                state.isAddressSubwayTranslateOrigin = true
+                let hasResults = stations.isEmpty == false
+                let searchCompletedEffect = Effect<Action>.send(
+                    .translateSearch(.searchCompleted(query: state.trimmedAddressTitle, hasResults: hasResults))
+                )
+                guard hasResults == false else { return searchCompletedEffect }
+                return .merge(self.showAddressStationSearchEmptyEffect(), searchCompletedEffect)
+
+            case .addressStationResolveResult(let spot):
+                guard let spot else { return .none }
+                state.addressMatchedStation = spot
+                state.addressPreviewCoordinate = spot.coordinate
+                state.addressPreviewFitToken += 1
+                state.addressSubwayResults = []
                 return .none
 
             case .bookmarksResult(let bookmarks):
@@ -344,6 +432,8 @@ private enum CancelID {
     case resolveStation
     case fetchBookmarks
     case addressPreview
+    case addressStationSearch
+    case resolveAddressStation
 }
 
 // MARK: - Method
@@ -388,6 +478,41 @@ private extension PlanDetailAddSpotFeature {
             }
         }
         .cancellable(id: CancelID.resolveStation, cancelInFlight: true)
+    }
+
+    func addressSubwaySearchEffect(keyword: String) -> Effect<Action> {
+        .run { [subwayStationUseCase = self.subwayStationUseCase] send in
+            let results = await subwayStationUseCase.search(keyword: keyword)
+            guard !Task.isCancelled else { return }
+            await send(.addressStationSearchResult(results))
+        }
+        .cancellable(id: CancelID.addressStationSearch, cancelInFlight: true)
+    }
+
+    /// "カスタム" 탭 지하철 검색 결과가 없을 때(빈 문자열 제출이 아닌, 실제 검색이 수행된 경우에 한해) 안내하는 Toast.
+    /// "検索" 탭은 결과 없음 상태를 리스트 내 빈 상태 UI로 표시하지만, 이 탭의 지하철 검색 결과는 별도의 리스트 UI가
+    /// 없어 결과가 사라졌다는 사실 자체를 알 수 없으므로 Toast로 안내한다
+    func showAddressStationSearchEmptyEffect() -> Effect<Action> {
+        .run { [toastCenter = self.toastCenter] _ in
+            toastCenter.show(ToastItem(message: Strings.Map.searchResultEmptyTitle, type: .info))
+        }
+    }
+
+    func resolveAddressStationEffect(station: SubwayStation) -> Effect<Action> {
+        .run { [subwayStationUseCase = self.subwayStationUseCase, toastCenter = self.toastCenter] send in
+            do {
+                let spot = try await subwayStationUseCase.selectStation(station)
+                await send(.addressStationResolveResult(spot))
+            } catch {
+                guard !Task.isCancelled else { return }
+                AppLogger.network.log(.error, "지하철역 좌표 조회 실패: \(station.koreanName) - \(error.localizedDescription)")
+                if error.isNetworkOriginatedError {
+                    toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
+                }
+                await send(.stationResolveFailed)
+            }
+        }
+        .cancellable(id: CancelID.resolveAddressStation, cancelInFlight: true)
     }
 
     func addressPreviewEffect(address: String) -> Effect<Action> {

@@ -72,4 +72,15 @@ extension CustomKoreanPhraseRepository: CustomKoreanPhraseRepositoryProtocol {
             throw TabiError.persistenceFailed(message: error.localizedDescription)
         }
     }
+
+    public func removeAll() async throws {
+        do {
+            let context = ModelContext(self.modelContainer)
+            try context.delete(model: CustomKoreanPhraseModel.self)
+            try context.save()
+        } catch {
+            AppLogger.core.log(.error, "커스텀 한국어 문구 전체 삭제 실패: \(error.localizedDescription)")
+            throw TabiError.persistenceFailed(message: error.localizedDescription)
+        }
+    }
 }

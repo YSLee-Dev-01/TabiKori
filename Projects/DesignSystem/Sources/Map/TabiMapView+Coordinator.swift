@@ -31,8 +31,18 @@ extension TabiMapView {
         private let singleMarkerFitZoomLevel: Double = 15
         private let boundsFitPadding: CGFloat = 60
         // makeUIView 시점에는 NMFNaverMapView가 아직 SwiftUI 레이아웃을 거치지 않아 frame이 .zero일 수 있음.
-        // fit 계산이 유효한 프레임을 전제로 하므로, 프레임이 잡힐 때까지 런루프 단위로 재시도할 최대 횟수
-        private let boundsFitMaxRetryCount: Int = 10
+        // fit 계산이 유효한 프레임을 전제로 하므로, 프레임이 잡힐 때까지 런루프 단위로 재시도할 최대 횟수.
+        //
+        // PlanDetailView의 일자 전환처럼 이 뷰가 .id(selectedDayIndex) 변경으로 완전히 재마운트되면서
+        // 동시에 compositingGroup()+clipped()+move 트랜지션(.tabiStandard ≈ 0.5초) 애니메이션 안에서
+        // 다시 그려지는 경로에서는, 단순 최초 진입 마운트보다 레이아웃 확정 + 네이티브 지도 엔진
+        // 재초기화가 겹쳐 안정화까지 더 오래 걸릴 수 있다. 재시도는 DispatchQueue.main.async로
+        // 런루프 1회당 1번만 진행되는데, 최악의 경우(60Hz 기기, 프레임당 ~16.7ms)에도 기존 10회는
+        // 약 167ms만 확보해 약 0.5초짜리 전환 애니메이션 구간을 구조적으로 다 덮지 못했다.
+        // (167ms < 500ms이므로 애니메이션이 끝나기 한참 전에 재시도가 소진돼 fit이 그냥 스킵되는
+        // 경우가 "간혹" 발생 — 지도 축소가 중간에 끊겨 일부 스팟만 보이던 버그의 원인).
+        // 전환 애니메이션 전체 구간과 그 위의 추가 초기화 오버헤드까지 여유 있게 덮도록 값을 올림
+        private let boundsFitMaxRetryCount: Int = 40
         // MapView 검색 패널 등장 애니메이션(.tabiStandard = Animation.smooth, 기본 duration 0.5초)과
         // 카메라 이동 애니메이션 길이를 맞춰, 시트가 다 올라오기 전에 지도가 먼저 이동해버리는 것을 방지
         private let boundsFitAnimationDuration: TimeInterval = 0.5

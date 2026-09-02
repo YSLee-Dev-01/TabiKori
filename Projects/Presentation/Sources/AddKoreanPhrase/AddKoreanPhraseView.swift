@@ -32,7 +32,7 @@ public struct AddKoreanPhraseView: View {
         }
         .scrollDismissesKeyboard(.immediately)
         .safeAreaBar(edge: .top) {
-            TabiNavigationBar(title: Strings.KoreanPhrase.addFormTitle) {
+            TabiNavigationBar(title: Strings.KoreanPhrase.addFormTitle, titleStyle: .titleS) {
                 self.closeButton()
             }
             .padding(.top, 20)

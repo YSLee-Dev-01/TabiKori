@@ -19,17 +19,12 @@ struct MapRecentSearchPlaceholderView: View {
         VStack(spacing: 0) {
             Spacer(minLength: 0)
 
-            VStack(spacing: 10) {
-                Image(systemName: "clock")
-                    .font(.system(size: 34))
-                    .foregroundStyle(TabiColor.tabiTextTertiary)
-                TabiLabel(
-                    title: Strings.Map.recentSearchPlaceholderDescription,
-                    style: .bodyS,
-                    color: .tabiTextTertiary,
-                    alignment: .center
-                )
-            }
+            TabiEmptyState(
+                systemImageName: "clock",
+                description: Strings.Map.recentSearchPlaceholderDescription,
+                style: .card
+            )
+            .padding(.horizontal, 20)
 
             Spacer(minLength: 0)
         }

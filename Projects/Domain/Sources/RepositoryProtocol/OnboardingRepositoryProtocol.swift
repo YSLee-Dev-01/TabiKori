@@ -11,4 +11,5 @@ import Foundation
 public protocol OnboardingRepositoryProtocol: Sendable {
     func isCompleted() -> Bool
     func markAsCompleted()
+    func reset()
 }

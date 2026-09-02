@@ -519,8 +519,9 @@ private extension PlanDetailView {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         // 하단 세이프 에어리어까지 배경이 이어지되(위 ignoresSafeArea), 마지막 스팟/추가 버튼이
-        // 화면 하단(홈 인디케이터)에 바로 붙지 않도록 여백을 확보한다
-        .contentMargins(.bottom, 20, for: .scrollContent)
+        // 화면 하단(홈 인디케이터)에 바로 붙지 않도록 여백을 확보한다. 기존 20은 홈 인디케이터와의
+        // 간격이 육안으로 확인되지 않을 만큼 좁아 32로 확대함
+        .contentMargins(.bottom, 32, for: .scrollContent)
         .environment(\.editMode, .constant(self.store.isEditing ? .active : .inactive))
         .onScrollGeometryChange(for: SpotListScrollGeometry.self) { geometry in
             SpotListScrollGeometry(

@@ -17,7 +17,9 @@ extension DataResetUseCaseDependencyKey: @retroactive DependencyKey {
         DataResetUseCase(
             bookmarkRepository: BookmarkRepository(),
             travelPlanRepository: TravelPlanRepository(),
-            searchHistoryRepository: SearchHistoryRepository()
+            searchHistoryRepository: SearchHistoryRepository(),
+            onboardingRepository: OnboardingRepository(),
+            customKoreanPhraseRepository: CustomKoreanPhraseRepository()
         )
     }
 }

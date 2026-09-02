@@ -29,4 +29,8 @@ public final class OnboardingRepository: OnboardingRepositoryProtocol {
     public func markAsCompleted() {
         self.userDefault.set(true, forKey: .onboardingCompleted)
     }
+
+    public func reset() {
+        self.userDefault.set(false, forKey: .onboardingCompleted)
+    }
 }

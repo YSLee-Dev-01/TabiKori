@@ -55,6 +55,10 @@ public struct AddCustomPlaceFeature: Sendable {
         fileprivate var searchPage: Int = 1
         fileprivate var hasMoreSearchResults: Bool = true
         fileprivate var lastSubmittedSearchQuery: String?
+        /// 현재 대기 중이거나 가장 최근에 요청된 번역이 검색 탭(searchQuery)이 아닌 커스텀 탭 지하철 검색(title)에서
+        /// 시작된 것인지 구분한다. `translateSearch`가 두 탭에서 공유하는 단일 Scope이므로, 번역 결과(`retranslatedQueryReady`)나
+        /// Toast 액션 확인(`toastActionConfirmed`)이 돌아왔을 때 어느 탭의 검색어를 갱신·재검색해야 하는지 이 값으로 판단한다
+        fileprivate var isSubwayTranslateOrigin: Bool = false
 
         @Presents var alert: AlertState<Action.Alert>?
 
@@ -246,7 +250,14 @@ public struct AddCustomPlaceFeature: Sendable {
             case .stationSearchResult(let stations):
                 state.isSubwaySearching = false
                 state.subwayResults = stations
-                return .none
+                guard state.isSubwayMode else { return .none }
+                state.isSubwayTranslateOrigin = true
+                let hasResults = stations.isEmpty == false
+                let searchCompletedEffect = Effect<Action>.send(
+                    .translateSearch(.searchCompleted(query: state.trimmedTitle, hasResults: hasResults))
+                )
+                guard hasResults == false else { return searchCompletedEffect }
+                return .merge(self.showStationSearchEmptyEffect(), searchCompletedEffect)
 
             case .subwayStationTapped(let station):
                 return self.selectSubwayStationEffect(station: station)
@@ -315,6 +326,7 @@ public struct AddCustomPlaceFeature: Sendable {
                 state.searchResults = spots
                 state.isSearchLoading = false
                 state.hasMoreSearchResults = spots.count >= self.searchPageSize
+                state.isSubwayTranslateOrigin = false
                 let hasResults = spots.isEmpty == false || state.searchStationResults.isEmpty == false
                 return .send(.translateSearch(.searchCompleted(query: state.trimmedSearchQuery, hasResults: hasResults)))
 
@@ -328,10 +340,29 @@ public struct AddCustomPlaceFeature: Sendable {
                 state.hasMoreSearchResults = spots.count >= self.searchPageSize
                 return .none
 
+            case .translateSearch(.translateButtonRequested(let query)):
+                // translateSearch는 검색 탭·커스텀 탭(지하철) 양쪽이 공유하는 단일 Scope이므로, 실제로 어느 탭의
+                // 검색어가 요청된 것인지를 여기서 판별해 isSubwayTranslateOrigin에 기록해둔다. 아래 두 조건 중
+                // 어느 쪽에도 해당하지 않으면(toastActionConfirmed로부터 재전송된 요청인데, 그사이 사용자가 탭을
+                // 전환해 현재 탭 상태와 query의 출처 탭이 서로 달라진 경우) 기존 값을 그대로 유지해 origin이
+                // 잘못 덮어써지지 않도록 한다
+                let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+                if state.isSubwayMode, trimmedQuery == state.trimmedTitle {
+                    state.isSubwayTranslateOrigin = true
+                } else if state.selectedTab == .search, trimmedQuery == state.trimmedSearchQuery {
+                    state.isSubwayTranslateOrigin = false
+                }
+                return .none
+
             case .translateSearch(.delegate(.toastActionConfirmed)):
-                return .send(.translateSearch(.translateButtonRequested(query: state.trimmedSearchQuery)))
+                let query = state.isSubwayTranslateOrigin ? state.trimmedTitle : state.trimmedSearchQuery
+                return .send(.translateSearch(.translateButtonRequested(query: query)))
 
             case .translateSearch(.delegate(.retranslatedQueryReady(let translatedQuery))):
+                if state.isSubwayTranslateOrigin {
+                    state.title = translatedQuery
+                    return .send(.stationNameSubmitted)
+                }
                 state.searchQuery = translatedQuery
                 return .send(.searchSubmitted)
 
@@ -431,6 +462,15 @@ private extension AddCustomPlaceFeature {
             await send(.stationSearchResult(results))
         }
         .cancellable(id: CancelID.stationSearch, cancelInFlight: true)
+    }
+
+    /// 커스텀 탭 지하철 검색 결과가 없을 때(빈 문자열 제출이 아닌, 실제 검색이 수행된 경우에 한해) 안내하는 Toast.
+    /// 검색 탭은 결과 없음 상태를 리스트 내 `TabiEmptyState`로 표시하지만, 지하철 검색 결과는 별도의 리스트 UI가
+    /// 없어 결과가 사라졌다는 사실 자체를 알 수 없으므로 Toast로 안내한다
+    func showStationSearchEmptyEffect() -> Effect<Action> {
+        .run { [toastCenter = self.toastCenter] _ in
+            toastCenter.show(ToastItem(message: Strings.Map.searchResultEmptyTitle, type: .info))
+        }
     }
 
     func selectSubwayStationEffect(station: SubwayStation) -> Effect<Action> {

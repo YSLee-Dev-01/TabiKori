@@ -12,4 +12,5 @@ public protocol CustomKoreanPhraseRepositoryProtocol: Sendable {
     func fetchCustomPhrases() async throws -> [KoreanPhrase]
     func addCustomPhrase(_ phrase: KoreanPhrase, createdAt: Date) async throws
     func deleteCustomPhrase(id: String) async throws
+    func removeAll() async throws
 }

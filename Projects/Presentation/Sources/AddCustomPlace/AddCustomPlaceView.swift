@@ -44,7 +44,7 @@ public struct AddCustomPlaceView: View {
         .animation(.tabiStandard, value: self.store.matchedStation)
         .animation(.tabiStandard, value: self.store.selectedTab)
         .safeAreaBar(edge: .top) {
-            TabiNavigationBar(title: Strings.AddCustomPlace.screenTitle) {
+            TabiNavigationBar(title: Strings.AddCustomPlace.screenTitle, titleStyle: .titleS) {
                 self.closeButton()
             }
             .padding(.top, 20)
@@ -143,14 +143,20 @@ private extension AddCustomPlaceView {
                 style: .bodyMBold,
                 color: .tabiTextPrimary
             )
-            TabiTextField(
-                placeholder: self.store.isSubwayMode ? Strings.AddCustomPlace.stationTitlePlaceholder : Strings.AddCustomPlace.titlePlaceholder,
-                text: self.$store.title,
-                focus: self.$isTitleFocused
-            )
-            .onSubmit {
-                guard self.store.isSubwayMode else { return }
-                self.store.send(.stationNameSubmitted)
+            HStack(spacing: 8) {
+                TabiTextField(
+                    placeholder: self.store.isSubwayMode ? Strings.AddCustomPlace.stationTitlePlaceholder : Strings.AddCustomPlace.titlePlaceholder,
+                    text: self.$store.title,
+                    focus: self.$isTitleFocused
+                )
+                .onSubmit {
+                    guard self.store.isSubwayMode else { return }
+                    self.store.send(.stationNameSubmitted)
+                }
+
+                if self.store.isSubwayMode, self.store.translateSearch.isAutoTranslateSearchEnabled {
+                    self.stationTranslateButton()
+                }
             }
             if self.store.isSubwayMode {
                 TabiLabel(
@@ -204,6 +210,20 @@ private extension AddCustomPlaceView {
             }
             self.mapPreviewSection()
         }
+    }
+
+    /// 커스텀 탭 지하철 검색의 번역 버튼. 검색 탭의 `translateSearchButton()`과 동일한 조건(자동 번역 검색 활성화 시)으로
+    /// 노출되며, 공유 `translateSearch` Scope에 역명(title)을 검색어로 실어 번역을 요청한다
+    func stationTranslateButton() -> some View {
+        TabiButton(
+            Strings.Map.translateButtonTitle,
+            style: .surface,
+            isLoading: self.store.translateSearch.pendingTranslationQuery != nil,
+            cornerRadius: .tabiRadiusMd
+        ) {
+            self.store.send(.translateSearch(.translateButtonRequested(query: self.store.title)))
+        }
+        .accessibilityLabel(Strings.Map.translateSearchButtonAccessibilityLabel)
     }
 
     @ViewBuilder

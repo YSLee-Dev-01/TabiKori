@@ -15,17 +15,23 @@ public final class DataResetUseCase: DataResetUseCaseProtocol {
     private let bookmarkRepository: BookmarkRepositoryProtocol
     private let travelPlanRepository: TravelPlanRepositoryProtocol
     private let searchHistoryRepository: SearchHistoryRepositoryProtocol
+    private let onboardingRepository: OnboardingRepositoryProtocol
+    private let customKoreanPhraseRepository: CustomKoreanPhraseRepositoryProtocol
 
     // MARK: - Init
 
     public init(
         bookmarkRepository: BookmarkRepositoryProtocol,
         travelPlanRepository: TravelPlanRepositoryProtocol,
-        searchHistoryRepository: SearchHistoryRepositoryProtocol
+        searchHistoryRepository: SearchHistoryRepositoryProtocol,
+        onboardingRepository: OnboardingRepositoryProtocol,
+        customKoreanPhraseRepository: CustomKoreanPhraseRepositoryProtocol
     ) {
         self.bookmarkRepository = bookmarkRepository
         self.travelPlanRepository = travelPlanRepository
         self.searchHistoryRepository = searchHistoryRepository
+        self.onboardingRepository = onboardingRepository
+        self.customKoreanPhraseRepository = customKoreanPhraseRepository
     }
 
     // MARK: - Method
@@ -47,6 +53,15 @@ public final class DataResetUseCase: DataResetUseCaseProtocol {
 
         // save(_:)는 non-throwing이라 인코딩 실패(사실상 발생하지 않음)를 failedTargets로 추적할 수 없다
         self.searchHistoryRepository.save([])
+
+        do {
+            try await self.customKoreanPhraseRepository.removeAll()
+        } catch {
+            failedTargets.append("customKoreanPhrase")
+        }
+
+        // reset()은 non-throwing이라 failedTargets로 추적할 대상이 없다
+        self.onboardingRepository.reset()
 
         guard failedTargets.isEmpty == false else { return }
         throw TabiError.persistenceFailed(message: "데이터 초기화 실패: \(failedTargets.joined(separator: ", "))")

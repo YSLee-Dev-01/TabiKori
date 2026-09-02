@@ -91,7 +91,7 @@ private extension ToolBarView {
     @ViewBuilder
     func packingSection() -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            TabiLabel(title: Strings.ToolBar.packingSectionTitle, style: .titleM, color: .tabiTextPrimary)
+            TabiLabel(title: Strings.ToolBar.packingSectionTitle, style: .titleS, color: .tabiTextPrimary)
 
             if self.store.isLoadingPacking {
                 ProgressView()
@@ -152,7 +152,7 @@ private extension ToolBarView {
 private extension ToolBarView {
     func exchangeRateSection() -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            TabiLabel(title: Strings.ToolBar.exchangeRateSectionTitle, style: .titleM, color: .tabiTextPrimary)
+            TabiLabel(title: Strings.ToolBar.exchangeRateSectionTitle, style: .titleS, color: .tabiTextPrimary)
 
             ExchangeRateCalculatorView(
                 store: self.store.scope(state: \.exchangeRateCalculatorState, action: \.exchangeRateCalculator)
@@ -167,7 +167,7 @@ private extension ToolBarView {
     @ViewBuilder
     func koreanPhraseSection() -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            TabiLabel(title: Strings.KoreanPhrase.sectionTitle, style: .titleM, color: .tabiTextPrimary)
+            TabiLabel(title: Strings.KoreanPhrase.sectionTitle, style: .titleS, color: .tabiTextPrimary)
 
             if self.store.isLoadingPhrases {
                 ProgressView()
@@ -236,7 +236,7 @@ private extension ToolBarView {
     @ViewBuilder
     func shoppingSection() -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            TabiLabel(title: Strings.Shopping.sectionTitle, style: .titleM, color: .tabiTextPrimary)
+            TabiLabel(title: Strings.Shopping.sectionTitle, style: .titleS, color: .tabiTextPrimary)
 
             if self.store.isLoadingShopping {
                 ProgressView()

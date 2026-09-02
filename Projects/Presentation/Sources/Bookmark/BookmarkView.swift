@@ -135,7 +135,7 @@ private extension BookmarkView {
                         }
 
                         TabiLabel(
-                            title: Strings.Bookmark.savedCountTitle(self.store.bookmarks.count),
+                            title: Strings.Bookmark.savedCountTitle(self.store.filteredBookmarks.count),
                             style: .captionMBold,
                             color: .tabiTextSecondary
                         )

@@ -214,7 +214,7 @@ fileprivate extension HomeView {
 
     func nearbyTouristSpotBanner() -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            TabiLabel(title: Strings.Home.nearbyTouristSpotsTitle, style: .titleM, color: .tabiTextPrimary)
+            TabiLabel(title: Strings.Home.nearbyTouristSpotsTitle, style: .titleS, color: .tabiTextPrimary)
 
             if self.store.isLoadingTouristSpots {
                 self.nearbyTouristSpotSkeletonRow()
@@ -239,7 +239,7 @@ fileprivate extension HomeView {
 
     func nearbyRestaurantBanner() -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            TabiLabel(title: Strings.Home.nearbyRestaurantsTitle, style: .titleM, color: .tabiTextPrimary)
+            TabiLabel(title: Strings.Home.nearbyRestaurantsTitle, style: .titleS, color: .tabiTextPrimary)
 
             if self.store.isLoadingRestaurants {
                 self.nearbyRestaurantSkeletonCard()
@@ -453,7 +453,7 @@ fileprivate extension HomeView {
 
     func categoryView() -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            TabiLabel(title: Strings.Common.categoryTitle, style: .titleM, color: .tabiTextPrimary)
+            TabiLabel(title: Strings.Common.categoryTitle, style: .titleS, color: .tabiTextPrimary)
 
             ScrollView(.horizontal) {
                 HStack(alignment: .top, spacing: 12) {
@@ -507,7 +507,7 @@ fileprivate extension HomeView {
 
     func festivalListSection() -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            TabiLabel(title: Strings.RegionSpot.festivalSectionTitle, style: .titleM, color: .tabiTextPrimary)
+            TabiLabel(title: Strings.RegionSpot.festivalSectionTitle, style: .titleS, color: .tabiTextPrimary)
 
             if self.store.isLoadingFestivals {
                 ProgressView()
@@ -559,7 +559,7 @@ fileprivate extension HomeView {
 
     func recommendedRegionBanner() -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            TabiLabel(title: Strings.Home.popularSpotsTitle, style: .titleM, color: .tabiTextPrimary)
+            TabiLabel(title: Strings.Home.popularSpotsTitle, style: .titleS, color: .tabiTextPrimary)
 
             ScrollView(.horizontal) {
                 HStack(spacing: 14) {

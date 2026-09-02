@@ -13,15 +13,18 @@ public struct TabiNavigationBar<Trailing: View>: View {
 
     private let subtitle: String?
     private let title: String
+    private let titleStyle: TypographyStyle
     private let trailing: Trailing
 
     public init(
         subtitle: String? = nil,
         title: String,
+        titleStyle: TypographyStyle = .titleL,
         @ViewBuilder trailing: () -> Trailing = { EmptyView() }
     ) {
         self.subtitle = subtitle
         self.title = title
+        self.titleStyle = titleStyle
         self.trailing = trailing()
     }
 
@@ -32,7 +35,7 @@ public struct TabiNavigationBar<Trailing: View>: View {
                     TabiLabel(title: subtitle, style: .bodyMBold, color: .tabiTextPrimary)
                 }
 
-                TabiLabel(title: self.title, style: .titleL, color: .tabiTextPrimary)
+                TabiLabel(title: self.title, style: self.titleStyle, color: .tabiTextPrimary)
             }
 
             Spacer()

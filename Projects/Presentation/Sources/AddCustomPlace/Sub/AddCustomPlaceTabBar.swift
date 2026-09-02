@@ -27,5 +27,6 @@ struct AddCustomPlaceTabBar: View {
                 self.onSelect(.custom)
             }
         }
+        .frame(maxWidth: .infinity)
     }
 }
