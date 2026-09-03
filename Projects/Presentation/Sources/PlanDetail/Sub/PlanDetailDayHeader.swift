@@ -23,6 +23,7 @@ struct PlanDetailDayHeader: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 TabiLabel(title: self.dateTitle, style: .bodyMBold, color: .tabiTextPrimary, lineLimit: 1)
+                    .minimumScaleFactor(0.7)
                 if let spotCountTitle {
                     TabiLabel(title: spotCountTitle, style: .captionM, color: .tabiTextSecondary, lineLimit: 1)
                 }
