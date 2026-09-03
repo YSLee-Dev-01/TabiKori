@@ -59,7 +59,9 @@ struct OnboardingWelcomeStepView: View {
                     LottieView(animation: .named("Congratulations", bundle: ResourceResources.bundle))
                         .playing(loopMode: .loop)
                         .resizable()
+                        .configure(\.contentMode, to: .scaleAspectFill)
                         .frame(width: proxy.size.width, height: proxy.size.height)
+                        .clipped()
                 }
             }
             .ignoresSafeArea()
