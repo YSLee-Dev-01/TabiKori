@@ -6,7 +6,24 @@ import PackageDescription
 
     let packageSettings = PackageSettings(
         // Default is .staticFramework
-        productTypes: ["ComposableArchitecture": .framework]
+        // App/Core, DesignSystem/Presentation 등 서로 다른 경로에서 동시에 링크되는
+        // static product는 최종 빌드 시 리소스 복사 태스크가 중복 스케줄링되어
+        // "Unexpected duplicate tasks" 에러를 유발하므로 dynamic framework로 전환
+        productTypes: [
+            "ComposableArchitecture": .framework,
+            "Kingfisher": .framework,
+            "Firebase": .framework,
+            "FirebaseCore": .framework,
+            "FirebaseCoreInternal": .framework,
+            "FirebaseInstallations": .framework,
+            "FBLPromises": .framework,
+            "GoogleUtilities-Environment": .framework,
+            "GoogleUtilities-Logger": .framework,
+            "GoogleUtilities-NSData": .framework,
+            "GoogleUtilities-UserDefaults": .framework,
+            "nanopb": .framework,
+            "third-party-IsAppEncrypted": .framework
+        ]
     )
 #endif
 
