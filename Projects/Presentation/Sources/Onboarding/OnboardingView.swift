@@ -107,7 +107,8 @@ private extension OnboardingView {
 
         case .planDetail:
             OnboardingPlanDetailHostView(
-                onDayTapped: { self.store.send(.planDetailDayTapped($0)) }
+                onDayTapped: { self.store.send(.planDetailDayTapped($0)) },
+                onFullMapTapped: { self.store.send(.planDetailFullMapButtonTapped) }
             )
 
         case .agreement:

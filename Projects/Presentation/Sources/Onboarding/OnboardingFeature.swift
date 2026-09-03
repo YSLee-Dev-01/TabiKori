@@ -44,6 +44,7 @@ public struct OnboardingFeature: Sendable {
         case detailAddButtonTapped
         case planCardTapped
         case planDetailDayTapped(Int)
+        case planDetailFullMapButtonTapped
         case policyViewButtonTapped
         case policyWebViewDismissed
         case policyRetryTapped
@@ -91,6 +92,10 @@ public struct OnboardingFeature: Sendable {
             case .planDetailDayTapped(let dayIndex):
                 guard state.currentCoachMark == .planDetailDayChip else { return .none }
                 state.planDetailSelectedDayIndex = dayIndex
+                return self.advanceEffect()
+
+            case .planDetailFullMapButtonTapped:
+                guard state.currentCoachMark == .planDetailFullMapButton else { return .none }
                 return self.advanceEffect()
 
             case .policyViewButtonTapped:

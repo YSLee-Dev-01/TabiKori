@@ -43,6 +43,9 @@ struct PlanDetailMapSection: View {
             }
             .accessibilityLabel(Strings.Plan.fullMapButtonAccessibilityLabel)
             .padding(10)
+            // 온보딩 코치마크는 이 버튼(지도 전체보기)을 하이라이트한다. 프로덕션 화면에서는 항상 부착되지만
+            // 온보딩 화면 밖에서는 아무도 이 anchorPreference 값을 읽지 않으므로 동작에 영향이 없다
+            .onboardingHighlight("planDetailFullMapButton")
         }
         .padding(.horizontal, 20)
     }

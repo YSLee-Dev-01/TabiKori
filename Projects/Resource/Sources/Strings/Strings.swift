@@ -27,6 +27,8 @@ public enum Strings {
     public enum KoreanPhrase {}
     public enum Shopping {}
     public enum Widget {}
+    public enum AppUpdate {}
+    public enum Notice {}
 }
 
 public extension Strings.Common {
@@ -108,6 +110,8 @@ public extension Strings.Onboarding {
     static let planCardCoachMark = "日ごとの予定がわかります"
     /// 일정상세 Day 칩 유도 코치마크 문구
     static let planDetailDayChipCoachMark = "日付ごとに確認できます"
+    /// 일정상세 지도 전체보기 버튼 유도 코치마크 문구
+    static let planDetailFullMapButtonCoachMark = "地図を全体表示で確認できます"
     /// 온보딩 웰컴 스텝 제목
     static let welcomeTitle = "タビコリをインストールしていただき、\nありがとうございます🎉"
     /// 온보딩 웰컴 스텝 설명
@@ -780,4 +784,20 @@ public extension Strings.Widget {
     static let phraseEmptyTitle = "表示できるフレーズがありません"
     /// 한국어 사전 위젯 - 미디엄 사이즈 좌측 국기 이모지
     static let phraseFlagEmoji = "🇰🇷"
+}
+
+public extension Strings.AppUpdate {
+    /// 강제 업데이트 Alert 타이틀
+    static let alertTitle = "アップデートのお知らせ"
+    /// 강제 업데이트 Alert 메시지
+    static let alertMessage = "より快適にご利用いただくため、最新バージョンへのアップデートが必要です"
+    /// 강제 업데이트 Alert 업데이트 버튼
+    static let updateButtonTitle = "アップデート"
+}
+
+public extension Strings.Notice {
+    /// 팝업/홈 시트 공지 - 오늘 하루 보지 않기 체크박스 라벨
+    static let doNotShowTodayLabel = "今日はもう表示しない"
+    /// 팝업/홈 시트 공지 - 닫기 버튼
+    static let closeButtonTitle = "閉じる"
 }

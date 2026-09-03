@@ -33,8 +33,21 @@ public struct PlanDetailView: View {
     // 자동 정렬로 인한 최초 진입 시의 day 이동은 애니메이션 없이 즉시 반영되어야 한다
     @State private var hasAppliedInitialDaySelection: Bool = false
 
+    // 단일 일자 뷰(spotList)의 스크롤에 따라 상단 날짜 헤더를 자동으로 숨기는 동작(isDayHeaderHidden)을
+    // 비활성화할지 여부. 온보딩 PlanDetail 스텝(OnboardingPlanDetailHostView)처럼 스크롤 컨테이너가
+    // 전환 애니메이션과 함께 새로 마운트되는 환경에서는 List의 초기 스크롤 지오메트리 측정이 실제 사용자
+    // 스크롤 없이도 흔들려 헤더가 숨김 상태로 고정되는 문제가 있어, 그 경우에만 true로 전달해 헤더가
+    // 항상 표시되도록 한다. 프로덕션 진입 경로(기본 init)는 기존 동작을 그대로 유지한다
+    private let isDayHeaderAutoHideDisabled: Bool
+
     public init(store: StoreOf<PlanDetailFeature>) {
         self.store = store
+        self.isDayHeaderAutoHideDisabled = false
+    }
+
+    init(store: StoreOf<PlanDetailFeature>, isDayHeaderAutoHideDisabled: Bool) {
+        self.store = store
+        self.isDayHeaderAutoHideDisabled = isDayHeaderAutoHideDisabled
     }
 
     public var body: some View {
@@ -648,6 +661,7 @@ private extension PlanDetailView {
     /// 최상단 부근(오버스크롤 포함)에서는 임계값과 무관하게 항상 표시해, 스크롤을 끝까지 올렸을 때
     /// 헤더가 숨겨진 채로 남아있지 않도록 한다. 실제로 스크롤 가능한 콘텐츠가 없으면 숨김 로직 자체를 건너뛴다
     func handleSpotListScrollChanged(oldGeometry: SpotListScrollGeometry, newGeometry: SpotListScrollGeometry) {
+        guard self.isDayHeaderAutoHideDisabled == false else { return }
         guard newGeometry.canScroll else {
             self.isDayHeaderHidden = false
             return
