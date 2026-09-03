@@ -71,7 +71,7 @@ public extension Strings.Onboarding {
     /// 관광지 상세 체험 스텝 제목
     static let detailStepTitle = "スポットの詳細を見てみよう"
     /// 관광지 상세 체험 스텝 설명
-    static let detailStepDescription = "スポットを保存したり、旅行日程に追加できます"
+    static let detailStepDescription = "スポットを保存したり、旅行日程に追加したりできます"
     /// 일정 체험 스텝 제목
     static let planStepTitle = "旅行日程を管理しよう"
     /// 일정 체험 스텝 설명
@@ -157,7 +157,7 @@ public extension Strings.Home {
     static let inKoreaBannerSubtitle = "ソウルにいますね！"
     /// 진행중인 플랜이 있을 때 한국 배너 부제목 (%@: 일차)
     nonisolated(unsafe) static let inKoreaBannerOngoingPlanSubtitle: ((String) -> String) = {
-        "\($0) 旅です！"
+        "\($0)の旅です！"
     }
     /// 플랜으로 이동 버튼
     static let moveToPlanButton = "プランへ移動"
@@ -211,7 +211,7 @@ public extension Strings.Tabbar {
     /// 지도
     static let map = "マップ"
     /// 여행 계획
-    static let plan = "旅程"
+    static let plan = "日程"
     /// 저장
     static let bookmark = "保存"
     /// 툴박스
@@ -246,7 +246,7 @@ public extension Strings.Map {
     /// TF 옆 번역 버튼 접근성 라벨
     static let translateSearchButtonAccessibilityLabel = "検索語を韓国語に翻訳して検索"
     /// 검색어 미입력 상태에서 번역 버튼을 눌렀을 때의 안내 Toast 메시지
-    static let translateSearchEmptyQueryGuideMessage = "翻訳ボタンをご利用いただくには、日本語で入力していただけますようお願いいたします"
+    static let translateSearchEmptyQueryGuideMessage = "翻訳ボタンをご利用いただくには、日本語で入力してください"
     /// 검색어가 일본어를 포함하지 않는 상태(예: 한국어 입력)에서 번역 버튼을 눌렀을 때의 안내 Toast 메시지
     static let translateSearchNonJapaneseInputGuideMessage = "この機能は日本語入力時のみご利用いただけます"
     /// 번역 실패 시 노출되는 에러 Toast 메시지
@@ -296,12 +296,12 @@ public extension Strings.Plan {
     /// 빈 상태 제목
     static let emptyTitle = "登録された日程がありません"
     /// 빈 상태 설명
-    static let emptyDescription = "右上の「新規作成」から旅行の日程を追加してみましょう"
+    static let emptyDescription = "右上の＋ボタンから旅行の日程を追加してみましょう"
 
     /// 스팟 빈 상태 제목
     static let spotEmptyTitle = "まだスポットがありません"
     /// 스팟 빈 상태 설명
-    static let spotEmptyDescription = "観光地や飲食店の詳細ページから「日程に追加する」で追加できます"
+    static let spotEmptyDescription = "観光地や飲食店の詳細ページから「日程に追加」で追加できます"
     /// 지도 빈 상태 설명
     static let mapEmptyDescription = "地図に表示するスポットがありません"
     /// 스팟 0건 안내
@@ -436,7 +436,7 @@ public extension Strings.Detail {
     /// 이용시기
     static let infoUseSeason = "利用時期"
     /// 일정에 추가 버튼
-    static let ctaAddToItinerary = "旅程に追加"
+    static let ctaAddToItinerary = "日程に追加"
     /// 지도보기 버튼
     static let viewInMap = "NAVERマップで見る"
     /// 공유 텍스트 - 장소명 접두사
@@ -561,11 +561,11 @@ public extension Strings.Setting {
     /// 데이터 초기화 행 타이틀
     static let dataResetRowTitle = "すべてのデータを初期化"
     /// 데이터 초기화 행 설명
-    static let dataResetRowDescription = "保存したスポット、旅程、最近の検索履歴が削除されます"
+    static let dataResetRowDescription = "保存したスポット、日程、最近の検索履歴が削除されます"
     /// 초기화 확인 Alert 타이틀
     static let dataResetAlertTitle = "データを初期化しますか？"
     /// 초기화 확인 Alert 메시지
-    static let dataResetAlertMessage = "保存済みスポット・旅程・最近の検索履歴が削除されます。この操作は取り消せません。"
+    static let dataResetAlertMessage = "保存済みスポット・日程・最近の検索履歴が削除されます。この操作は取り消せません。"
     /// 초기화 확인 Alert 삭제(확정) 버튼
     static let dataResetAlertConfirmButton = "初期化する"
     /// 초기화 성공 Alert 타이틀
@@ -612,12 +612,12 @@ public extension Strings.ToolBar {
     /// 화면 타이틀 (마스터/저장된 체크리스트 공용)
     static let title = "持ち物リスト"
     /// 플랜에 전체 추가 버튼
-    static let saveToPlanButton = "すべて旅程に追加"
+    static let saveToPlanButton = "すべて日程に追加"
     /// 마스터 리스트 로드 실패 설명
     static let loadFailedDescription = "リストを読み込めませんでした"
 
     /// 개별 추가 안내 문구 (리스트 상단)
-    static let individualAddGuideDescription = "アイテムをタップすると、その項目だけ旅程に追加できます"
+    static let individualAddGuideDescription = "アイテムをタップすると、その項目だけ日程に追加できます"
 
     /// 준비물 빈 상태 제목 (마스터 리스트 0건)
     static let itemEmptyTitle = "登録された持ち物がありません"
@@ -625,16 +625,16 @@ public extension Strings.ToolBar {
     static let itemEmptyDescription = "しばらくしてから再度お試しください"
 
     /// 플랜 선택 시트 타이틀
-    static let planPickerTitle = "保存する旅程を選択"
+    static let planPickerTitle = "保存する日程を選択"
     /// 플랜 선택 시트 빈 상태 제목 (플랜 0건)
     static let planPickerEmptyTitle = "登録された日程がありません"
     /// 플랜 선택 시트 빈 상태 설명 (플랜 0건)
-    static let planPickerEmptyDescription = "先に旅程を作成してください"
+    static let planPickerEmptyDescription = "先に日程を作成してください"
 
     /// 덮어쓰기 확인 알림 타이틀
     static let overwriteAlertTitle = "持ち物リストを上書きしますか？"
     /// 덮어쓰기 확인 알림 메시지
-    static let overwriteAlertMessage = "この旅程には既に持ち物リストが保存されています。上書きすると、チェック状態を含む既存のリストは削除されます。"
+    static let overwriteAlertMessage = "この日程には既に持ち物リストが保存されています。上書きすると、チェック状態を含む既存のリストは削除されます。"
     /// 덮어쓰기 확인 버튼
     static let overwriteAlertConfirm = "上書きする"
     /// 덮어쓰기 알림 취소 버튼
@@ -651,7 +651,7 @@ public extension Strings.ToolBar {
     /// 저장된 체크리스트 빈 상태 제목 (아직 저장 안 됨)
     static let savedEmptyTitle = "持ち物リストがまだありません"
     /// 저장된 체크리스트 빈 상태 설명 (아직 저장 안 됨)
-    static let savedEmptyDescription = "ツールタブの持ち物リストから、この旅程に保存できます"
+    static let savedEmptyDescription = "ツールタブの持ち物リストから、この日程に保存できます"
     /// 완료 개수 표시 (%d: 완료 개수, %d: 전체 개수)
     nonisolated(unsafe) static let checkedCountTitle: ((Int, Int) -> String) = { checked, total in
         "\(checked)/\(total) 完了"
@@ -755,12 +755,12 @@ public extension Strings.Shopping {
     /// 플랜 저장 시 덮어쓰기 확인 알림 타이틀
     static let overwriteAlertTitle = "お買い物リストを上書きしますか？"
     /// 플랜 저장 시 덮어쓰기 확인 알림 메시지
-    static let overwriteAlertMessage = "この旅程には既にお買い物リストが保存されています。上書きすると、チェック状態を含む既存のリストは削除されます。"
+    static let overwriteAlertMessage = "この日程には既にお買い物リストが保存されています。上書きすると、チェック状態を含む既存のリストは削除されます。"
 }
 
 public extension Strings.Widget {
     /// 플랜 위젯 갤러리 표시명
-    static let planDisplayName = "旅程"
+    static let planDisplayName = "日程"
     /// 플랜 위젯 갤러리 설명
     static let planDescription = "直近の旅行日程をホーム画面で確認できます"
     /// 플랜 위젯 - 오늘 시작 표기
