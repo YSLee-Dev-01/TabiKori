@@ -302,7 +302,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "종료 시각"
+            "value": "종료 시간"
           }
         }
       }
@@ -319,7 +319,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "시각 저장 안 함"
+            "value": "시간 저장 안 함"
           }
         }
       }
@@ -353,7 +353,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "시작 시각"
+            "value": "시작 시간"
           }
         }
       }
@@ -914,7 +914,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "정기휴무일"
+            "value": "휴무일"
           }
         }
       }
@@ -1254,7 +1254,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "여행을 더 즐겁게 즐기려면 일정을 만들어보세요"
+            "value": "여행 계획을 세워보세요!"
           }
         }
       }
@@ -1509,7 +1509,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "인기 관광 장소"
+            "value": "추천 여행지"
           }
         }
       }
