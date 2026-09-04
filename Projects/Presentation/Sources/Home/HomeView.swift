@@ -610,7 +610,9 @@ fileprivate extension HomeView {
                 }
 
                 TabiLabel(title: region.jaTitle, style: .bodyMBold, color: .tabiTextPrimary)
-                TabiLabel(title: region.koTitle, style: .captionM, color: .tabiTextSecondary)
+                if let koTitle = region.koTitle {
+                    TabiLabel(title: koTitle, style: .captionM, color: .tabiTextSecondary)
+                }
             }
         }
         .buttonStyle(TabiPressStyle())

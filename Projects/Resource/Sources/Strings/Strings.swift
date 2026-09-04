@@ -295,19 +295,33 @@ public extension Strings.Home {
 
 public extension Strings.Region {
     /// 서울
-    static let seoul = "ソウル"
+    static var seoul: String {
+        String(localized: "Region.seoul", defaultValue: "ソウル", table: "Localizable", bundle: .module)
+    }
     /// 부산
-    static let busan = "釜山"
+    static var busan: String {
+        String(localized: "Region.busan", defaultValue: "釜山", table: "Localizable", bundle: .module)
+    }
     /// 제주
-    static let jeju = "済州"
+    static var jeju: String {
+        String(localized: "Region.jeju", defaultValue: "済州", table: "Localizable", bundle: .module)
+    }
     /// 경주
-    static let gyeongju = "慶州"
+    static var gyeongju: String {
+        String(localized: "Region.gyeongju", defaultValue: "慶州", table: "Localizable", bundle: .module)
+    }
     /// 여수
-    static let yeosu = "麗水"
+    static var yeosu: String {
+        String(localized: "Region.yeosu", defaultValue: "麗水", table: "Localizable", bundle: .module)
+    }
     /// 강릉
-    static let gangneung = "江陵"
+    static var gangneung: String {
+        String(localized: "Region.gangneung", defaultValue: "江陵", table: "Localizable", bundle: .module)
+    }
     /// 전주
-    static let jeonju = "全州"
+    static var jeonju: String {
+        String(localized: "Region.jeonju", defaultValue: "全州", table: "Localizable", bundle: .module)
+    }
 
     /// 서울 (한국어)
     static let seoulKo = "서울"
@@ -324,7 +338,9 @@ public extension Strings.Region {
     /// 전주 (한국어)
     static let jeonjuKo = "전주"
     /// 기타
-    static let etc = "その他"
+    static var etc: String {
+        String(localized: "Region.etc", defaultValue: "その他", table: "Localizable", bundle: .module)
+    }
     /// 기타 (한국어)
     static let etcKo = "기타"
 }

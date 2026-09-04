@@ -506,7 +506,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "장소 %lld곳을 저장했어요"
+            "value": "%lld곳이 저장됨"
           }
         }
       }
@@ -523,7 +523,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "저장됨"
+            "value": "북마크"
           }
         }
       }
@@ -1203,7 +1203,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld월에 진행하는"
+            "value": "%lld월에 진행하고 있는"
           }
         }
       }
@@ -2002,7 +2002,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "장소 검색"
+            "value": "검색"
           }
         }
       }
@@ -2886,7 +2886,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld일간"
+            "value": "%lld일 일정"
           }
         }
       }
@@ -3447,7 +3447,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "장소 추가"
+            "value": "추가"
           }
         }
       }
@@ -3481,7 +3481,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "장소 %lld곳이 추가되어 있어요"
+            "value": "장소 %lld곳 추가됨"
           }
         }
       }
@@ -3566,7 +3566,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "관광지나 음식점 상세 페이지에서 '일정에 추가'로 담을 수 있어요"
+            "value": "상세 페이지에서 일정을 추가할 수 있어요!"
           }
         }
       }
@@ -3634,7 +3634,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "총 %lld곳"
+            "value": "전체 %lld 곳"
           }
         }
       }
@@ -4841,7 +4841,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "툴박스"
+            "value": "ToolBox"
           }
         }
       }
@@ -4977,7 +4977,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이 일정에는 이미 준비물 목록이 저장되어 있어요. 덮어쓰면 체크 상태를 포함한 기존 목록이 삭제돼요."
+            "value": "이 일정에는 이미 준비물이 저장되어 있어요. 덮어쓰면 체크 상태를 포함한 기존 목록이 삭제돼요."
           }
         }
       }
@@ -4994,7 +4994,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "준비물 목록을 덮어쓸까요?"
+            "value": "준비물을 덮어쓸까요?"
           }
         }
       }
@@ -5011,7 +5011,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "준비물 목록"
+            "value": "준비물"
           }
         }
       }
@@ -5130,7 +5130,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "툴 탭의 준비물 목록에서 이 일정에 저장할 수 있어요"
+            "value": "툴 탭의 준비물에서 이 일정에 저장할 수 있어요"
           }
         }
       }
@@ -5147,7 +5147,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "아직 준비물 목록이 없어요"
+            "value": "아직 준비물이 없어요"
           }
         }
       }
@@ -5181,7 +5181,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "준비물 목록"
+            "value": "준비물"
           }
         }
       }
@@ -5335,6 +5335,142 @@
           "stringUnit": {
             "state": "translated",
             "value": "오늘부터"
+          }
+        }
+      }
+    },
+    "Region.seoul": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ソウル"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "서울"
+          }
+        }
+      }
+    },
+    "Region.busan": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "釜山"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "부산"
+          }
+        }
+      }
+    },
+    "Region.jeju": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "済州"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제주"
+          }
+        }
+      }
+    },
+    "Region.gyeongju": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "慶州"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경주"
+          }
+        }
+      }
+    },
+    "Region.yeosu": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "麗水"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여수"
+          }
+        }
+      }
+    },
+    "Region.gangneung": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "江陵"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "강릉"
+          }
+        }
+      }
+    },
+    "Region.jeonju": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全州"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전주"
+          }
+        }
+      }
+    },
+    "Region.etc": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "その他"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기타"
           }
         }
       }

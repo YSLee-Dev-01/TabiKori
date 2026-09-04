@@ -25,16 +25,18 @@ extension KoreanRegion {
         }
     }
 
-    var koTitle: String {
+    /// 한국어 발음 캡션. `jaTitle`이 이미 한국어로 로컬라이즈되는 한국어 로케일에서는 중복 표시를 피하기 위해 nil 반환
+    var koTitle: String? {
+        guard Locale.current.language.languageCode != .korean else { return nil }
         switch self {
-        case .seoul: Strings.Region.seoulKo
-        case .busan: Strings.Region.busanKo
-        case .jeju: Strings.Region.jejuKo
-        case .gyeongju: Strings.Region.gyeongjuKo
-        case .yeosu: Strings.Region.yeosuKo
-        case .gangneung: Strings.Region.gangneungKo
-        case .jeonju: Strings.Region.jeonjuKo
-        case .etc: Strings.Region.etcKo
+        case .seoul: return Strings.Region.seoulKo
+        case .busan: return Strings.Region.busanKo
+        case .jeju: return Strings.Region.jejuKo
+        case .gyeongju: return Strings.Region.gyeongjuKo
+        case .yeosu: return Strings.Region.yeosuKo
+        case .gangneung: return Strings.Region.gangneungKo
+        case .jeonju: return Strings.Region.jeonjuKo
+        case .etc: return Strings.Region.etcKo
         }
     }
 

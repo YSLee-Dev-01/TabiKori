@@ -76,7 +76,9 @@ private extension RegionSpotView {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     TabiLabel(title: self.store.region.jaTitle, style: .titleL, color: .tabiTextPrimary)
-                    TabiLabel(title: self.store.region.koTitle, style: .bodyM, color: .tabiTextSecondary)
+                    if let koTitle = self.store.region.koTitle {
+                        TabiLabel(title: koTitle, style: .bodyM, color: .tabiTextSecondary)
+                    }
                 }
             }
             .padding(.horizontal, 20)
