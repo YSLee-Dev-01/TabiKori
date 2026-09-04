@@ -3447,7 +3447,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "추가"
+            "value": "일정 추가"
           }
         }
       }
@@ -3634,7 +3634,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "전체 %lld곳"
+            "value": "총 %lld곳"
           }
         }
       }

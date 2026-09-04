@@ -34,7 +34,7 @@ struct PlanDetailEditView: View {
         }
         .scrollDismissesKeyboard(.immediately)
         .safeAreaBar(edge: .top) {
-            TabiNavigationBar(title: Strings.Plan.editPlanScreenTitle) {
+            TabiNavigationBar(title: Strings.Plan.editPlanScreenTitle, titleStyle: .titleS) {
                 self.closeButton()
             }
             .padding(.top, 20)
