@@ -20,8 +20,8 @@ enum FestivalEndpoint: Endpoint {
 
     var path: String {
         switch self {
-        case .searchFestival: return "/B551011/JpnService2/searchFestival2"
-        case .ldongCode: return "/B551011/JpnService2/ldongCode2"
+        case .searchFestival: return "/B551011/\(self.serviceName)/searchFestival2"
+        case .ldongCode: return "/B551011/\(self.serviceName)/ldongCode2"
         }
     }
 
@@ -64,5 +64,12 @@ enum FestivalEndpoint: Endpoint {
 
     var method: HTTPMethod {
         return .get
+    }
+}
+
+// MARK: - Method
+private extension FestivalEndpoint {
+    var serviceName: String {
+        Locale.current.language.languageCode == .korean ? "KorService2" : "JpnService2"
     }
 }

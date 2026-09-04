@@ -26,12 +26,12 @@ enum TouristSpotEndpoint: Endpoint {
 
     var path: String {
         switch self {
-        case .nearbySpots: return "/B551011/JpnService2/locationBasedList2"
-        case .areaBasedSpots: return "/B551011/JpnService2/areaBasedList2"
-        case .detail: return "/B551011/JpnService2/detailCommon2"
-        case .intro: return "/B551011/JpnService2/detailIntro2"
-        case .images: return "/B551011/JpnService2/detailImage2"
-        case .searchKeyword: return "/B551011/JpnService2/searchKeyword2"
+        case .nearbySpots: return "/B551011/\(self.serviceName)/locationBasedList2"
+        case .areaBasedSpots: return "/B551011/\(self.serviceName)/areaBasedList2"
+        case .detail: return "/B551011/\(self.serviceName)/detailCommon2"
+        case .intro: return "/B551011/\(self.serviceName)/detailIntro2"
+        case .images: return "/B551011/\(self.serviceName)/detailImage2"
+        case .searchKeyword: return "/B551011/\(self.serviceName)/searchKeyword2"
         }
     }
 
@@ -115,5 +115,12 @@ enum TouristSpotEndpoint: Endpoint {
 
     var method: HTTPMethod {
         return .get
+    }
+}
+
+// MARK: - Method
+private extension TouristSpotEndpoint {
+    var serviceName: String {
+        Locale.current.language.languageCode == .korean ? "KorService2" : "JpnService2"
     }
 }
