@@ -5,21 +5,21 @@ import Resource
 extension Date {
     var homeDateTitle: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
-        formatter.dateFormat = "M月d日(E)"
+        formatter.locale = Locale.current
+        formatter.dateFormat = Self.isKoreanLocale ? "M월 d일 (E)" : "M月d日(E)"
         return formatter.string(from: self)
     }
 
     var exchangeRateUpdatedAtTitle: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
-        formatter.dateFormat = "M月d日 HH:mm"
+        formatter.locale = Locale.current
+        formatter.dateFormat = Self.isKoreanLocale ? "M월 d일 HH:mm" : "M月d日 HH:mm"
         return Strings.Home.exchangeRateUpdatedAtTitle(formatter.string(from: self))
     }
 
     var recentSearchDateTitle: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.locale = Locale.current
         let isThisYear = Calendar.current.component(.year, from: self) == Calendar.current.component(.year, from: Date())
         formatter.dateFormat = isThisYear ? "MM.dd (HH:mm)" : "yyyy.MM.dd (HH:mm)"
         return formatter.string(from: self)
@@ -27,7 +27,7 @@ extension Date {
 
     var planPeriodDateTitle: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.locale = Locale.current
         let isThisYear = Calendar.current.component(.year, from: self) == Calendar.current.component(.year, from: Date())
         formatter.dateFormat = isThisYear ? "MM/dd" : "YY/MM/dd"
         return formatter.string(from: self)
@@ -35,29 +35,37 @@ extension Date {
 
     var planDayDateTitle: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
-        formatter.dateFormat = "M月d日"
+        formatter.locale = Locale.current
+        formatter.dateFormat = Self.isKoreanLocale ? "M월 d일" : "M月d日"
         return formatter.string(from: self)
     }
 
     var planDayHeaderTitle: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
-        formatter.dateFormat = "M月d日（E）"
+        formatter.locale = Locale.current
+        formatter.dateFormat = Self.isKoreanLocale ? "M월 d일 (E)" : "M月d日（E）"
         return formatter.string(from: self)
     }
 
     var planSpotTimeTitle: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.locale = Locale.current
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: self)
     }
 
     var festivalPeriodDateTitle: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
+        formatter.locale = Locale.current
         formatter.dateFormat = "M/d"
         return formatter.string(from: self)
+    }
+}
+
+// MARK: - Method
+
+private extension Date {
+    static var isKoreanLocale: Bool {
+        return Locale.current.language.languageCode == .korean
     }
 }

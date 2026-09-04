@@ -156,8 +156,9 @@ private extension TabiRangeCalendar {
 private extension TabiRangeCalendar {
     var monthTitle: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ja_JP")
-        formatter.dateFormat = "yyyy年 M月"
+        formatter.locale = Locale.current
+        let isKorean = Locale.current.language.languageCode == .korean
+        formatter.dateFormat = isKorean ? "yyyy년 M월" : "yyyy年 M月"
         return formatter.string(from: self.displayedMonth)
     }
 
