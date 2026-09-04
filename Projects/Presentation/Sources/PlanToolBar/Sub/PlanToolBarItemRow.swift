@@ -60,6 +60,7 @@ private extension PlanToolBarItemRow {
                 Spacer()
             }
             .animation(.tabiFast, value: self.item.isChecked)
+            .contentShape(Rectangle())
         }
         .buttonStyle(TabiPressStyle())
         .disabled(self.isAdding)

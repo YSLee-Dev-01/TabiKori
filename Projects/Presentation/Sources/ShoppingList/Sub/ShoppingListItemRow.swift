@@ -26,6 +26,7 @@ struct ShoppingListItemRow: View {
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
         }
         .buttonStyle(TabiPressStyle())

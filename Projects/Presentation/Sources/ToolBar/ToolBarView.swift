@@ -144,6 +144,7 @@ private extension ToolBarView {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
+        .contentShape(Rectangle())
     }
 }
 
@@ -227,6 +228,7 @@ private extension ToolBarView {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
+        .contentShape(Rectangle())
     }
 }
 
@@ -289,6 +291,7 @@ private extension ToolBarView {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
+        .contentShape(Rectangle())
     }
 }
 
