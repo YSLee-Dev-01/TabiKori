@@ -41,6 +41,21 @@ public struct BookmarkView: View {
 // MARK: - View
 
 private extension BookmarkView {
+    /// 로케일이 한국어이고 한국어 표기가 존재하면 한국어를 메인(볼드)으로 표시
+    func mainTitle(of touristSpot: TouristSpot) -> String {
+        if Locale.isKoreanLanguage, let koreanTitle = touristSpot.koreanTitle {
+            return koreanTitle
+        }
+        return touristSpot.japaneseTitle
+    }
+
+    func subTitle(of touristSpot: TouristSpot) -> String? {
+        if Locale.isKoreanLanguage, touristSpot.koreanTitle != nil {
+            return touristSpot.japaneseTitle
+        }
+        return touristSpot.koreanTitle
+    }
+
     func addCustomPlaceButton() -> some View {
         TabiGlassIconButton(systemName: "plus", size: .ml, foregroundColor: .tabiPrimary) {
             self.store.send(.addCustomPlaceButtonTapped)
@@ -92,8 +107,8 @@ private extension BookmarkView {
                         ForEach(self.store.filteredBookmarks) { bookmark in
                             TabiSpotRow(
                                 thumbnailURL: bookmark.touristSpot.thumbnailURL,
-                                japaneseTitle: bookmark.touristSpot.japaneseTitle,
-                                koreanTitle: bookmark.touristSpot.koreanTitle,
+                                japaneseTitle: self.mainTitle(of: bookmark.touristSpot),
+                                koreanTitle: self.subTitle(of: bookmark.touristSpot),
                                 address: bookmark.touristSpot.address,
                                 tagTitle: bookmark.touristSpot.contentType.label,
                                 tagColor: bookmark.touristSpot.contentType.color,
