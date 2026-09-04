@@ -27,7 +27,9 @@ public struct SettingView: View {
             VStack(spacing: 20) {
                 self.gpsSection()
                 self.planDetailSection()
-                self.searchSection()
+                if Locale.isKoreanLanguage == false {
+                    self.searchSection()
+                }
                 self.dataResetSection()
                 self.etcSection()
             }
