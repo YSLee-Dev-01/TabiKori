@@ -57,9 +57,14 @@ public struct SettingFeature: Sendable {
         case resetCompleted
         case info(PresentationAction<SettingInfoFeature.Action>)
         case alert(PresentationAction<Alert>)
+        case delegate(Delegate)
 
         public enum Alert: Equatable {
             case resetConfirmed
+        }
+
+        public enum Delegate: Equatable {
+            case resetCompleted
         }
     }
 
@@ -199,6 +204,9 @@ public struct SettingFeature: Sendable {
                 return .none
 
             case .resetCompleted:
+                return .send(.delegate(.resetCompleted))
+
+            case .delegate:
                 return .none
 
             case .info:
