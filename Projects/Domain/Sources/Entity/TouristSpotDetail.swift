@@ -8,6 +8,8 @@
 
 import Foundation
 
+import Core
+
 public struct TouristSpotDetail: Equatable, Sendable {
     public let id: String
     public let title: String
@@ -42,7 +44,7 @@ public struct TouristSpotDetail: Equatable, Sendable {
     }
 
     public var imageURL: URL? {
-        return URL(string: self.imageURLString ?? "")
+        return self.imageURLString?.secureURL
     }
 
     public var homepageURL: URL? {

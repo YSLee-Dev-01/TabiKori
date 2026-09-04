@@ -8,6 +8,8 @@
 
 import Foundation
 
+import Core
+
 public struct TouristSpot: Equatable, Sendable, Identifiable {
     public let id: String
     public let title: String
@@ -41,14 +43,8 @@ public struct TouristSpot: Equatable, Sendable, Identifiable {
         self.address = address
     }
 
-    /// 한국관광공사 API가 반환하는 이미지 URL이 http 스킴이면, ATS(App Transport Security) 정책에 막혀
-    /// 로드되지 않으므로 https로 승격해 사용한다
     public var thumbnailURL: URL? {
-        guard let thumbnailURLString else { return nil }
-        guard thumbnailURLString.hasPrefix("http://") else {
-            return URL(string: thumbnailURLString)
-        }
-        return URL(string: "https://" + thumbnailURLString.dropFirst("http://".count))
+        return self.thumbnailURLString?.secureURL
     }
 
     /// isCustom과 isStation은 동시에 true가 될 수 없음 — 원격 상세 API 호출을 스킵해야 하는지 여부

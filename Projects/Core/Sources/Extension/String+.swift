@@ -56,4 +56,30 @@ public extension String {
         let range = NSRange(self.startIndex..., in: self)
         return japaneseRegex.firstMatch(in: self, range: range) != nil
     }
+
+    /// http 스킴 URL 문자열을 https로 승격해 URL로 변환한다. ATS(App Transport Security) 정책 때문에
+    /// http로는 로드되지 않는 외부 API의 이미지 URL(예: 한국관광공사 API)을 안전하게 사용하기 위함
+    var secureURL: URL? {
+        guard self.hasPrefix("http://") else {
+            return URL(string: self)
+        }
+        return URL(string: "https://" + self.dropFirst("http://".count))
+    }
+
+    /// semantic 버전 문자열을 세그먼트(".") 단위 숫자로 비교해 self가 other보다 낮은 버전인지 판별
+    /// (문자열 사전식 비교와 달리 "1.10.0"이 "1.9.0"보다 높은 버전으로 올바르게 비교됨)
+    func isVersionLower(than other: String) -> Bool {
+        let selfComponents = self.split(separator: ".").map { Int($0) ?? 0 }
+        let otherComponents = other.split(separator: ".").map { Int($0) ?? 0 }
+        let maxCount = max(selfComponents.count, otherComponents.count)
+
+        for index in 0..<maxCount {
+            let selfValue = index < selfComponents.count ? selfComponents[index] : 0
+            let otherValue = index < otherComponents.count ? otherComponents[index] : 0
+            if selfValue != otherValue {
+                return selfValue < otherValue
+            }
+        }
+        return false
+    }
 }
