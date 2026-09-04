@@ -35,10 +35,12 @@ extension ShoppingItemRepository: ShoppingItemRepositoryProtocol {
             do {
                 return try snapshot.decodeOrderedList(listKey: "items", order: { $0.order }) { id, dict in
                     guard let order = (dict["order"] as? NSNumber)?.intValue,
-                          let title = dict["title"] as? String else {
+                          let titleDict = dict["title"] as? [String: Any],
+                          let title = titleDict.localizedStringValue else {
                         return nil
                     }
-                    return ShoppingItem(id: id, order: order, title: title, note: dict["note"] as? String)
+                    let noteDict = dict["note"] as? [String: Any]
+                    return ShoppingItem(id: id, order: order, title: title, note: noteDict?.localizedStringValue)
                 }
             } catch {
                 AppLogger.network.log(.error, "추천 쇼핑 리스트 조회 실패: TabiKori/shoppingItems/items 데이터 없음")
