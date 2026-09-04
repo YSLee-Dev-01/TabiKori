@@ -13,7 +13,7 @@ public struct TabiPressStyle: ButtonStyle {
 
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.92 : 1)
+            .scaleEffect(configuration.isPressed ? 0.95 : 1)
             .geometryGroup()
             .animation(
                 configuration.isPressed ? .none : .spring(response: 0.4, dampingFraction: 0.6),
