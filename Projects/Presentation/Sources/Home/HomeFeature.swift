@@ -23,6 +23,7 @@ public struct HomeFeature: Sendable {
     @Dependency(\.touristSpotUseCase) var touristSpotUseCase
     @Dependency(\.festivalUseCase) var festivalUseCase
     @Dependency(\.travelPlanUseCase) var travelPlanUseCase
+    @Dependency(\.homeSheetAnnounceUseCase) var homeSheetAnnounceUseCase
     @Dependency(\.analyticsCenter) var analyticsCenter
 
     private let nearbySpotRadiusMeters = TouristSpotSearchRadius.nearbyMeters
@@ -45,8 +46,11 @@ public struct HomeFeature: Sendable {
         var exchangeRateUpdatedAtTitle: String = ""
         var ongoingMatchedPlan: TravelPlan?
         var ongoingMatchedPlanDayIndex: Int = 0
+        var activeHomeAnnouncement: Announcement? = nil
+        var homeAnnouncementSheetItem: Announcement? = nil
         fileprivate var krwToJPYRate: Double = 0
         fileprivate var hasLoadedInitialFestivals: Bool = false
+        fileprivate var hasLoadedInitialHomeAnnouncement: Bool = false
 
         public init() {}
     }
@@ -58,11 +62,13 @@ public struct HomeFeature: Sendable {
         case locationPermissionResult(LocationAuthorizationStatus)
         case regionResult(TravelRegion)
         case exchangeRateResult(KRWToJPYRate)
+        case nearbyCoordinateResolved(Coordinate)
         case nearbyTouristSpotsResult([TouristSpot])
         case nearbyRestaurantsResult([TouristSpot])
         case festivalsResult([Festival])
         case festivalsFailed
         case travelPlansResult([TravelPlan])
+        case homeSheetAnnounceResult(Announcement?)
         case planCreateButtonTapped
         case nearbySpotTapped(TouristSpot)
         case festivalTapped(Festival)
@@ -76,6 +82,8 @@ public struct HomeFeature: Sendable {
         case regionCardTapped(KoreanRegion)
         case moveToPlanButtonTapped
         case moveToToolBoxButtonTapped
+        case homeAnnouncementCardTapped
+        case homeAnnouncementSheetDismissed
     }
 
     public init() {}
@@ -124,7 +132,15 @@ public struct HomeFeature: Sendable {
                     festivalEffect = self.fetchFestivalsEffect()
                 }
 
-                return .merge(locationEffect, exchangeRateEffect, festivalEffect)
+                let homeAnnouncementEffect: Effect<Action>
+                if state.hasLoadedInitialHomeAnnouncement {
+                    homeAnnouncementEffect = .none
+                } else {
+                    state.hasLoadedInitialHomeAnnouncement = true
+                    homeAnnouncementEffect = self.fetchHomeSheetAnnounceEffect()
+                }
+
+                return .merge(locationEffect, exchangeRateEffect, festivalEffect, homeAnnouncementEffect)
 
             case .refreshTriggered:
                 state.locationStatus = self.locationUseCase.checkAuthorization()
@@ -144,6 +160,8 @@ public struct HomeFeature: Sendable {
                     guard state.locationStatus == .allowed else { return festivalEffect }
                     return .merge(festivalEffect, self.fetchRegionEffect())
                 }
+                state.isLoadingTouristSpots = true
+                state.isLoadingRestaurants = true
                 return .merge(self.fetchNearbySpotsEffect(), festivalEffect)
 
             case .requestLocationPermission:
@@ -190,6 +208,12 @@ public struct HomeFeature: Sendable {
                     state.jpyAmountText = String(format: "%.1f", krw * krwToJPYRate.rate)
                 }
                 return .none
+
+            case .nearbyCoordinateResolved(let coordinate):
+                return .merge(
+                    self.fetchNearbyTouristSpotsEffect(coordinate: coordinate),
+                    self.fetchNearbyRestaurantsEffect(coordinate: coordinate)
+                )
 
             case .nearbyTouristSpotsResult(let spots):
                 state.nearbyTouristSpots = spots
@@ -281,6 +305,18 @@ public struct HomeFeature: Sendable {
             case .moveToToolBoxButtonTapped:
                 self.analyticsCenter.log(.currencyWidgetTapped)
                 return .none
+
+            case .homeSheetAnnounceResult(let announcement):
+                state.activeHomeAnnouncement = announcement
+                return .none
+
+            case .homeAnnouncementCardTapped:
+                state.homeAnnouncementSheetItem = state.activeHomeAnnouncement
+                return .none
+
+            case .homeAnnouncementSheetDismissed:
+                state.homeAnnouncementSheetItem = nil
+                return .none
             }
         }
     }
@@ -290,6 +326,8 @@ public struct HomeFeature: Sendable {
 
 private enum CancelID {
     case categoryCoordinate
+    case nearbyTouristSpots
+    case nearbyRestaurants
 }
 
 // MARK: - Method
@@ -306,40 +344,76 @@ private extension HomeFeature {
         }
     }
 
+    /// 가까운 관광지/음식점을 병렬로 조회한다. 좌표는 한 번만 조회해 두 요청에 공유한다
+    /// (LocationRepository.fetchCurrentCoordinate()는 동시에 하나의 요청만 진행 가능해, 좌표 조회까지
+    /// 각 이펙트에서 독립적으로 하면 둘 중 하나가 항상 "이미 위치 요청이 진행 중입니다" 에러로 실패한다).
+    /// 좌표 조회 이후의 관광지/음식점 조회는 별개의 이펙트로 분리해 취소 스코프를 독립적으로 관리하는
+    /// 것은 물론, 한쪽 요청이 실패하더라도 다른 쪽이 이미 보낸 결과를 되돌리지 않도록 한다.
     func fetchNearbySpotsEffect() -> Effect<Action> {
+        .run { [locationUseCase = self.locationUseCase] send in
+            do {
+                let coordinate = try await locationUseCase.fetchCurrentCoordinate()
+                await send(.nearbyCoordinateResolved(coordinate))
+            } catch {
+                guard !Task.isCancelled else {
+                    AppLogger.view.log(.debug, "주변 관광정보 좌표 조회 취소됨")
+                    return
+                }
+                await send(.nearbyTouristSpotsResult([]))
+                await send(.nearbyRestaurantsResult([]))
+                AppLogger.view.log(.error, "주변 관광정보 좌표 조회 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func fetchNearbyTouristSpotsEffect(coordinate: Coordinate) -> Effect<Action> {
         .run { [
-            locationUseCase = self.locationUseCase,
             touristSpotUseCase = self.touristSpotUseCase,
             radius = self.nearbySpotRadiusMeters
         ] send in
             do {
-                let coordinate = try await locationUseCase.fetchCurrentCoordinate()
-
-                async let touristSpots = touristSpotUseCase.fetchNearbySpots(
+                let spots = try await touristSpotUseCase.fetchNearbySpots(
                     contentType: .sightseeing,
                     coordinate: coordinate,
                     radiusMeters: radius,
                     pageNo: 1
                 )
-                async let restaurants = touristSpotUseCase.fetchNearbySpots(
+                await send(.nearbyTouristSpotsResult(spots))
+            } catch {
+                guard !Task.isCancelled else {
+                    AppLogger.view.log(.debug, "주변 관광지 조회 취소됨")
+                    return
+                }
+                await send(.nearbyTouristSpotsResult([]))
+                AppLogger.view.log(.error, "주변 관광지 조회 실패: \(error.localizedDescription)")
+            }
+        }
+        .cancellable(id: CancelID.nearbyTouristSpots, cancelInFlight: true)
+    }
+
+    func fetchNearbyRestaurantsEffect(coordinate: Coordinate) -> Effect<Action> {
+        .run { [
+            touristSpotUseCase = self.touristSpotUseCase,
+            radius = self.nearbySpotRadiusMeters
+        ] send in
+            do {
+                let spots = try await touristSpotUseCase.fetchNearbySpots(
                     contentType: .food,
                     coordinate: coordinate,
                     radiusMeters: radius,
                     pageNo: 1
                 )
-
-                await send(.nearbyTouristSpotsResult(try await touristSpots))
-                await send(.nearbyRestaurantsResult(try await restaurants))
+                await send(.nearbyRestaurantsResult(spots))
             } catch {
                 guard !Task.isCancelled else {
-                    AppLogger.view.log(.debug, "주변 관광정보 조회 취소됨")
+                    AppLogger.view.log(.debug, "주변 음식점 조회 취소됨")
                     return
                 }
-                await send(.nearbyTouristSpotsResult([]))
                 await send(.nearbyRestaurantsResult([]))
-                AppLogger.view.log(.error, "주변 관광정보 조회 실패: \(error.localizedDescription)")
+                AppLogger.view.log(.error, "주변 음식점 조회 실패: \(error.localizedDescription)")
             }
         }
+        .cancellable(id: CancelID.nearbyRestaurants, cancelInFlight: true)
     }
 
     func fetchFestivalsEffect() -> Effect<Action> {
@@ -376,6 +450,22 @@ private extension HomeFeature {
                 }
                 await send(.travelPlansResult([]))
                 AppLogger.view.log(.error, "여행 플랜 조회 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func fetchHomeSheetAnnounceEffect() -> Effect<Action> {
+        .run { [homeSheetAnnounceUseCase = self.homeSheetAnnounceUseCase] send in
+            do {
+                let announcement = try await homeSheetAnnounceUseCase.fetchActiveAnnouncement()
+                await send(.homeSheetAnnounceResult(announcement))
+            } catch {
+                guard !Task.isCancelled else {
+                    AppLogger.view.log(.debug, "홈 시트 공지 조회 취소됨")
+                    return
+                }
+                await send(.homeSheetAnnounceResult(nil))
+                AppLogger.view.log(.error, "홈 시트 공지 조회 실패: \(error.localizedDescription)")
             }
         }
     }
