@@ -50,9 +50,12 @@ struct PlanDetailAddSpotSearchListView: View {
             }
             .padding(.horizontal, 20)
 
-            TabiLabel(title: Strings.Map.searchLanguageGuide, style: .captionM, color: .tabiTextSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 20)
+            // 한국어·영어 검색 권장 문구이므로, 시스템 로케일이 이미 한국어인 사용자에게는 노출하지 않는다
+            if Locale.isKoreanLanguage == false {
+                TabiLabel(title: Strings.Map.searchLanguageGuide, style: .captionM, color: .tabiTextSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+            }
 
             ScrollView {
                 LazyVStack(spacing: 0) {

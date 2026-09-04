@@ -199,11 +199,14 @@ private extension AddCustomPlaceView {
             .onSubmit {
                 self.store.send(.addressSubmitted)
             }
-            TabiLabel(
-                title: Strings.AddCustomPlace.addressKoreanSearchGuide,
-                style: .captionM,
-                color: .tabiTextSecondary
-            )
+            // 주소를 한국어로 검색하라는 안내이므로, 시스템 로케일이 이미 한국어인 사용자에게는 노출하지 않는다
+            if Locale.isKoreanLanguage == false {
+                TabiLabel(
+                    title: Strings.AddCustomPlace.addressKoreanSearchGuide,
+                    style: .captionM,
+                    color: .tabiTextSecondary
+                )
+            }
             if self.store.isAddressPreviewLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity)
@@ -295,8 +298,11 @@ private extension AddCustomPlaceView {
     func searchTabContent() -> some View {
         VStack(alignment: .leading, spacing: 16) {
             self.searchField()
-            TabiLabel(title: Strings.Map.searchLanguageGuide, style: .captionM, color: .tabiTextSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            // 한국어·영어 검색 권장 문구이므로, 시스템 로케일이 이미 한국어인 사용자에게는 노출하지 않는다
+            if Locale.isKoreanLanguage == false {
+                TabiLabel(title: Strings.Map.searchLanguageGuide, style: .captionM, color: .tabiTextSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
 
             // 검색 결과 리스트는 상단 검색창/안내 문구와 분리된 자체 ScrollView에 둔다.
             // 화면 전체를 하나의 ScrollView로 감쌀 경우, 검색 중 키보드가 열린 상태에서 스크롤을 시작하면

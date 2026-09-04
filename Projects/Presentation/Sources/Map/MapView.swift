@@ -624,19 +624,23 @@ private extension MapView {
         }
     }
 
+    @ViewBuilder
     func languageGuideBadge() -> some View {
-        HStack {
-            Spacer(minLength: 0)
-            TabiLabel(
-                title: Strings.Map.searchLanguageGuide,
-                style: .captionM,
-                color: .tabiTextSecondary,
-                alignment: .center
-            )
-            .padding(.vertical, 10)
-            .padding(.horizontal, 16)
-            .glassEffect(.regular, in: .rect(cornerRadius: .tabiRadiusSm))
-            Spacer(minLength: 0)
+        // 한국어·영어 검색 권장 문구이므로, 시스템 로케일이 이미 한국어인 사용자에게는 노출하지 않는다
+        if Locale.isKoreanLanguage == false {
+            HStack {
+                Spacer(minLength: 0)
+                TabiLabel(
+                    title: Strings.Map.searchLanguageGuide,
+                    style: .captionM,
+                    color: .tabiTextSecondary,
+                    alignment: .center
+                )
+                .padding(.vertical, 10)
+                .padding(.horizontal, 16)
+                .glassEffect(.regular, in: .rect(cornerRadius: .tabiRadiusSm))
+                Spacer(minLength: 0)
+            }
         }
     }
 

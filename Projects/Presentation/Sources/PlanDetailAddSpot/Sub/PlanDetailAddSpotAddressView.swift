@@ -143,11 +143,14 @@ private extension PlanDetailAddSpotAddressView {
             .onSubmit {
                 self.onAddressSubmit()
             }
-            TabiLabel(
-                title: Strings.AddCustomPlace.addressKoreanSearchGuide,
-                style: .captionM,
-                color: .tabiTextSecondary
-            )
+            // 주소를 한국어로 검색하라는 안내이므로, 시스템 로케일이 이미 한국어인 사용자에게는 노출하지 않는다
+            if Locale.isKoreanLanguage == false {
+                TabiLabel(
+                    title: Strings.AddCustomPlace.addressKoreanSearchGuide,
+                    style: .captionM,
+                    color: .tabiTextSecondary
+                )
+            }
             if self.isGeocoding {
                 ProgressView()
                     .frame(maxWidth: .infinity)

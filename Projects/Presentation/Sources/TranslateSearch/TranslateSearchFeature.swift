@@ -68,7 +68,8 @@ public struct TranslateSearchFeature: Sendable {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                state.isAutoTranslateSearchEnabled = self.autoTranslateSearchUseCase.isEnabled()
+                // 일본어 → 한국어 번역 기능이므로, 시스템 로케일이 이미 한국어인 사용자에게는 의미가 없다
+                state.isAutoTranslateSearchEnabled = self.autoTranslateSearchUseCase.isEnabled() && Locale.isKoreanLanguage == false
                 return self.subscribeToastActionTapEffect(instanceId: state.subscriptionInstanceId)
 
             case .reset:
