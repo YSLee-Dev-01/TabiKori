@@ -58,6 +58,7 @@ public struct PlanDetailAddSpotFeature: Sendable {
         var addressSubwayResults: [SubwayStation] = []
         var addressMatchedStation: TouristSpot?
         fileprivate let existingDetail: TravelPlanDetail?
+        fileprivate var lastSubmittedSearchKeyword: String?
         /// 현재 대기 중이거나 가장 최근에 요청된 번역이 "検索" 탭(searchKeyword)이 아닌 "カスタム" 탭 지하철 검색(addressTitle)에서
         /// 시작된 것인지 구분한다. `translateSearch`가 두 탭에서 공유하는 단일 Scope이므로, 번역 결과(`retranslatedQueryReady`)나
         /// Toast 액션 확인(`toastActionConfirmed`)이 돌아왔을 때 어느 탭의 검색어를 갱신·재검색해야 하는지 이 값으로 판단한다
@@ -193,6 +194,11 @@ public struct PlanDetailAddSpotFeature: Sendable {
             case .searchSubmitted:
                 let keyword = state.searchKeyword.trimmingCharacters(in: .whitespaces)
                 guard keyword.isEmpty == false else { return .none }
+                // 검색어 변경 없이 동일한 검색어로 다시 제출된 경우, 결과가 이미 표시된 상태(hasSearched)라면
+                // 결과 초기화·로딩 인디케이터·재요청 없이 그대로 유지한다. 검색어가 바뀌면 keyword 값 자체가
+                // lastSubmittedSearchKeyword와 달라지므로, 이 가드는 오직 "완전히 동일한 검색어 재제출"만 걸러낸다
+                guard state.hasSearched == false || keyword != state.lastSubmittedSearchKeyword else { return .none }
+                state.lastSubmittedSearchKeyword = keyword
                 state.isSearchLoading = true
                 state.hasSearched = true
                 return .merge(

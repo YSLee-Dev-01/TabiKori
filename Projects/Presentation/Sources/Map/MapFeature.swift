@@ -57,6 +57,7 @@ public struct MapFeature: Sendable {
         fileprivate var activeCategoryCoordinate: Coordinate?
         fileprivate var activeCategoryRadiusMeters: Int?
         fileprivate var isTrackingUserDrag: Bool = false
+        fileprivate var lastSubmittedSearchQuery: String?
 
         public init() {}
     }
@@ -133,6 +134,12 @@ public struct MapFeature: Sendable {
             case .searchSubmitted:
                 guard state.searchQuery.isEmpty == false else { return .none }
                 let keyword = state.searchQuery
+                // 검색어 변경 없이 동일한 검색어로 다시 제출된 경우(최근 검색어 재탭 포함), 이미 결과가 표시된
+                // 상태(mode == .result)라면 결과 초기화·로딩 인디케이터·재요청 없이 그대로 유지한다. 검색어가
+                // 바뀌면 keyword 값 자체가 lastSubmittedSearchQuery와 달라지므로, 이 가드는 오직 "완전히 동일한
+                // 검색어 재제출"만 걸러낸다
+                guard state.mode != .result || keyword != state.lastSubmittedSearchQuery else { return .none }
+                state.lastSubmittedSearchQuery = keyword
                 state.activeCategory = nil
                 state.activeCategoryCoordinate = nil
                 state.mode = .result
@@ -562,5 +569,6 @@ private extension MapFeature {
         state.activeCategoryRadiusMeters = nil
         state.hasMapMovedSinceSearch = false
         state.isTrackingUserDrag = false
+        state.lastSubmittedSearchQuery = nil
     }
 }
