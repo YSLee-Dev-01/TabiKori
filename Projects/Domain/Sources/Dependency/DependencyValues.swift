@@ -130,4 +130,19 @@ extension DependencyValues {
         get {self[WidgetSnapshotStoreDependencyKey.self]}
         set {self[WidgetSnapshotStoreDependencyKey.self] = newValue}
     }
+
+    public var appUpdateUseCase: AppUpdateUseCaseProtocol {
+        get {self[AppUpdateUseCaseDependencyKey.self]}
+        set {self[AppUpdateUseCaseDependencyKey.self] = newValue}
+    }
+
+    public var noticePopupUseCase: NoticePopupUseCaseProtocol {
+        get {self[NoticePopupUseCaseDependencyKey.self]}
+        set {self[NoticePopupUseCaseDependencyKey.self] = newValue}
+    }
+
+    public var homeSheetAnnounceUseCase: HomeSheetAnnounceUseCaseProtocol {
+        get {self[HomeSheetAnnounceUseCaseDependencyKey.self]}
+        set {self[HomeSheetAnnounceUseCaseDependencyKey.self] = newValue}
+    }
 }

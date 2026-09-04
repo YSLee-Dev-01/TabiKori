@@ -20,4 +20,17 @@ extension String {
     func toFestivalDate() -> Date? {
         return Self.festivalResponseDateFormatter.date(from: self)
     }
+
+    private static let announcementDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        formatter.dateFormat = "yyyyMMdd"
+        return formatter
+    }()
+
+    /// 팝업/홈 시트 공지 RTDB의 startDate/endDate("yyyyMMdd") 문자열을 Date로 변환
+    func toAnnouncementDate() -> Date? {
+        return Self.announcementDateFormatter.date(from: self)
+    }
 }

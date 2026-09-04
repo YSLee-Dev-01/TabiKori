@@ -7,10 +7,12 @@
 //
 
 import Foundation
+import UIKit
 
 import ComposableArchitecture
 import Core
 import Domain
+import Resource
 
 @Reducer
 public struct RootFeature {
@@ -21,6 +23,8 @@ public struct RootFeature {
         var onboardingState: OnboardingFeature.State? = nil
         var currentToast: ToastItem? = nil
         fileprivate var pendingDeepLink: WidgetDeepLink? = nil
+        @Presents var alert: AlertState<Action.Alert>?
+        @Presents var noticePopupState: NoticePopupFeature.State?
 
         public init() {}
     }
@@ -28,12 +32,22 @@ public struct RootFeature {
     public enum Action: Equatable {
         case onAppear
         case onboardingChecking
+        case appUpdateChecking
+        case appUpdateResult(AppUpdateInfo?)
+        case noticePopupChecking
+        case noticePopupResult(Announcement?)
         case toastEventReceived(ToastItem)
         case toastDismissed
         case toastActionButtonTapped
         case openURLReceived(URL)
         case tabBar(TabBarFeature.Action)
         case onboarding(OnboardingFeature.Action)
+        case alert(PresentationAction<Alert>)
+        case noticePopup(PresentationAction<NoticePopupFeature.Action>)
+
+        public enum Alert: Equatable {
+            case updateButtonTapped
+        }
     }
 
     @Dependency(\.onboardingUseCase) var onboardingUsecase
@@ -41,6 +55,8 @@ public struct RootFeature {
     @Dependency(\.travelPlanUseCase) var travelPlanUseCase
     @Dependency(\.koreanPhraseUseCase) var koreanPhraseUseCase
     @Dependency(\.widgetSnapshotStore) var widgetSnapshotStore
+    @Dependency(\.appUpdateUseCase) var appUpdateUseCase
+    @Dependency(\.noticePopupUseCase) var noticePopupUseCase
 
     public init() {}
 
@@ -49,7 +65,12 @@ public struct RootFeature {
             switch action {
             case .onAppear:
                 let onboardingEffect: Effect<Action> = state.tabBarState == nil ? .send(.onboardingChecking) : .none
-                return .merge(onboardingEffect, self.subscribeToastEffect(), self.syncWidgetSnapshotEffect())
+                return .merge(
+                    onboardingEffect,
+                    self.subscribeToastEffect(),
+                    self.syncWidgetSnapshotEffect(),
+                    .send(.appUpdateChecking)
+                )
 
             case .onboardingChecking:
                 if onboardingUsecase.isCompleted() {
@@ -57,6 +78,36 @@ public struct RootFeature {
                 } else {
                     state.onboardingState = .init()
                 }
+                return .none
+
+            case .appUpdateChecking:
+                return self.fetchAppUpdateInfoEffect()
+
+            case .appUpdateResult(let info):
+                guard let info else { return .send(.noticePopupChecking) }
+
+                let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+                guard currentVersion.isVersionLower(than: info.minimumVersion) else {
+                    return .send(.noticePopupChecking)
+                }
+
+                state.alert = AlertState {
+                    TextState(Strings.AppUpdate.alertTitle)
+                } actions: {
+                    ButtonState(action: .updateButtonTapped) {
+                        TextState(Strings.AppUpdate.updateButtonTitle)
+                    }
+                } message: {
+                    TextState(Strings.AppUpdate.alertMessage)
+                }
+                return .none
+
+            case .noticePopupChecking:
+                return self.fetchActiveNoticePopupEffect()
+
+            case .noticePopupResult(let announcement):
+                guard let announcement else { return .none }
+                state.noticePopupState = NoticePopupFeature.State(announcement: announcement)
                 return .none
 
             case .onboarding(.delegate(.completed)):
@@ -105,6 +156,15 @@ public struct RootFeature {
 
             case .onboarding:
                 return .none
+
+            case .alert(.presented(.updateButtonTapped)):
+                return self.openAppStoreEffect()
+
+            case .alert:
+                return .none
+
+            case .noticePopup:
+                return .none
             }
         }
         .ifLet(\.tabBarState, action: \.tabBar) {
@@ -112,6 +172,10 @@ public struct RootFeature {
         }
         .ifLet(\.onboardingState, action: \.onboarding) {
             OnboardingFeature()
+        }
+        .ifLet(\.$alert, action: \.alert)
+        .ifLet(\.$noticePopupState, action: \.noticePopup) {
+            NoticePopupFeature()
         }
     }
 }
@@ -155,5 +219,45 @@ private extension RootFeature {
             koreanPhraseUseCase: self.koreanPhraseUseCase,
             widgetSnapshotStore: self.widgetSnapshotStore
         )
+    }
+
+    func fetchAppUpdateInfoEffect() -> Effect<Action> {
+        .run { [appUpdateUseCase = self.appUpdateUseCase] send in
+            do {
+                let info = try await appUpdateUseCase.fetchAppUpdateInfo()
+                await send(.appUpdateResult(info))
+            } catch {
+                AppLogger.view.log(.error, "강제 업데이트 정보 조회 실패: \(error.localizedDescription)")
+                await send(.appUpdateResult(nil))
+            }
+        }
+    }
+
+    func fetchActiveNoticePopupEffect() -> Effect<Action> {
+        .run { [noticePopupUseCase = self.noticePopupUseCase] send in
+            do {
+                guard let announcement = try await noticePopupUseCase.fetchActiveAnnouncement(),
+                      noticePopupUseCase.isDismissedToday(id: announcement.id) == false else {
+                    await send(.noticePopupResult(nil))
+                    return
+                }
+                await send(.noticePopupResult(announcement))
+            } catch {
+                AppLogger.view.log(.error, "팝업 공지 조회 실패: \(error.localizedDescription)")
+                await send(.noticePopupResult(nil))
+            }
+        }
+    }
+
+    func openAppStoreEffect() -> Effect<Action> {
+        .run { _ in
+            guard let url = URL(string: TabiURL.appStoreUpdatePage) else {
+                AppLogger.view.log(.error, "App Store URL 생성 실패")
+                return
+            }
+            await MainActor.run {
+                UIApplication.shared.open(url)
+            }
+        }
     }
 }

@@ -20,4 +20,17 @@ extension Date {
     var festivalQueryDateString: String {
         return Self.festivalQueryDateFormatter.string(from: self)
     }
+
+    private static let noticePopupDismissRecordDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        formatter.dateFormat = "yyyyMMdd"
+        return formatter
+    }()
+
+    /// 팝업 공지 "오늘 하루 보지 않기" 기록 저장용 날짜 문자열
+    var noticePopupDismissRecordDateString: String {
+        return Self.noticePopupDismissRecordDateFormatter.string(from: self)
+    }
 }

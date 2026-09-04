@@ -14,7 +14,7 @@ import DesignSystem
 
 public struct RootView: View {
 
-    @State private var store: StoreOf<RootFeature>
+    @Bindable private var store: StoreOf<RootFeature>
 
     public init(store: StoreOf<RootFeature>) {
         self.store = store
@@ -42,6 +42,10 @@ public struct RootView: View {
             actionButtonTitle: self.store.currentToast?.actionButtonTitle,
             onActionTapped: { self.store.send(.toastActionButtonTapped) }
         )
+        .sheet(item: self.$store.scope(state: \.noticePopupState, action: \.noticePopup)) { store in
+            NoticePopupView(store: store)
+        }
+        .alert($store.scope(state: \.alert, action: \.alert))
     }
 }
 

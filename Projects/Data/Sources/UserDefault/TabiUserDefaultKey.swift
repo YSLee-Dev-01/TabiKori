@@ -13,4 +13,6 @@ public enum TabiUserDefaultKey: String {
     case recentSearchHistory
     case autoScrollToTodayEnabled
     case autoTranslateSearchEnabled
+    /// 팝업 공지 "오늘 하루 보지 않기" 기록: [공지 id: 닫은 날짜("yyyyMMdd") 문자열]
+    case noticePopupDismissedRecords
 }
