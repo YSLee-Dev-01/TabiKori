@@ -17,6 +17,11 @@ public struct AddKoreanPhraseView: View {
 
     @Bindable private var store: StoreOf<AddKoreanPhraseFeature>
 
+    @State private var selectedDetent: PresentationDetent = .medium
+    @FocusState private var isJapaneseFocused: Bool
+    @FocusState private var isKoreanFocused: Bool
+    @FocusState private var isPronunciationFocused: Bool
+
     public init(store: StoreOf<AddKoreanPhraseFeature>) {
         self.store = store
     }
@@ -40,7 +45,7 @@ public struct AddKoreanPhraseView: View {
         .safeAreaBar(edge: .bottom) {
             self.saveButton()
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.medium, .large], selection: self.$selectedDetent)
         .presentationDragIndicator(.visible)
         .alert($store.scope(state: \.alert, action: \.alert))
         .translateSearchTask(
@@ -48,6 +53,22 @@ public struct AddKoreanPhraseView: View {
             onResult: { self.store.send(.translationResultReceived($0)) },
             onFailure: { self.store.send(.translationFailed) }
         )
+        // 텍스트필드 포커스 시 시트를 large로 미리 확장해둔다. 키보드가 올라오면서 발생하는 safe area 변화에
+        // 따라 시트가 자동으로 detent를 전환하도록 두면, 키보드 애니메이션과 detent 전환 애니메이션이 서로
+        // 어긋나며 하단 저장 버튼이 뚝 떨어지듯 움직인다. 포커스 변화를 직접 감지해 selectedDetent를 갱신하면
+        // 두 애니메이션이 하나로 합쳐져 자연스럽게 이어진다
+        .onChange(of: self.isJapaneseFocused) { _, isFocused in
+            guard isFocused else { return }
+            self.selectedDetent = .large
+        }
+        .onChange(of: self.isKoreanFocused) { _, isFocused in
+            guard isFocused else { return }
+            self.selectedDetent = .large
+        }
+        .onChange(of: self.isPronunciationFocused) { _, isFocused in
+            guard isFocused else { return }
+            self.selectedDetent = .large
+        }
     }
 }
 
@@ -78,7 +99,11 @@ private extension AddKoreanPhraseView {
     func koreanField() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             TabiLabel(title: Strings.KoreanPhrase.koreanFieldLabel, style: .bodyMBold, color: .tabiTextPrimary)
-            TabiTextField(placeholder: Strings.KoreanPhrase.koreanFieldPlaceholder, text: self.$store.korean)
+            TabiTextField(
+                placeholder: Strings.KoreanPhrase.koreanFieldPlaceholder,
+                text: self.$store.korean,
+                focus: self.$isKoreanFocused
+            )
         }
     }
 
@@ -86,7 +111,11 @@ private extension AddKoreanPhraseView {
         VStack(alignment: .leading, spacing: 8) {
             TabiLabel(title: Strings.KoreanPhrase.japaneseFieldLabel, style: .bodyMBold, color: .tabiTextPrimary)
             HStack(spacing: 8) {
-                TabiTextField(placeholder: Strings.KoreanPhrase.japaneseFieldPlaceholder, text: self.$store.japanese)
+                TabiTextField(
+                    placeholder: Strings.KoreanPhrase.japaneseFieldPlaceholder,
+                    text: self.$store.japanese,
+                    focus: self.$isJapaneseFocused
+                )
                 TabiButton(
                     Strings.KoreanPhrase.translateButtonTitle,
                     style: .surface,
@@ -102,7 +131,11 @@ private extension AddKoreanPhraseView {
     func pronunciationField() -> some View {
         VStack(alignment: .leading, spacing: 8) {
             TabiLabel(title: Strings.KoreanPhrase.pronunciationFieldLabel, style: .bodyMBold, color: .tabiTextPrimary)
-            TabiTextField(placeholder: Strings.KoreanPhrase.pronunciationFieldPlaceholder, text: self.$store.pronunciation)
+            TabiTextField(
+                placeholder: Strings.KoreanPhrase.pronunciationFieldPlaceholder,
+                text: self.$store.pronunciation,
+                focus: self.$isPronunciationFocused
+            )
         }
     }
 }
