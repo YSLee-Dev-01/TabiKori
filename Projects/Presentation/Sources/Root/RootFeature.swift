@@ -95,6 +95,11 @@ public struct RootFeature {
                 }
                 return .send(.tabBar(.deepLinkReceived(link)))
 
+            case .tabBar(.delegate(.dataResetCompleted)):
+                state.tabBarState = nil
+                state.onboardingState = .init()
+                return .none
+
             case .tabBar:
                 return .none
 

@@ -34,12 +34,18 @@ public struct TabBarFeature {
         case tabSelected(AppTab)
         case deepLinkReceived(WidgetDeepLink)
         case deepLinkPlanResolved(TravelPlan?)
+        case deepLinkAddPlanSheetRequested
         case home(HomeFeature.Action)
         case map(MapFeature.Action)
         case plan(PlanFeature.Action)
         case bookmark(BookmarkFeature.Action)
         case toolbox(ToolBarFeature.Action)
         case path(StackActionOf<StackPath>)
+        case delegate(Delegate)
+
+        public enum Delegate: Equatable {
+            case dataResetCompleted
+        }
     }
 
     @Dependency(\.travelPlanUseCase) var travelPlanUseCase
@@ -79,6 +85,16 @@ public struct TabBarFeature {
 
             case .deepLinkReceived(.planAdd):
                 state.selectedTab = .plan
+                // 탭 전환 애니메이션이 끝난 뒤 시트가 열리도록, 시트 표시를 별도 액션으로 분리해 지연시킨다.
+                // 탭 전환과 시트 표시가 동시에 발생하면 전환 애니메이션이 채 끝나기도 전에 시트가 먼저 보이는
+                // 것처럼 느껴진다
+                return .run { send in
+                    try? await Task.sleep(for: .seconds(0.35))
+                    await send(.deepLinkAddPlanSheetRequested)
+                }
+                .cancellable(id: CancelID.deepLinkAddPlanSheet, cancelInFlight: true)
+
+            case .deepLinkAddPlanSheetRequested:
                 state.planState.addPlanState = AddTravelPlanFeature.State()
                 return .none
 
@@ -217,6 +233,9 @@ public struct TabBarFeature {
             case .path(.element(id: _, action: .setting(.resetCompleted))):
                 return .merge(.send(.bookmark(.onAppear)), .send(.plan(.onAppear)))
 
+            case .path(.element(id: _, action: .setting(.delegate(.resetCompleted)))):
+                return .send(.delegate(.dataResetCompleted))
+
             case .path(.element(id: let id, action: .detail(.photoCellTapped(let index)))):
                 guard case .detail(let detailState) = state.path[id: id] else { return .none }
                 state.path.append(.photoViewer(PhotoViewerFeature.State(
@@ -265,6 +284,9 @@ public struct TabBarFeature {
 
             case .path:
                 return .none
+
+            case .delegate:
+                return .none
             }
         }
         .forEach(\.path, action: \.path)
@@ -275,4 +297,5 @@ public struct TabBarFeature {
 
 private enum CancelID {
     case deepLinkPlanFetch
+    case deepLinkAddPlanSheet
 }
