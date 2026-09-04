@@ -39,16 +39,19 @@ public struct HomeView: View {
                         }
                         .staggeredAppear(index: 1)
                         
-                        self.exchangeRateCard()
+                        self.homeAnnouncementCard()
                             .staggeredAppear(index: 2)
-                        self.recommendedEventBanner()
+                        
+                        self.exchangeRateCard()
                             .staggeredAppear(index: 3)
-                        self.categoryView()
+                        self.recommendedEventBanner()
                             .staggeredAppear(index: 4)
-                        self.nearbyTouristSpotBanner()
+                        self.categoryView()
                             .staggeredAppear(index: 5)
-                        self.nearbyRestaurantBanner()
+                        self.nearbyTouristSpotBanner()
                             .staggeredAppear(index: 6)
+                        self.nearbyRestaurantBanner()
+                            .staggeredAppear(index: 7)
                     } else {
                         if self.store.locationStatus == .allowed {
                             self.inJapanBanner()
@@ -61,12 +64,16 @@ public struct HomeView: View {
                             self.store.send(.searchBarTapped)
                         }
                         .staggeredAppear(index: 1)
-                        self.exchangeRateCard()
+                        
+                        self.homeAnnouncementCard()
                             .staggeredAppear(index: 2)
-                        self.recommendedRegionBanner()
+                        
+                        self.exchangeRateCard()
                             .staggeredAppear(index: 3)
-                        self.festivalListSection()
+                        self.recommendedRegionBanner()
                             .staggeredAppear(index: 4)
+                        self.festivalListSection()
+                            .staggeredAppear(index: 5)
                     }
                 }
                 .animation(.tabiStandard, value: self.store.locationStatus)
@@ -88,6 +95,16 @@ public struct HomeView: View {
         }
         .onAppear {
             self.store.send(.onAppear)
+        }
+        .sheet(item: self.$store.homeAnnouncementSheetItem) { announcement in
+            TabiAnnouncementView(
+                title: announcement.title,
+                subtitle: announcement.subtitle,
+                content: announcement.content,
+                onClose: { self.store.send(.homeAnnouncementSheetDismissed) }
+            )
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.hidden)
         }
     }
 }
@@ -699,6 +716,16 @@ fileprivate extension HomeView {
                 .minimumScaleFactor(0.5)
         }
         .frame(maxWidth: .infinity)
+    }
+
+    func homeAnnouncementCard() -> some View {
+        Group {
+            if let announcement = self.store.activeHomeAnnouncement {
+                HomeAnnouncementCard(title: announcement.title, subtitle: announcement.subtitle) {
+                    self.store.send(.homeAnnouncementCardTapped)
+                }
+            }
+        }
     }
 
     func inKoreaBanner() -> some View {

@@ -55,7 +55,8 @@ public struct HomeFeature: Sendable {
         public init() {}
     }
 
-    public enum Action: Equatable {
+    public enum Action: BindableAction, Equatable {
+        case binding(BindingAction<State>)
         case onAppear
         case refreshTriggered
         case requestLocationPermission
@@ -89,8 +90,12 @@ public struct HomeFeature: Sendable {
     public init() {}
 
     public var body: some Reducer<State, Action> {
+        BindingReducer()
         Reduce { state, action in
             switch action {
+            case .binding:
+                return .none
+
             case .onAppear:
                 state.locationStatus = self.locationUseCase.checkAuthorization()
 
@@ -326,6 +331,7 @@ public struct HomeFeature: Sendable {
 
 private enum CancelID {
     case categoryCoordinate
+    case nearbySpotsCoordinate
     case nearbyTouristSpots
     case nearbyRestaurants
 }
@@ -347,8 +353,17 @@ private extension HomeFeature {
     /// 가까운 관광지/음식점을 병렬로 조회한다. 좌표는 한 번만 조회해 두 요청에 공유한다
     /// (LocationRepository.fetchCurrentCoordinate()는 동시에 하나의 요청만 진행 가능해, 좌표 조회까지
     /// 각 이펙트에서 독립적으로 하면 둘 중 하나가 항상 "이미 위치 요청이 진행 중입니다" 에러로 실패한다).
-    /// 좌표 조회 이후의 관광지/음식점 조회는 별개의 이펙트로 분리해 취소 스코프를 독립적으로 관리하는
-    /// 것은 물론, 한쪽 요청이 실패하더라도 다른 쪽이 이미 보낸 결과를 되돌리지 않도록 한다.
+    ///
+    /// 좌표 조회와 실제 관광지/음식점 조회를 `send`로 액션을 분기해 별개의 이펙트로 넘기는 이유는, 이
+    /// 조회가 `HomeView`의 `.refreshable { await store.send(.refreshTriggered).finish() }`에 걸려있기
+    /// 때문이다. `StoreTask.finish()`는 내부적으로 `cancellableValue`를 사용해 호출부(당겨서 새로고침
+    /// 제스처의 Task)가 취소되면 그 취소를 대기 중인 이펙트까지 전파한다. 만약 좌표 조회부터 관광지/음식점
+    /// API 응답까지 전부 하나의 `.run` 스코프에서 처리하면, 새로고침 제스처가 (시뮬레이터 등에서) 도중에
+    /// 취소될 때 아직 응답을 못 받은 API 요청까지 통째로 취소되어 두 목록이 모두 비어버린다.
+    /// `send`는 액션을 보내기만 하고 그 결과 이펙트를 기다리지 않는(fire-and-forget) 별도 Task로 실행되므로,
+    /// 좌표 조회 이후의 실제 API 호출은 새로고침 제스처의 취소에 영향받지 않고 끝까지 진행된다.
+    /// 두 조회는 별개의 이펙트로 분리해 취소 스코프를 독립적으로 관리하는 것은 물론, 한쪽 요청이
+    /// 실패하더라도 다른 쪽이 이미 보낸 결과를 되돌리지 않도록 한다.
     func fetchNearbySpotsEffect() -> Effect<Action> {
         .run { [locationUseCase = self.locationUseCase] send in
             do {
@@ -364,6 +379,7 @@ private extension HomeFeature {
                 AppLogger.view.log(.error, "주변 관광정보 좌표 조회 실패: \(error.localizedDescription)")
             }
         }
+        .cancellable(id: CancelID.nearbySpotsCoordinate, cancelInFlight: true)
     }
 
     func fetchNearbyTouristSpotsEffect(coordinate: Coordinate) -> Effect<Action> {
