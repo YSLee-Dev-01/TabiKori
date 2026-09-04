@@ -83,7 +83,13 @@ public struct HomeView: View {
             }
             .scrollDismissesKeyboard(.immediately)
             .refreshable {
-                await self.store.send(.refreshTriggered).finish()
+                // `.send(.refreshTriggered).finish()`로 완료를 기다리면, 새로고침 제스처의 Task가
+                // (iOS/시뮬레이터에 의해) 도중에 취소될 때 그 취소가 실제 관광지/음식점 조회 이펙트까지
+                // 전파되어 API 응답을 기다리다 그대로 끊겨버린다(HomeFeature의 fetchNearbySpotsEffect
+                // 주석 참고). 그래서 여기서는 액션만 보내고 이펙트 완료는 기다리지 않는다 — 새로고침
+                // 인디케이터는 짧은 고정 시간만 보여주고, 실제 데이터는 이펙트가 끝나는 대로 반영된다
+                self.store.send(.refreshTriggered)
+                try? await Task.sleep(for: .milliseconds(500))
             }
         }
         .safeAreaBar(edge: .top) {

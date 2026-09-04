@@ -58,7 +58,16 @@ public final class LocationRepository: NSObject, LocationRepositoryProtocol, @un
                 self.locationManager.startUpdatingLocation()
             }
         } onCancel: { [weak self] in
-            self?.locationManager.stopUpdatingLocation()
+            // withCheckedThrowingContinuation은 Task가 취소돼도 자동으로 재개되지 않는다. 여기서 명시적으로
+            // CancellationError를 던져 재개시키지 않으면, 호출부의 Task가 취소된 뒤에도 continuation이
+            // 영원히 대기 상태로 남아 fetchCurrentCoordinate()가 끝나지 않는다(예: 새로고침 제스처가
+            // 도중에 취소되는 경우)
+            Task { @MainActor [weak self] in
+                guard let self, let continuation = self.coordinateContinuation else { return }
+                self.coordinateContinuation = nil
+                self.locationManager.stopUpdatingLocation()
+                continuation.resume(throwing: CancellationError())
+            }
         }
         #endif
     }

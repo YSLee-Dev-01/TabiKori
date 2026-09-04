@@ -159,9 +159,6 @@ public struct HomeFeature: Sendable {
                 }
 
                 guard state.currentRegion.isKorea else {
-                    // 위치 권한이 새로 허용됐지만 아직 지역이 반영되지 않은 상태라면, 지역을 즉시 조회해
-                    // 위치모드(주변 정보/여행 플랜)로 전환한다. onAppear와 달리 새로고침은 사용자가 명시적으로
-                    // 요청한 즉시 동작이어야 하므로 지역 조회 전 대기 시간을 두지 않는다
                     guard state.locationStatus == .allowed else { return festivalEffect }
                     return .merge(festivalEffect, self.fetchRegionEffect())
                 }
@@ -353,17 +350,15 @@ private extension HomeFeature {
     /// 가까운 관광지/음식점을 병렬로 조회한다. 좌표는 한 번만 조회해 두 요청에 공유한다
     /// (LocationRepository.fetchCurrentCoordinate()는 동시에 하나의 요청만 진행 가능해, 좌표 조회까지
     /// 각 이펙트에서 독립적으로 하면 둘 중 하나가 항상 "이미 위치 요청이 진행 중입니다" 에러로 실패한다).
+    /// 좌표 조회 이후의 관광지/음식점 조회는 별개의 이펙트로 분리해 취소 스코프를 독립적으로 관리하는
+    /// 것은 물론, 한쪽 요청이 실패하더라도 다른 쪽이 이미 보낸 결과를 되돌리지 않도록 한다.
     ///
-    /// 좌표 조회와 실제 관광지/음식점 조회를 `send`로 액션을 분기해 별개의 이펙트로 넘기는 이유는, 이
-    /// 조회가 `HomeView`의 `.refreshable { await store.send(.refreshTriggered).finish() }`에 걸려있기
-    /// 때문이다. `StoreTask.finish()`는 내부적으로 `cancellableValue`를 사용해 호출부(당겨서 새로고침
-    /// 제스처의 Task)가 취소되면 그 취소를 대기 중인 이펙트까지 전파한다. 만약 좌표 조회부터 관광지/음식점
-    /// API 응답까지 전부 하나의 `.run` 스코프에서 처리하면, 새로고침 제스처가 (시뮬레이터 등에서) 도중에
-    /// 취소될 때 아직 응답을 못 받은 API 요청까지 통째로 취소되어 두 목록이 모두 비어버린다.
-    /// `send`는 액션을 보내기만 하고 그 결과 이펙트를 기다리지 않는(fire-and-forget) 별도 Task로 실행되므로,
-    /// 좌표 조회 이후의 실제 API 호출은 새로고침 제스처의 취소에 영향받지 않고 끝까지 진행된다.
-    /// 두 조회는 별개의 이펙트로 분리해 취소 스코프를 독립적으로 관리하는 것은 물론, 한쪽 요청이
-    /// 실패하더라도 다른 쪽이 이미 보낸 결과를 되돌리지 않도록 한다.
+    /// 이 이펙트는 `HomeView`의 `.refreshable`에서 트리거된다. `.refreshable { await store.send(...).finish() }`
+    /// 처럼 `.finish()`로 완료를 대기하면, `.run` 안에서 `send`로 액션을 여러 단계 우회시켜도 그 결과 이펙트가
+    /// 결국 원래 `_send` 호출의 tasks 배열에 재귀적으로 포함되어 새로고침 제스처의 Task 취소가 그대로
+    /// 전파된다(TCA의 `Send`가 캡처하는 `tasks`가 상위 `_send` 스코프의 것이라서 이펙트 체인이 끊기지 않음).
+    /// 그래서 액션 우회로는 취소 전파를 막을 수 없고, `HomeView`가 `.finish()`를 호출하지 않도록 하는 쪽으로
+    /// 해결했다 — 자세한 내용은 `HomeView.swift`의 `.refreshable` 주석 참고
     func fetchNearbySpotsEffect() -> Effect<Action> {
         .run { [locationUseCase = self.locationUseCase] send in
             do {
