@@ -40,7 +40,7 @@ public struct TabiChip: View {
             .overlay {
                 if !self.isSelected {
                     Capsule()
-                        .stroke(TabiColor.tabiBorder, lineWidth: 1)
+                        .strokeBorder(TabiColor.tabiBorder, lineWidth: 1)
                 }
             }
         }

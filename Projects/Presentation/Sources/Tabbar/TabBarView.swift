@@ -9,46 +9,83 @@
 import SwiftUI
 
 import ComposableArchitecture
+import Resource
 
 public struct TabBarView: View {
 
     @State private var store: StoreOf<TabBarFeature>
+    @Namespace private var heroNamespace
 
     public init(store: StoreOf<TabBarFeature>) {
         self.store = store
     }
 
     public var body: some View {
-        TabView(selection: self.$store.selectedTab.sending(\.tabSelected)) {
-            HomeView(store: self.store.scope(state: \.homeState, action: \.home))
-                .tabItem {
-                    Image(systemName: AppTab.home.systemImage)
-                }
-                .tag(AppTab.home)
+        NavigationStack(
+            path: self.$store.scope(state: \.path, action: \.path)
+        ) {
+            TabView(selection: self.$store.selectedTab.sending(\.tabSelected)) {
+                HomeView(
+                    store: self.store.scope(state: \.homeState, action: \.home),
+                    namespace: self.heroNamespace
+                )
+                    .tabItem {
+                        Image(systemName: AppTab.home.systemImage)
+                    }
+                    .tag(AppTab.home)
 
-            Text(AppTab.map.title)
-                .tabItem {
-                    Image(systemName: AppTab.map.systemImage)
-                }
-                .tag(AppTab.map)
+                PlanView(store: self.store.scope(state: \.planState, action: \.plan))
+                    .tabItem {
+                        Image(systemName: AppTab.plan.systemImage)
+                    }
+                    .tag(AppTab.plan)
 
-            Text(AppTab.plan.title)
-                .tabItem {
-                    Image(systemName: AppTab.plan.systemImage)
-                }
-                .tag(AppTab.plan)
+                BookmarkView(store: self.store.scope(state: \.bookmarkState, action: \.bookmark))
+                    .tabItem {
+                        Image(systemName: AppTab.bookmark.systemImage)
+                    }
+                    .tag(AppTab.bookmark)
+                
+                MapView(store: self.store.scope(state: \.mapState, action: \.map))
+                    .tabItem {
+                        Image(systemName: AppTab.map.systemImage)
+                    }
+                    .tag(AppTab.map)
 
-            Text(AppTab.save.title)
-                .tabItem {
-                    Image(systemName: AppTab.save.systemImage)
-                }
-                .tag(AppTab.save)
-
-            Text(AppTab.search.title)
-                .tabItem {
-                    Image(systemName: AppTab.search.systemImage)
-                }
-                .tag(AppTab.search)
+                ToolBarView(store: self.store.scope(state: \.toolboxState, action: \.toolbox))
+                    .tabItem {
+                        Image(systemName: AppTab.toolbox.systemImage)
+                    }
+                    .tag(AppTab.toolbox)
+            }
+            .tint(Color.getTabiColor(.tabiPrimary))
+        } destination: { store in
+            switch store.case {
+            case .detail(let store):
+                DetailView(store: store, namespace: self.heroNamespace)
+            case .photoViewer(let store):
+                PhotoViewerView(store: store)
+            case .planDetail(let store):
+                PlanDetailView(store: store)
+            case .festival(let store):
+                FestivalView(store: store)
+            case .region(let store):
+                RegionSpotView(store: store)
+            case .setting(let store):
+                SettingView(store: store)
+            case .planToolBar(let store):
+                PlanToolBarView(store: store)
+            case .planDetailFullMap(let store):
+                PlanDetailFullMapView(store: store)
+            case .packingList(let store):
+                PackingListView(store: store)
+            case .koreanPhraseList(let store):
+                KoreanPhraseListView(store: store)
+            case .shoppingList(let store):
+                ShoppingListView(store: store)
+            case .shoppingPlanList(let store):
+                ShoppingPlanListView(store: store)
+            }
         }
     }
 }

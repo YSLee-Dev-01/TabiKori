@@ -8,39 +8,66 @@
 
 import Foundation
 
+import Core
 import Domain
 import CoreLocation
 
 public final class LocationRepository: NSObject, LocationRepositoryProtocol, @unchecked Sendable {
-    
+
     private let locationManager: CLLocationManager
     private var authContinuation: CheckedContinuation<LocationAuthorizationStatus, Never>?
     private var coordinateContinuation: CheckedContinuation<Coordinate, Error>?
+    private var authorizationTask: Task<LocationAuthorizationStatus, Never>?
 
     public init(locationManager: CLLocationManager = .init()) {
         self.locationManager = locationManager
         super.init()
         self.locationManager.delegate = self
     }
-    
+
     public func checkAuthorization() -> LocationAuthorizationStatus {
         return Self.mapAuthorizationStatus(self.locationManager.authorizationStatus)
     }
-    
+
     public func requestAuthorization() async -> LocationAuthorizationStatus {
-        return await withCheckedContinuation { continuation in
-            self.authContinuation = continuation
-            self.locationManager.requestWhenInUseAuthorization()
+        if let authorizationTask {
+            return await authorizationTask.value
         }
+
+        let task = Task<LocationAuthorizationStatus, Never> {
+            await withCheckedContinuation { continuation in
+                self.authContinuation = continuation
+                self.locationManager.requestWhenInUseAuthorization()
+            }
+        }
+        self.authorizationTask = task
+        defer { self.authorizationTask = nil }
+        return await task.value
     }
 
     public func fetchCurrentCoordinate() async throws -> Coordinate {
         #if targetEnvironment(simulator)
         return Coordinate(latitude: 37.5666102, longitude: 126.9783881)
         #else
-        return try await withCheckedThrowingContinuation { continuation in
-            self.coordinateContinuation = continuation
-            self.locationManager.startUpdatingLocation()
+        guard self.coordinateContinuation == nil else {
+            throw TabiError.persistenceFailed(message: "이미 위치 요청이 진행 중입니다")
+        }
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                self.coordinateContinuation = continuation
+                self.locationManager.startUpdatingLocation()
+            }
+        } onCancel: { [weak self] in
+            // withCheckedThrowingContinuation은 Task가 취소돼도 자동으로 재개되지 않는다. 여기서 명시적으로
+            // CancellationError를 던져 재개시키지 않으면, 호출부의 Task가 취소된 뒤에도 continuation이
+            // 영원히 대기 상태로 남아 fetchCurrentCoordinate()가 끝나지 않는다(예: 새로고침 제스처가
+            // 도중에 취소되는 경우)
+            Task { @MainActor [weak self] in
+                guard let self, let continuation = self.coordinateContinuation else { return }
+                self.coordinateContinuation = nil
+                self.locationManager.stopUpdatingLocation()
+                continuation.resume(throwing: CancellationError())
+            }
         }
         #endif
     }
@@ -76,6 +103,7 @@ extension LocationRepository: CLLocationManagerDelegate {
     }
 
     public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        AppLogger.core.log(.error, "위치 조회 실패: \(error.localizedDescription)")
         self.coordinateContinuation?.resume(throwing: error)
         self.coordinateContinuation = nil
         self.locationManager.stopUpdatingLocation()

@@ -15,6 +15,10 @@ public final class TestLocationUseCase: LocationUseCaseProtocol, @unchecked Send
     public var coordinate: Coordinate = Coordinate(latitude: 37.5665, longitude: 126.9780)
     public var region: TravelRegion = .korea(.seoul)
 
+    // MARK: - Init
+
+    public init() {}
+
     // MARK: - Method
 
     public func checkAuthorization() -> LocationAuthorizationStatus {

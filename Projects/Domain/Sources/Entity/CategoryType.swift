@@ -9,5 +9,5 @@
 import Foundation
 
 public enum CategoryType: String, Codable, Sendable {
-    case sightseeing, food, hotel, festival, shopping, nature
+    case sightseeing, food, hotel, festival, shopping, nature, subway
 }

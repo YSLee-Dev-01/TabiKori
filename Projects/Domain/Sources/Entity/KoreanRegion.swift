@@ -16,4 +16,5 @@ public enum KoreanRegion: String, CaseIterable, Sendable {
     case yeosu
     case gangneung
     case jeonju
+    case etc
 }

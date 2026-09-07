@@ -11,25 +11,31 @@ import Resource
 
 public struct TabiNavigationBar<Trailing: View>: View {
 
-    private let subtitle: String
+    private let subtitle: String?
     private let title: String
+    private let titleStyle: TypographyStyle
     private let trailing: Trailing
 
     public init(
-        subtitle: String,
+        subtitle: String? = nil,
         title: String,
-        @ViewBuilder trailing: () -> Trailing
+        titleStyle: TypographyStyle = .titleL,
+        @ViewBuilder trailing: () -> Trailing = { EmptyView() }
     ) {
         self.subtitle = subtitle
         self.title = title
+        self.titleStyle = titleStyle
         self.trailing = trailing()
     }
 
     public var body: some View {
-        HStack {
+        HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 5) {
-                TabiLabel(title: self.subtitle, style: .bodyMBold, color: .tabiTextPrimary)
-                TabiLabel(title: self.title, style: .titleL, color: .tabiTextPrimary)
+                if let subtitle = self.subtitle {
+                    TabiLabel(title: subtitle, style: .bodyMBold, color: .tabiTextPrimary)
+                }
+
+                TabiLabel(title: self.title, style: self.titleStyle, color: .tabiTextPrimary)
             }
 
             Spacer()

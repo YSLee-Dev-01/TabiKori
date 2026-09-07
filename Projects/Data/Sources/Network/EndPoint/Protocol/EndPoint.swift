@@ -13,6 +13,7 @@ public protocol Endpoint {
     var path: String {get}
     var queryItems: [URLQueryItem] {get}
     var method: HTTPMethod {get}
+    var headers: [String: String] {get}
     var timeout: TimeInterval {get}
     var enableLog: Bool {get}
 }
@@ -20,6 +21,10 @@ public protocol Endpoint {
 extension Endpoint {
     var queryItems: [URLQueryItem] {
         return []
+    }
+
+    var headers: [String: String] {
+        return [:]
     }
 
     var fullURL: String {

@@ -21,21 +21,31 @@ public struct TabiButton: View {
         case primary
         case secondary
         case ghost
+        /// TabiTextField/TabiSearchField(.solid)와 동일한 배경(tabiSurface) + 테두리(tabiBorder) 조합
+        case surface
         case glass(on: GlassContext = .surface)
     }
 
     private let title: String
     private let style: Style
     private let icon: Image?
+    private let foregroundColorOverride: TabiColor?
     private let isExpanded: Bool
     private let isLoading: Bool
+    private let height: CGFloat?
+    private let cornerRadius: CGFloat
     private let action: () -> Void
 
     private var foregroundColor: TabiColor {
+        self.foregroundColorOverride ?? self.styleForegroundColor
+    }
+
+    private var styleForegroundColor: TabiColor {
         switch self.style {
         case .primary: return .tabiOnColor
         case .secondary: return .tabiPrimary
         case .ghost: return .tabiTextPrimary
+        case .surface: return .tabiTextTertiary
         case .glass(on: .surface): return .tabiPrimary
         case .glass(on: .accent): return .tabiSurface
         case .glass(on: .secondary): return .tabiSecondary
@@ -45,20 +55,21 @@ public struct TabiButton: View {
     private var backgroundColor: TabiColor? {
         switch self.style {
         case .primary: return .tabiPrimary
+        case .surface: return .tabiSurface
         case .secondary, .ghost, .glass: return nil
         }
     }
 
     private var horizontalPadding: CGFloat {
         switch self.style {
-        case .primary, .secondary, .glass: return 20
+        case .primary, .secondary, .surface, .glass: return 20
         case .ghost: return 16
         }
     }
 
     private var typographyStyle: TypographyStyle {
         switch self.style {
-        case .primary, .secondary, .glass: return .bodyMBold
+        case .primary, .secondary, .surface, .glass: return .bodyMBold
         case .ghost: return .bodyM
         }
     }
@@ -69,15 +80,21 @@ public struct TabiButton: View {
         _ title: String,
         style: Style,
         icon: Image? = nil,
+        foregroundColor: TabiColor? = nil,
         isExpanded: Bool = false,
         isLoading: Bool = false,
+        height: CGFloat? = nil,
+        cornerRadius: CGFloat = .tabiRadiusSm,
         action: @escaping () -> Void
     ) {
         self.title = title
         self.style = style
         self.icon = icon
+        self.foregroundColorOverride = foregroundColor
         self.isExpanded = isExpanded
         self.isLoading = isLoading
+        self.height = height
+        self.cornerRadius = cornerRadius
         self.action = action
     }
 
@@ -109,8 +126,9 @@ public struct TabiButton: View {
             .animation(.tabiStandard, value: self.isLoading)
             .padding(.vertical, 12)
             .padding(.horizontal, self.horizontalPadding)
+            .frame(minHeight: self.height)
             .frame(maxWidth: self.isExpanded ? .infinity : nil)
-            .modifier(TabiButtonBackground(style: self.style, backgroundColor: self.backgroundColor))
+            .modifier(TabiButtonBackground(style: self.style, backgroundColor: self.backgroundColor, cornerRadius: self.cornerRadius))
         }
         .buttonStyle(TabiPressStyle())
         .disabled(self.isLoading)
@@ -123,32 +141,41 @@ public struct TabiButton: View {
 private struct TabiButtonBackground: ViewModifier {
     let style: TabiButton.Style
     let backgroundColor: TabiColor?
+    let cornerRadius: CGFloat
 
     func body(content: Content) -> some View {
         switch self.style {
         case .glass(on: .surface), .glass(on: .secondary):
             content
-                .glassEffect(.regular, in: .rect(cornerRadius: .tabiRadiusSm))
+                .glassEffect(.regular, in: .rect(cornerRadius: self.cornerRadius))
         case .glass(on: .accent):
             content
                 .background(Color.white.opacity(0.25))
-                .clipShape(.rect(cornerRadius: .tabiRadiusSm))
+                .clipShape(.rect(cornerRadius: self.cornerRadius))
                 .overlay {
-                    RoundedRectangle(cornerRadius: .tabiRadiusSm)
+                    RoundedRectangle(cornerRadius: self.cornerRadius)
                         .stroke(Color.white.opacity(0.45), lineWidth: 1)
                 }
         case .secondary:
             content
                 .background(self.backgroundColor ?? .tabiBackground)
-                .clipShape(.rect(cornerRadius: .tabiRadiusSm))
+                .clipShape(.rect(cornerRadius: self.cornerRadius))
                 .overlay {
-                    RoundedRectangle(cornerRadius: .tabiRadiusSm)
+                    RoundedRectangle(cornerRadius: self.cornerRadius)
                         .stroke(TabiColor.tabiPrimary, lineWidth: 1.5)
+                }
+        case .surface:
+            content
+                .background(self.backgroundColor ?? .tabiSurface)
+                .clipShape(.rect(cornerRadius: self.cornerRadius))
+                .overlay {
+                    RoundedRectangle(cornerRadius: self.cornerRadius)
+                        .stroke(TabiColor.tabiBorder, lineWidth: 1)
                 }
         default:
             content
                 .background(self.backgroundColor ?? .tabiBackground)
-                .clipShape(.rect(cornerRadius: .tabiRadiusSm))
+                .clipShape(.rect(cornerRadius: self.cornerRadius))
         }
     }
 }

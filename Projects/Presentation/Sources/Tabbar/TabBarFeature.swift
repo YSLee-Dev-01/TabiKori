@@ -8,6 +8,9 @@
 
 import Foundation
 import ComposableArchitecture
+import Core
+import Domain
+import Resource
 
 @Reducer
 public struct TabBarFeature {
@@ -17,24 +20,35 @@ public struct TabBarFeature {
         var selectedTab: AppTab = .home
         
         var homeState: HomeFeature.State = .init()
-        var mapState: MapState = .init()
-        var planState: PlanState = .init()
-        var saveState: SaveState = .init()
-        var searchState: SearchState = .init()
+        var mapState: MapFeature.State = .init()
+        var planState: PlanFeature.State = .init()
+        var bookmarkState: BookmarkFeature.State = .init()
+        var toolboxState: ToolBarFeature.State = .init()
 
-        // 임시
-        public struct MapState: Equatable { public init() {} }
-        public struct PlanState: Equatable { public init() {} }
-        public struct SaveState: Equatable { public init() {} }
-        public struct SearchState: Equatable { public init() {} }
+        var path = StackState<StackPath.State>()
 
         public init() {}
     }
 
     public enum Action: Equatable {
         case tabSelected(AppTab)
+        case deepLinkReceived(WidgetDeepLink)
+        case deepLinkPlanResolved(TravelPlan?)
+        case deepLinkAddPlanSheetRequested
         case home(HomeFeature.Action)
+        case map(MapFeature.Action)
+        case plan(PlanFeature.Action)
+        case bookmark(BookmarkFeature.Action)
+        case toolbox(ToolBarFeature.Action)
+        case path(StackActionOf<StackPath>)
+        case delegate(Delegate)
+
+        public enum Delegate: Equatable {
+            case dataResetCompleted
+        }
     }
+
+    @Dependency(\.travelPlanUseCase) var travelPlanUseCase
 
     public init() {}
 
@@ -42,15 +56,246 @@ public struct TabBarFeature {
         Scope(state: \.homeState, action: \.home) {
             HomeFeature()
         }
-        
+        Scope(state: \.mapState, action: \.map) {
+            MapFeature()
+        }
+        Scope(state: \.bookmarkState, action: \.bookmark) {
+            BookmarkFeature()
+        }
+        Scope(state: \.planState, action: \.plan) {
+            PlanFeature()
+        }
+        Scope(state: \.toolboxState, action: \.toolbox) {
+            ToolBarFeature()
+        }
+
         Reduce { state, action in
             switch action {
             case .tabSelected(let tab):
                 state.selectedTab = tab
                 return .none
+
+            case .deepLinkReceived(.koreanPhraseList):
+                state.selectedTab = .toolbox
+                if case .koreanPhraseList = state.path.last {
+                    return .none
+                }
+                state.path.append(.koreanPhraseList(KoreanPhraseListFeature.State()))
+                return .none
+
+            case .deepLinkReceived(.planAdd):
+                state.selectedTab = .plan
+                // 탭 전환 애니메이션이 끝난 뒤 시트가 열리도록, 시트 표시를 별도 액션으로 분리해 지연시킨다.
+                // 탭 전환과 시트 표시가 동시에 발생하면 전환 애니메이션이 채 끝나기도 전에 시트가 먼저 보이는
+                // 것처럼 느껴진다
+                return .run { send in
+                    try? await Task.sleep(for: .seconds(0.35))
+                    await send(.deepLinkAddPlanSheetRequested)
+                }
+                .cancellable(id: CancelID.deepLinkAddPlanSheet, cancelInFlight: true)
+
+            case .deepLinkAddPlanSheetRequested:
+                state.planState.addPlanState = AddTravelPlanFeature.State()
+                return .none
+
+            case .deepLinkReceived(.planDetail(let id)):
+                state.selectedTab = .plan
+                return .run { [travelPlanUseCase = self.travelPlanUseCase] send in
+                    do {
+                        let plans = try await travelPlanUseCase.fetch()
+                        await send(.deepLinkPlanResolved(plans.first { $0.id == id }))
+                    } catch {
+                        AppLogger.view.log(.error, "위젯 딥링크 일정 조회 실패: \(error.localizedDescription)")
+                        await send(.deepLinkPlanResolved(nil))
+                    }
+                }
+                .cancellable(id: CancelID.deepLinkPlanFetch, cancelInFlight: true)
+
+            case .deepLinkPlanResolved(let plan):
+                guard let plan else {
+                    AppLogger.view.log(.error, "위젯 딥링크로 전달된 일정을 찾을 수 없음")
+                    return .none
+                }
+                if case .planDetail(let detailState) = state.path.last, detailState.plan.id == plan.id {
+                    return .none
+                }
+                state.path.append(.planDetail(PlanDetailFeature.State(plan: plan, initialDayIndex: plan.todayDayIndex ?? 0)))
+                return .none
+
+            case .home(.nearbySpotTapped(let spot)):
+                state.path.append(.detail(DetailFeature.State(touristSpot: spot)))
+                return .none
+
+            case .home(.searchBarTapped):
+                state.selectedTab = .map
+                return .send(.map(.searchFieldTapped))
+
+            case .home(.categoryTapped):
+                state.selectedTab = .map
+                return .none
+
+            case .home(.categoryCoordinateResolved(let category, let coordinate)):
+                guard state.selectedTab == .map else { return .none }
+                return .send(.map(.categorySelected(category, coordinate: coordinate)))
+
+            case .home(.festivalMoreButtonTapped):
+                state.path.append(.festival(FestivalFeature.State()))
+                return .none
+
+            case .home(.festivalTapped(let festival)):
+                state.path.append(.detail(DetailFeature.State(touristSpot: festival.touristSpot)))
+                return .none
+
+            case .home(.regionCardTapped(let region)):
+                state.path.append(.region(RegionSpotFeature.State(region: region)))
+                return .none
+
+            case .home(.settingButtonTapped):
+                state.path.append(.setting(SettingFeature.State()))
+                return .none
+
+            case .home(.moveToToolBoxButtonTapped):
+                state.selectedTab = .toolbox
+                return .send(.toolbox(.scrollToTopRequested))
+
+            case .home(.moveToPlanButtonTapped):
+                state.selectedTab = .plan
+                if let matchedPlan = state.homeState.ongoingMatchedPlan {
+                    state.path.append(.planDetail(PlanDetailFeature.State(
+                        plan: matchedPlan,
+                        initialDayIndex: state.homeState.ongoingMatchedPlanDayIndex
+                    )))
+                }
+                return .none
+
+            case .home(.planCreateButtonTapped):
+                state.selectedTab = .plan
+                state.planState.addPlanState = AddTravelPlanFeature.State()
+                return .none
+
             case .home:
+                return .none
+
+            case .map(.searchResultTapped(let spot)):
+                state.path.append(.detail(DetailFeature.State(touristSpot: spot)))
+                return .none
+
+            case .map:
+                return .none
+
+            case .bookmark(.spotTapped(let spot)):
+                state.path.append(.detail(DetailFeature.State(touristSpot: spot)))
+                return .none
+
+            case .bookmark:
+                return .none
+
+            case .toolbox(.packingListButtonTapped):
+                state.path.append(.packingList(PackingListFeature.State()))
+                return .none
+
+            case .toolbox(.koreanPhraseListButtonTapped):
+                state.path.append(.koreanPhraseList(KoreanPhraseListFeature.State()))
+                return .none
+
+            case .toolbox(.shoppingListButtonTapped):
+                state.path.append(.shoppingList(ShoppingListFeature.State()))
+                return .none
+
+            case .toolbox:
+                return .none
+
+            case .plan(.planTapped(let plan)):
+                state.path.append(.planDetail(PlanDetailFeature.State(plan: plan)))
+                return .none
+
+            case .plan:
+                return .none
+
+            case .path(.element(id: _, action: .planDetail(.spotRowTapped(let spot)))):
+                let touristSpot = TouristSpot(
+                    id: spot.contentId,
+                    title: spot.title,
+                    thumbnailURLString: spot.thumbnailURLString,
+                    distanceMeters: nil,
+                    contentType: spot.category,
+                    coordinate: spot.coordinate,
+                    isCustom: spot.isCustom,
+                    isStation: spot.isStation,
+                    address: spot.address
+                )
+                state.path.append(.detail(DetailFeature.State(touristSpot: touristSpot)))
+                return .none
+
+            case .path(.element(id: _, action: .detail(.isBookmarkedResult))):
+                return .send(.bookmark(.onAppear))
+
+            case .path(.element(id: _, action: .setting(.resetCompleted))):
+                return .merge(.send(.bookmark(.onAppear)), .send(.plan(.onAppear)))
+
+            case .path(.element(id: _, action: .setting(.delegate(.resetCompleted)))):
+                return .send(.delegate(.dataResetCompleted))
+
+            case .path(.element(id: let id, action: .detail(.photoCellTapped(let index)))):
+                guard case .detail(let detailState) = state.path[id: id] else { return .none }
+                state.path.append(.photoViewer(PhotoViewerFeature.State(
+                    images: detailState.images,
+                    startIndex: index,
+                    title: detailState.detail.japaneseTitle
+                )))
+                return .none
+
+            case .path(.element(id: let id, action: .planDetail(.toolBarButtonTapped))):
+                guard case .planDetail(let planDetailState) = state.path[id: id] else { return .none }
+                state.path.append(.planToolBar(PlanToolBarFeature.State(plan: planDetailState.plan)))
+                return .none
+
+            case .path(.element(id: let id, action: .planDetail(.shoppingListButtonTapped))):
+                guard case .planDetail(let planDetailState) = state.path[id: id] else { return .none }
+                state.path.append(.shoppingPlanList(ShoppingPlanListFeature.State(plan: planDetailState.plan)))
+                return .none
+
+            case .path(.element(id: let id, action: .planDetail(.fullMapButtonTapped))):
+                guard case .planDetail(let planDetailState) = state.path[id: id] else { return .none }
+                let dayIndex = planDetailState.isFullOverview ? planDetailState.visibleDayIndex : planDetailState.selectedDayIndex
+                guard planDetailState.plan.dayDates.indices.contains(dayIndex) else { return .none }
+                state.path.append(.planDetailFullMap(PlanDetailFullMapFeature.State(
+                    dayTitle: Strings.Plan.dayChipTitle(dayIndex + 1),
+                    dateTitle: planDetailState.plan.dayDates[dayIndex].planDayHeaderTitle,
+                    spots: planDetailState.spots(forDay: dayIndex)
+                )))
+                return .none
+
+            case .path(.element(id: _, action: .planDetailFullMap(.delegate(.spotReselected(let spot))))):
+                state.path.append(.detail(DetailFeature.State(touristSpot: spot.toTouristSpot())))
+                return .none
+
+            case .path(.element(id: _, action: .festival(.festivalTapped(let festival)))):
+                state.path.append(.detail(DetailFeature.State(touristSpot: festival.touristSpot)))
+                return .none
+
+            case .path(.element(id: _, action: .region(.spotTapped(let spot)))):
+                state.path.append(.detail(DetailFeature.State(touristSpot: spot)))
+                return .none
+
+            case .path(.element(id: _, action: .region(.festivalTapped(let festival)))):
+                state.path.append(.detail(DetailFeature.State(touristSpot: festival.touristSpot)))
+                return .none
+
+            case .path:
+                return .none
+
+            case .delegate:
                 return .none
             }
         }
+        .forEach(\.path, action: \.path)
     }
+}
+
+// MARK: - CancelID
+
+private enum CancelID {
+    case deepLinkPlanFetch
+    case deepLinkAddPlanSheet
 }

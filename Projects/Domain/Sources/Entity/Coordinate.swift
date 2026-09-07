@@ -16,4 +16,11 @@ public struct Coordinate: Equatable, Sendable {
         self.latitude = latitude
         self.longitude = longitude
     }
+
+    public static let zero = Coordinate(latitude: 0, longitude: 0)
+    public static let seoulCityHall = Coordinate(latitude: 37.5666102, longitude: 126.9783881)
+
+    public var isValid: Bool {
+        return self != .zero
+    }
 }

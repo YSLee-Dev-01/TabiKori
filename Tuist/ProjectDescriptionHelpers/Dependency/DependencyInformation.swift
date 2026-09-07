@@ -17,6 +17,7 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
     case designSystem = "DesignSystem"
     case presentation = "Presentation"
     case resource = "Resource"
+    case widget = "Widgets"
 
     // 외부 (라이브러리)
     case tca = "ComposableArchitecture"
@@ -24,22 +25,27 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
     case kingfisher = "Kingfisher"
     case firebaseDatabase = "FirebaseDatabase"
     case firebaseAnalytics = "FirebaseAnalytics"
+    case firebaseCrashlytics = "FirebaseCrashlytics"
+    case naverMap = "NMapsMap"
 
     static let internalDependencyInfo: [DependencyInformation: [DependencyInformation]] = [
-        .app: [.domain, .data, .presentation],
+        .app: [.domain, .data, .presentation, .core, .widget],
         .domain: [.core],
-        .data: [.domain, .core],
+        .data: [.domain, .core, .resource],
         .core: [],
         .designSystem: [.core, .resource],
         .presentation: [.designSystem, .core, .domain, .resource],
-        .resource: []
+        .resource: [],
+        .widget: [.domain, .core, .resource]
     ]
 
     static let externalDependencyInfo: [DependencyInformation: [DependencyInformation]] = [
         .presentation: [.tca, .lottie, .kingfisher],
         .domain: [.tca],
         .app: [.tca, .firebaseDatabase, .firebaseAnalytics],
-        .data: [.firebaseDatabase]
+        .data: [.firebaseDatabase],
+        .designSystem: [.naverMap, .kingfisher],
+        .core: [.firebaseCrashlytics]
     ]
 }
 

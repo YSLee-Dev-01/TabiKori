@@ -14,4 +14,5 @@ public extension CGFloat {
     static let tabiRadiusLg: CGFloat = 22
     static let tabiRadiusXl: CGFloat = 28
     static let tabiRadius2Xl: CGFloat = 36
+    static let tabiRadiusFull: CGFloat = 999
 }

@@ -9,29 +9,54 @@
 import SwiftUI
 
 import ComposableArchitecture
+import Domain
+import DesignSystem
 
 public struct RootView: View {
-    
-    @State private var store: StoreOf<RootFeature>
-    
+
+    @Bindable private var store: StoreOf<RootFeature>
+
     public init(store: StoreOf<RootFeature>) {
         self.store = store
     }
-    
+
     public var body: some View {
         Group {
             if let tabBarStore = self.store.scope(state: \.tabBarState, action: \.tabBar) {
                 TabBarView(store: tabBarStore)
+            } else if let onboardingStore = self.store.scope(state: \.onboardingState, action: \.onboarding) {
+                OnboardingView(store: onboardingStore)
             } else {
-                Button {
-                    self.store.send(.testBtnTapped)
-                } label: {
-                    Text("온보딩 완료 버튼")
-                }
+                EmptyView()
             }
         }
         .onAppear {
             self.store.send(.onAppear)
+        }
+        .onOpenURL { url in
+            self.store.send(.openURLReceived(url))
+        }
+        .tabiToast(
+            message: self.store.currentToast?.message,
+            style: self.toastStyle(for: self.store.currentToast?.type),
+            actionButtonTitle: self.store.currentToast?.actionButtonTitle,
+            onActionTapped: { self.store.send(.toastActionButtonTapped) }
+        )
+        .sheet(item: self.$store.scope(state: \.noticePopupState, action: \.noticePopup)) { store in
+            NoticePopupView(store: store)
+        }
+        .alert($store.scope(state: \.alert, action: \.alert))
+    }
+}
+
+// MARK: - Method
+
+private extension RootView {
+    func toastStyle(for type: ToastType?) -> TabiToast.Style {
+        switch type {
+        case .success: return .success
+        case .info: return .info
+        case .error, .none: return .error
         }
     }
 }

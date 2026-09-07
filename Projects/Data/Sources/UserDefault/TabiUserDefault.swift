@@ -6,14 +6,15 @@
 //  Copyright © 2026 yslee. All rights reserved.
 //
 
+import Core
 import Foundation
 
 public final class TabiUserDefault: TabiUserDefaultProtocol, @unchecked Sendable {
 
     public static let shared = TabiUserDefault()
     private init() {}
-    
-    private let sharedUserDefaults: UserDefaults = UserDefaults(suiteName: "group.com.yslee.tabikori") ?? .standard
+
+    private let sharedUserDefaults: UserDefaults = UserDefaults(suiteName: AppGroup.identifier) ?? .standard
     
     public func set<T>(_ value: T, forKey: TabiUserDefaultKey) {
         self.sharedUserDefaults.set(value, forKey: forKey.rawValue)

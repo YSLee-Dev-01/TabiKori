@@ -11,17 +11,16 @@ import Core
 
 enum Secret {
     static let tourAPIKey: String = Self.value(for: "TOUR_API_KEY")
-    static let exchangeAPIKey: String = Self.value(for: "EXCHANGE_API_KEY")
+    static let naverMapClientID: String = Self.value(for: "NMFNcpKeyId")
+    static let naverGeocodingClientSecret: String = Self.value(for: "NAVER_GEOCODING_CLIENT_SECRET")
 }
 
 private extension Secret {
     static func value(for key: String) -> String {
-        guard let value = Bundle(for: BundleToken.self).object(forInfoDictionaryKey: key) as? String else {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
             AppLogger.network.log(.error, "❌ Info.plist 키 누락: \(key)")
             return ""
         }
         return value
     }
 }
-
-private final class BundleToken {}

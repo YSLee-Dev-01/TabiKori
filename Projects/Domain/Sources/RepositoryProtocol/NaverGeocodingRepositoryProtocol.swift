@@ -1,0 +1,13 @@
+//
+//  NaverGeocodingRepositoryProtocol.swift
+//  Domain
+//
+//  Created by 이윤수 on 8/6/26.
+//  Copyright © 2026 yslee. All rights reserved.
+//
+
+import Foundation
+
+public protocol NaverGeocodingRepositoryProtocol: Sendable {
+    func geocode(address: String) async throws -> GeocodedAddress
+}

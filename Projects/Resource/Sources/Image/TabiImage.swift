@@ -27,7 +27,7 @@ public enum TabiImage: String {
     case regionJeonju = "regionJeonju"
 }
 
-public enum TabiIcon: String {
+public enum TabiIcon: String, Sendable {
 
     // MARK: - Category Icon
 
@@ -37,6 +37,18 @@ public enum TabiIcon: String {
     case festival = "calendar"
     case shopping = "bag"
     case nature = "leaf"
+    case subway = "tram.fill"
+
+    // MARK: - Toast Icon
+
+    case toastSuccess = "checkmark.circle.fill"
+    case toastInfo = "info.circle.fill"
+    case toastError = "exclamationmark.triangle.fill"
+
+    // MARK: - Search Icon
+
+    /// 검색어 번역 아이콘 (iOS 17.4+)
+    case translate = "translate"
 }
 
 // MARK: - Extension

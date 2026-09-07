@@ -1,0 +1,172 @@
+//
+//  BookmarkView.swift
+//  Presentation
+//
+//  Created by 이윤수 on 7/28/26.
+//  Copyright © 2026 yslee. All rights reserved.
+//
+
+import SwiftUI
+
+import ComposableArchitecture
+import DesignSystem
+import Domain
+import Resource
+
+public struct BookmarkView: View {
+
+    @Bindable private var store: StoreOf<BookmarkFeature>
+    @State private var headerHeight: CGFloat = 0
+
+    public init(store: StoreOf<BookmarkFeature>) {
+        self.store = store
+    }
+    
+    public var body: some View {
+        self.bookmarkList()
+            .safeAreaBar(edge: .top) {
+                TabiNavigationBar(title: Strings.Bookmark.title) {
+                    self.addCustomPlaceButton()
+                }
+            }
+            .sheet(item: self.$store.scope(state: \.addCustomPlaceState, action: \.addCustomPlace)) { store in
+                AddCustomPlaceView(store: store)
+            }
+            .onAppear {
+                self.store.send(.onAppear)
+            }
+    }
+}
+
+// MARK: - View
+
+private extension BookmarkView {
+    /// 로케일이 한국어이고 한국어 표기가 존재하면 한국어를 메인(볼드)으로 표시
+    func mainTitle(of touristSpot: TouristSpot) -> String {
+        if Locale.isKoreanLanguage, let koreanTitle = touristSpot.koreanTitle {
+            return koreanTitle
+        }
+        return touristSpot.japaneseTitle
+    }
+
+    func subTitle(of touristSpot: TouristSpot) -> String? {
+        if Locale.isKoreanLanguage, touristSpot.koreanTitle != nil {
+            return touristSpot.japaneseTitle
+        }
+        return touristSpot.koreanTitle
+    }
+
+    func addCustomPlaceButton() -> some View {
+        TabiGlassIconButton(systemName: "plus", size: .ml, foregroundColor: .tabiPrimary) {
+            self.store.send(.addCustomPlaceButtonTapped)
+        }
+    }
+
+    func bookmarkList() -> some View {
+        GeometryReader { proxy in
+            List {
+                Section {
+                    if self.store.isLoading {
+                        ProgressView()
+                            .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                            .frame(maxWidth: .infinity)
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                    } else if self.store.hasLoadFailed {
+                        TabiRetryableEmptyState(description: Strings.Bookmark.loadFailedDescription) {
+                            self.store.send(.onAppear)
+                        }
+                        .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                    } else if self.store.filteredBookmarks.isEmpty {
+                        if self.store.selectedCategory != nil {
+                            TabiEmptyState(
+                                systemImageName: "line.3.horizontal.decrease.circle",
+                                title: Strings.Bookmark.filteredEmptyTitle,
+                                description: Strings.Bookmark.filteredEmptyDescription,
+                                style: .card
+                            )
+                            .padding(.horizontal, 20)
+                            .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                        } else {
+                            TabiEmptyState(
+                                systemImageName: "heart.slash",
+                                title: Strings.Bookmark.emptyTitle,
+                                description: Strings.Bookmark.emptyDescription,
+                                style: .card
+                            )
+                            .padding(.horizontal, 20)
+                            .frame(height: max(proxy.size.height - self.headerHeight, 0))
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                        }
+                    } else {
+                        ForEach(self.store.filteredBookmarks) { bookmark in
+                            TabiSpotRow(
+                                thumbnailURL: bookmark.touristSpot.thumbnailURL,
+                                japaneseTitle: self.mainTitle(of: bookmark.touristSpot),
+                                koreanTitle: self.subTitle(of: bookmark.touristSpot),
+                                address: bookmark.touristSpot.address,
+                                tagTitle: bookmark.touristSpot.contentType.label,
+                                tagColor: bookmark.touristSpot.contentType.color,
+                                isCustom: bookmark.touristSpot.isCustom,
+                                distance: nil,
+                                onTap: {
+                                    if self.store.isEditing {
+                                        self.store.send(.editCellTapped(bookmark.touristSpot))
+                                    } else {
+                                        self.store.send(.spotTapped(bookmark.touristSpot))
+                                    }
+                                }
+                            )
+                            .listRowInsets(EdgeInsets())
+                            .listRowSeparator(.hidden)
+                            .swipeActions(edge: .trailing) {
+                                if self.store.isEditing == false {
+                                    Button(role: .destructive) {
+                                        self.store.send(.deleteSwiped(contentId: bookmark.id))
+                                    } label: {
+                                        Label(Strings.Common.delete, systemImage: "trash")
+                                    }
+                                }
+                            }
+                        }
+                        .onDelete { indexSet in
+                            for index in indexSet {
+                                self.store.send(.deleteSwiped(contentId: self.store.filteredBookmarks[index].id))
+                            }
+                        }
+                    }
+                } header: {
+                    VStack(alignment: .leading, spacing: 8) {
+                        BookmarkCategoryFilterBar(
+                            selectedCategory: self.store.selectedCategory,
+                            includesSubwayChip: true
+                        ) { category in
+                            self.store.send(.categoryFilterTapped(category), animation: .tabiStandard)
+                        }
+
+                        TabiLabel(
+                            title: Strings.Bookmark.savedCountTitle(self.store.filteredBookmarks.count),
+                            style: .captionMBold,
+                            color: .tabiTextSecondary
+                        )
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .onGeometryChange(for: CGFloat.self) { headerProxy in
+                        headerProxy.size.height
+                    } action: { newValue in
+                        self.headerHeight = newValue
+                    }
+                }
+            }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .contentMargins(.top, 0, for: .scrollContent)
+            .environment(\.editMode, .constant(self.store.isEditing ? .active : .inactive))
+        }
+    }
+}

@@ -1,0 +1,207 @@
+//
+//  SettingView.swift
+//  Presentation
+//
+//  Created by 이윤수 on 8/11/26.
+//  Copyright © 2026 yslee. All rights reserved.
+//
+
+import SwiftUI
+
+import ComposableArchitecture
+import DesignSystem
+import Resource
+
+public struct SettingView: View {
+
+    @Bindable private var store: StoreOf<SettingFeature>
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
+
+    public init(store: StoreOf<SettingFeature>) {
+        self.store = store
+    }
+
+    public var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                self.gpsSection()
+                self.planDetailSection()
+                if Locale.isKoreanLanguage == false {
+                    self.searchSection()
+                }
+                self.dataResetSection()
+                self.etcSection()
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+        }
+        .navigationTitle(Strings.Setting.screenTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    self.dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                }
+                .tint(Color.getTabiColor(.tabiPrimary))
+                .disabled(self.store.isResetting)
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .interactivePopGestureEnabled(self.store.isResetting == false)
+        .sheet(item: self.$store.scope(state: \.infoState, action: \.info)) { store in
+            SettingInfoView(store: store)
+                .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: Binding(
+            get: { self.store.isMailComposePresented },
+            set: { isPresented in
+                guard isPresented == false else { return }
+                self.store.send(.mailComposeDismissed)
+            }
+        )) {
+            SettingMailComposeView(
+                recipient: SettingEtcItem.contactEmailAddress,
+                subject: Strings.Setting.etcContactTitle,
+                onFinish: { self.store.send(.mailComposeDismissed) }
+            )
+            .ignoresSafeArea()
+        }
+        .sheet(isPresented: Binding(
+            get: { self.store.isPrivacyWebViewPresented },
+            set: { isPresented in
+                guard isPresented == false else { return }
+                self.store.send(.privacyWebViewDismissed)
+            }
+        )) {
+            self.privacyWebViewSheet()
+        }
+        .alert($store.scope(state: \.alert, action: \.alert))
+        .onAppear {
+            self.store.send(.onAppear)
+        }
+        .onChange(of: self.scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            self.store.send(.scenePhaseBecameActive)
+        }
+    }
+}
+
+// MARK: - View
+
+private extension SettingView {
+    func gpsSection() -> some View {
+        SettingSectionCard(title: Strings.Setting.gpsSectionTitle) {
+            SettingRow(
+                title: Strings.Setting.gpsRowTitle,
+                value: self.gpsStatusText
+            ) {
+                self.store.send(.gpsRowTapped)
+            }
+        }
+    }
+
+    func planDetailSection() -> some View {
+        SettingSectionCard(title: Strings.Setting.planDetailSectionTitle) {
+            SettingToggleRow(
+                title: Strings.Setting.autoScrollToTodayRowTitle,
+                description: Strings.Setting.autoScrollToTodayRowDescription,
+                isOn: Binding(
+                    get: { self.store.isAutoScrollToTodayEnabled },
+                    set: { self.store.send(.autoScrollToTodayToggled($0)) }
+                )
+            )
+        }
+    }
+
+    func searchSection() -> some View {
+        SettingSectionCard(title: Strings.Setting.searchSectionTitle) {
+            SettingToggleRow(
+                title: Strings.Setting.autoTranslateSearchRowTitle,
+                description: Strings.Setting.autoTranslateSearchRowDescription,
+                isOn: Binding(
+                    get: { self.store.isAutoTranslateSearchEnabled },
+                    set: { self.store.send(.autoTranslateSearchToggled($0)) }
+                )
+            )
+        }
+    }
+
+    func dataResetSection() -> some View {
+        SettingSectionCard(title: Strings.Setting.dataResetSectionTitle) {
+            SettingRow(
+                title: Strings.Setting.dataResetRowTitle,
+                description: Strings.Setting.dataResetRowDescription,
+                isDisabled: self.store.isResetting
+            ) {
+                self.store.send(.resetRowTapped)
+            }
+        }
+    }
+
+    func etcSection() -> some View {
+        SettingSectionCard(title: Strings.Setting.etcSectionTitle) {
+            ForEach(SettingEtcItem.allCases) { item in
+                if item != SettingEtcItem.allCases.first {
+                    Divider()
+                        .padding(.leading, 16)
+                }
+                self.etcRow(item)
+            }
+        }
+    }
+
+    @ViewBuilder
+    func etcRow(_ item: SettingEtcItem) -> some View {
+        switch item.kind {
+        case .staticText, .mailCompose, .openURL, .webView:
+            SettingRow(title: item.title) {
+                self.store.send(.etcRowTapped(item))
+            }
+
+        case .versionDisplay:
+            SettingRow(title: item.title, value: SettingEtcItem.appVersionText)
+
+        case .disabled:
+            SettingRow(title: item.title, value: Strings.Setting.etcComingSoonLabel, isDisabled: true)
+        }
+    }
+
+    func privacyWebViewSheet() -> some View {
+        VStack(spacing: 0) {
+            TabiNavigationBar(title: Strings.Onboarding.privacyPolicyWebViewTitle) {
+                TabiCircleIconButton(systemName: "xmark") {
+                    self.store.send(.privacyWebViewDismissed)
+                }
+            }
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+
+            ZStack {
+                TabiWebView(
+                    urlString: TabiURL.privacyPolicy,
+                    reloadTrigger: self.store.privacyPolicyReloadTrigger,
+                    onLoadFailed: { self.store.send(.privacyPolicyLoadFailed) }
+                )
+
+                if self.store.isPrivacyPolicyLoadFailed {
+                    TabiRetryableEmptyState(
+                        description: Strings.Onboarding.privacyPolicyLoadFailedDescription,
+                        onRetry: { self.store.send(.privacyPolicyRetryTapped) }
+                    )
+                    .background(TabiColor.tabiBackground)
+                }
+            }
+        }
+    }
+
+    var gpsStatusText: String {
+        switch self.store.locationStatus {
+        case .allowed: return Strings.Setting.gpsStatusAllowed
+        case .denied: return Strings.Setting.gpsStatusDenied
+        case .undetermined: return Strings.Setting.gpsStatusUndetermined
+        }
+    }
+}

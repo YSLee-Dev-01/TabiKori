@@ -15,19 +15,134 @@ extension DependencyValues {
         get {self[OnboardingUseCaseDependencyKey.self]}
         set {self[OnboardingUseCaseDependencyKey.self] = newValue}
     }
+
+    public var autoScrollToTodayUseCase: AutoScrollToTodayUseCaseProtocol {
+        get {self[AutoScrollToTodayUseCaseDependencyKey.self]}
+        set {self[AutoScrollToTodayUseCaseDependencyKey.self] = newValue}
+    }
+
+    public var autoTranslateSearchUseCase: AutoTranslateSearchUseCaseProtocol {
+        get {self[AutoTranslateSearchUseCaseDependencyKey.self]}
+        set {self[AutoTranslateSearchUseCaseDependencyKey.self] = newValue}
+    }
     
     public var locationUseCase: LocationUseCaseProtocol {
         get {self[LocationUseCaseDependencyKey.self]}
         set {self[LocationUseCaseDependencyKey.self] = newValue}
     }
-
+    
     public var exchangeRateUseCase: ExchangeRateUseCaseProtocol {
         get {self[ExchangeRateUseCaseDependencyKey.self]}
         set {self[ExchangeRateUseCaseDependencyKey.self] = newValue}
     }
-
+    
     public var touristSpotUseCase: TouristSpotUseCaseProtocol {
         get {self[TouristSpotUseCaseDependencyKey.self]}
         set {self[TouristSpotUseCaseDependencyKey.self] = newValue}
+    }
+    
+    public var naverMapUseCase: NaverMapUseCaseProtocol {
+        get {self[NaverMapUseCaseDependencyKey.self]}
+        set {self[NaverMapUseCaseDependencyKey.self] = newValue}
+    }
+    
+    public var searchHistoryUseCase: SearchHistoryUseCaseProtocol {
+        get {self[SearchHistoryUseCaseDependencyKey.self]}
+        set {self[SearchHistoryUseCaseDependencyKey.self] = newValue}
+    }
+    
+    public var bookmarkUseCase: BookmarkUseCaseProtocol {
+        get {self[BookmarkUseCaseDependencyKey.self]}
+        set {self[BookmarkUseCaseDependencyKey.self] = newValue}
+    }
+    
+    public var travelPlanUseCase: TravelPlanUseCaseProtocol {
+        get {self[TravelPlanUseCaseDependencyKey.self]}
+        set {self[TravelPlanUseCaseDependencyKey.self] = newValue}
+    }
+    
+    public var travelPlanDetailUseCase: TravelPlanDetailUseCaseProtocol {
+        get {self[TravelPlanDetailUseCaseDependencyKey.self]}
+        set {self[TravelPlanDetailUseCaseDependencyKey.self] = newValue}
+    }
+    
+    public var travelPlanShareUseCase: TravelPlanShareUseCaseProtocol {
+        get {self[TravelPlanShareUseCaseDependencyKey.self]}
+        set {self[TravelPlanShareUseCaseDependencyKey.self] = newValue}
+    }
+    
+    public var festivalUseCase: FestivalUseCaseProtocol {
+        get {self[FestivalUseCaseDependencyKey.self]}
+        set {self[FestivalUseCaseDependencyKey.self] = newValue}
+    }
+    
+    public var naverGeocodingUseCase: NaverGeocodingUseCaseProtocol {
+        get {self[NaverGeocodingUseCaseDependencyKey.self]}
+        set {self[NaverGeocodingUseCaseDependencyKey.self] = newValue}
+    }
+    
+    public var dataResetUseCase: DataResetUseCaseProtocol {
+        get {self[DataResetUseCaseDependencyKey.self]}
+        set {self[DataResetUseCaseDependencyKey.self] = newValue}
+    }
+    
+    public var subwayStationUseCase: SubwayStationUseCaseProtocol {
+        get {self[SubwayStationUseCaseDependencyKey.self]}
+        set {self[SubwayStationUseCaseDependencyKey.self] = newValue}
+    }
+    
+    public var toolBarItemUseCase: ToolBarItemUseCaseProtocol {
+        get {self[ToolBarItemUseCaseDependencyKey.self]}
+        set {self[ToolBarItemUseCaseDependencyKey.self] = newValue}
+    }
+
+    public var shoppingPlanItemUseCase: ShoppingPlanItemUseCaseProtocol {
+        get {self[ShoppingPlanItemUseCaseDependencyKey.self]}
+        set {self[ShoppingPlanItemUseCaseDependencyKey.self] = newValue}
+    }
+
+    public var koreanPhraseUseCase: KoreanPhraseUseCaseProtocol {
+        get {self[KoreanPhraseUseCaseDependencyKey.self]}
+        set {self[KoreanPhraseUseCaseDependencyKey.self] = newValue}
+    }
+
+    public var shoppingItemUseCase: ShoppingItemUseCaseProtocol {
+        get {self[ShoppingItemUseCaseDependencyKey.self]}
+        set {self[ShoppingItemUseCaseDependencyKey.self] = newValue}
+    }
+
+    public var toastCenter: ToastCenterProtocol {
+        get {self[ToastCenterDependencyKey.self]}
+        set {self[ToastCenterDependencyKey.self] = newValue}
+    }
+
+    public var settingInfoUseCase: SettingInfoUseCaseProtocol {
+        get {self[SettingInfoUseCaseDependencyKey.self]}
+        set {self[SettingInfoUseCaseDependencyKey.self] = newValue}
+    }
+
+    public var analyticsCenter: AnalyticsCenterProtocol {
+        get {self[AnalyticsCenterDependencyKey.self]}
+        set {self[AnalyticsCenterDependencyKey.self] = newValue}
+    }
+
+    public var widgetSnapshotStore: WidgetSnapshotStoreProtocol {
+        get {self[WidgetSnapshotStoreDependencyKey.self]}
+        set {self[WidgetSnapshotStoreDependencyKey.self] = newValue}
+    }
+
+    public var appUpdateUseCase: AppUpdateUseCaseProtocol {
+        get {self[AppUpdateUseCaseDependencyKey.self]}
+        set {self[AppUpdateUseCaseDependencyKey.self] = newValue}
+    }
+
+    public var noticePopupUseCase: NoticePopupUseCaseProtocol {
+        get {self[NoticePopupUseCaseDependencyKey.self]}
+        set {self[NoticePopupUseCaseDependencyKey.self] = newValue}
+    }
+
+    public var homeSheetAnnounceUseCase: HomeSheetAnnounceUseCaseProtocol {
+        get {self[HomeSheetAnnounceUseCaseDependencyKey.self]}
+        set {self[HomeSheetAnnounceUseCaseDependencyKey.self] = newValue}
     }
 }

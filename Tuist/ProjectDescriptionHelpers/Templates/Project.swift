@@ -14,7 +14,9 @@ public extension Project {
         product: Product,
         hasResource: Bool,
         infoPlist: InfoPlist = .file(path: .relativeToRoot("Tuist/Config/Info.plist")),
-        xcconfig: Path? = nil
+        xcconfig: Path? = nil,
+        entitlements: Entitlements? = nil,
+        scripts: [TargetScript] = []
     ) -> Project {
         let debugScheme = Scheme.makeScheme(
             schemeName: "\(name)Debug",
@@ -42,7 +44,9 @@ public extension Project {
                     product: product,
                     dependencies: DependencyInformation.dependencies(name: name),
                     infoPlist: infoPlist,
-                    xcconfig: xcconfig
+                    xcconfig: xcconfig,
+                    entitlements: entitlements,
+                    scripts: scripts
                 )
             ],
             schemes: [
@@ -55,8 +59,8 @@ public extension Project {
     private static func options(disableBundleAccessors: Bool) -> Options {
         return Options.options(
             automaticSchemesOptions: .disabled,
-            defaultKnownRegions: ["en", "ko"],
-            developmentRegion: "ko",
+            defaultKnownRegions: ["en", "ja", "ko"],
+            developmentRegion: "ja",
             disableBundleAccessors: !disableBundleAccessors
         )
     }

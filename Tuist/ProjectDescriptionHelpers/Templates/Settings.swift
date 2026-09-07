@@ -15,6 +15,8 @@ extension Settings {
                 "SWIFT_VERSION": "6.0",
                 "IPHONEOS_DEPLOYMENT_TARGET": "\(Environment.deploymentTargetVersion)",
                 "OTHER_LDFLAGS": "-ObjC",
+                "MARKETING_VERSION": "\(Environment.appVersion)",
+                "CURRENT_PROJECT_VERSION": "\(Environment.buildNumber)",
             ],
             configurations: [
                 .debug(

@@ -15,17 +15,23 @@ public extension Target {
         product: Product,
         dependencies: [TargetDependency],
         infoPlist: InfoPlist = .file(path: .relativeToRoot("Tuist/Config/Info.plist")),
-        xcconfig: Path? = nil
+        xcconfig: Path? = nil,
+        entitlements: Entitlements? = nil,
+        scripts: [TargetScript] = []
     ) -> Target {
         return Target.target(
             name: name,
             destinations: Environment.destinations,
             product: product,
-            bundleId: "\(Environment.organizationName).\(Environment.appName).\(name)",
+            bundleId: product == .app
+                ? Environment.bundleIdentifier
+                : "\(Environment.bundleIdentifier).\(name)",
             deploymentTargets: Environment.deploymentTarget,
             infoPlist: infoPlist,
             sources: ["Sources/**"],
             resources: hasResource ? ["Resources/**"] : nil,
+            entitlements: entitlements,
+            scripts: scripts,
             dependencies: dependencies,
             settings: Settings.defaultTargetSettings(xcconfig: xcconfig)
             )

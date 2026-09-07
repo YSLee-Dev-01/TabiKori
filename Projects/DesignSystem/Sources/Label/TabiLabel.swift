@@ -16,6 +16,7 @@ public struct TabiLabel: View {
     private let alignment: Alignment
     private let isExpanded: Bool
     private let lineLimit: Int?
+    private let isUnderlined: Bool
 
     public init(
         title: String,
@@ -23,7 +24,8 @@ public struct TabiLabel: View {
         color: TabiColor,
         alignment: Alignment = .leading,
         isExpanded: Bool = false,
-        lineLimit: Int? = nil
+        lineLimit: Int? = nil,
+        isUnderlined: Bool = false
     ) {
         self.title = title
         self.style = style
@@ -31,12 +33,14 @@ public struct TabiLabel: View {
         self.alignment = alignment
         self.isExpanded = isExpanded
         self.lineLimit = lineLimit
+        self.isUnderlined = isUnderlined
     }
 
     public var body: some View {
         Text(self.title)
             .font(.pretendard(self.style.weight, size: self.style.size))
             .foregroundStyle(self.color)
+            .underline(self.isUnderlined)
             .lineLimit(self.lineLimit)
             .multilineTextAlignment(self.alignment.textAlignment)
             .frame(maxWidth: self.isExpanded ? .infinity : nil, alignment: self.alignment)
