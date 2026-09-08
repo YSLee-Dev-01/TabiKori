@@ -149,7 +149,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "장소 추가"
+            "value": "북마크 추가"
           }
         }
       }
@@ -251,7 +251,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "제목"
+            "value": "장소 이름"
           }
         }
       }
@@ -285,7 +285,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "소요 시간"
+            "value": "총 시간"
           }
         }
       }
@@ -438,7 +438,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "저장한 장소가 없어요"
+            "value": "저장된 장소가 없어요"
           }
         }
       }
@@ -1067,7 +1067,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "종료일을 지정하면 해당 기간 안에 끝나는 이벤트만 표시돼요"
+            "value": "종료일을 설정하면 해당 기간 안에 끝나는 이벤트만 검색돼요"
           }
         }
       }
@@ -1084,7 +1084,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "조건을 바꿔서 다시 시도해주세요"
+            "value": "검색 조건을 변경해주세요"
           }
         }
       }
@@ -1101,7 +1101,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이벤트를 찾을 수 없어요"
+            "value": "조건에 맞는 이벤트가 없어요"
           }
         }
       }
@@ -1237,7 +1237,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "서울에 계시네요!"
+            "value": "어떤 일정을 만들어볼까요?"
           }
         }
       }
@@ -1900,7 +1900,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "최근 검색 기록이 없어요"
+            "value": "검색 기록이 없어요"
           }
         }
       }
@@ -2019,7 +2019,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "다른 키워드로 검색해보세요"
+            "value": "다른 키워드로 검색해주세요"
           }
         }
       }
@@ -2223,7 +2223,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "일정에 간편하게 추가할 수 있어요"
+            "value": "원하는 일정에 바로 추가할 수 있어요"
           }
         }
       }
@@ -2240,7 +2240,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "북마크에 저장할 수 있어요"
+            "value": "관심 있는 장소는 북마크에 모아놓을 수 있어요"
           }
         }
       }
@@ -2291,7 +2291,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "카테고리로 검색을 시작해요"
+            "value": "원하는 카테고리를 눌러 바로 검색할 수 있어요"
           }
         }
       }
@@ -2342,7 +2342,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "검색 결과를 눌러서 상세정보를 확인할 수 있어요"
+            "value": "결과를 눌러 상세정보를 확인할 수 있어요"
           }
         }
       }
@@ -2427,7 +2427,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "전체 지도로 확인해보세요"
+            "value": "하루 일정을 전체화면으로 확인할 수 있어요"
           }
         }
       }
@@ -2529,7 +2529,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "네트워크 연결을 확인한 후 다시 시도해주세요"
+            "value": "네트워크 연결이 불안정해요"
           }
         }
       }
@@ -2546,7 +2546,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "먼저 내용을 확인해야 동의할 수 있어요"
+            "value": "먼저 개인정보처리방침을 확인해주세요"
           }
         }
       }
@@ -2631,7 +2631,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "사용 방법을 간단히 설명해드릴게요!"
+            "value": "사용법을 간단히 소개해드릴게요"
           }
         }
       }
@@ -2880,13 +2880,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld日間"
+            "value": "%1$lld泊%2$lld日"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld일"
+            "value": "%1$lld박%2$lld일"
           }
         }
       }
@@ -3005,7 +3005,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "오른쪽 위 + 버튼으로 여행 일정을 추가해보세요"
+            "value": "+ 버튼으로 여행 일정을 추가할 수 있어요"
           }
         }
       }
@@ -3175,7 +3175,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "일정 목록에 추가됐어요"
+            "value": "일정 목록에서 바로 확인할 수 있어요"
           }
         }
       }
@@ -3192,7 +3192,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "가져오기가 완료됐어요"
+            "value": "일정을 성공적으로 가져왔어요"
           }
         }
       }
@@ -3311,7 +3311,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이 일정을 삭제할까요?"
+            "value": "일정을 삭제할까요?"
           }
         }
       }
@@ -3668,7 +3668,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "네트워크 연결을 확인한 후 다시 시도해주세요"
+            "value": "네트워크 연결이 불안정해요"
           }
         }
       }
@@ -3787,7 +3787,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "관광 장소"
+            "value": "모아보기"
           }
         }
       }
@@ -4569,7 +4569,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "+ 버튼으로 목록을 추가할 수 있어요"
+            "value": "+ 버튼으로 쇼핑 목록을 추가할 수 있어요"
           }
         }
       }
@@ -5130,7 +5130,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "+ 버튼으로 목록을 추가할 수 있어요"
+            "value": "+ 버튼으로 준비물을 추가할 수 있어요"
           }
         }
       }

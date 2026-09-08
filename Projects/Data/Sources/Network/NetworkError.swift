@@ -26,6 +26,29 @@ public enum NetworkError: Error, Equatable {
 
 extension NetworkError: LocalizedError {
     public var errorDescription: String? {
+        if Self.isKoreanLocale {
+            switch self {
+            case .timeout:
+                return "네트워크 연결이 시간 초과되었어요"
+            case .cancelled:
+                return "요청이 취소되었어요"
+            case .invalidURL:
+                return "요청 주소가 올바르지 않아요"
+            case .decodingError:
+                return "데이터 처리 중 오류가 발생했어요"
+            case .serverError:
+                return "서버에 문제가 발생했어요\n잠시 후 다시 시도해주세요"
+            case .clientError:
+                return "요청 처리 중 오류가 발생했어요"
+            case .networkError:
+                return "네트워크 연결 상태를 확인해주세요"
+            case .apiError:
+                return "데이터를 불러오는 중 오류가 발생했어요"
+            case .unknown:
+                return "알 수 없는 오류가 발생했어요"
+            }
+        }
+
         switch self {
         case .timeout:
             return "ネットワーク接続がタイムアウトしました"
@@ -46,6 +69,14 @@ extension NetworkError: LocalizedError {
         case .unknown:
             return "不明なエラーが発生しました"
         }
+    }
+}
+
+// MARK: - Method
+
+private extension NetworkError {
+    static var isKoreanLocale: Bool {
+        return Locale.current.language.languageCode == .korean
     }
 }
 

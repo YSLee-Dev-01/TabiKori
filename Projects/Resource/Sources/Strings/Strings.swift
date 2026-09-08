@@ -483,9 +483,10 @@ public extension Strings.Plan {
     static var pastSectionTitle: String {
         String(localized: "Plan.pastSectionTitle", defaultValue: "過去の日程", table: "Localizable", bundle: .module)
     }
-    /// 기간 배지 (%d: 일수)
+    /// 기간 배지 (%1$d: 박, %2$d: 일수)
     static func durationBadge(_ days: Int) -> String {
-        String(localized: "Plan.durationBadge", defaultValue: "\(days)日間", table: "Localizable", bundle: .module)
+        let nights = max(days - 1, 0)
+        return String(localized: "Plan.durationBadge", defaultValue: "\(nights)泊\(days)日", table: "Localizable", bundle: .module)
     }
     /// 일자 칩 (%d: 일차)
     static func dayChipTitle(_ day: Int) -> String {
