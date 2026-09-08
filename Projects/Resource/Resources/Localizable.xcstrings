@@ -500,7 +500,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld件のスポットを保存中"
+            "value": "%lld件保存済み"
           }
         },
         "ko": {
@@ -1231,7 +1231,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ソウルにいますね！"
+            "value": "どんな日程を作ってみましょうか？"
           }
         },
         "ko": {
@@ -2387,7 +2387,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "日ごとの予定がわかります"
+            "value": "旅行ごとに日程を分けて管理できます"
           }
         },
         "ko": {
@@ -2886,7 +2886,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$lld박%2$lld일"
+            "value": "%1$lld박 %2$lld일"
           }
         }
       }
@@ -3339,7 +3339,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "予定を編集"
+            "value": "日程を編集"
           }
         },
         "ko": {
@@ -4240,7 +4240,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "拒否"
+            "value": "拒否済み"
           }
         },
         "ko": {
@@ -4280,7 +4280,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이 앱은 다음의 라이브러리·SDK를 사용하고 있어요.\n\n・swift-composable-architecture — MIT License\n   © Point-Free, Inc.\n\n・Kingfisher — MIT License\n   © Wei Wang\n\n・lottie-ios — Apache License 2.0\n   © Airbnb, Inc.\n\n・firebase-ios-sdk — Apache License 2.0\n   © Google LLC\n\n・SPM-NMapsMap (NAVER Maps SDK) — プロプライエタリライセンス\n   © NAVER Corp. All rights reserved."
+            "value": "이 앱은 다음의 라이브러리·SDK를 사용하고 있어요.\n\n・swift-composable-architecture — MIT License\n   © Point-Free, Inc.\n\n・Kingfisher — MIT License\n   © Wei Wang\n\n・lottie-ios — Apache License 2.0\n   © Airbnb, Inc.\n\n・firebase-ios-sdk — Apache License 2.0\n   © Google LLC\n\n・SPM-NMapsMap (NAVER Maps SDK) — 독점 라이선스\n   © NAVER Corp. All rights reserved."
           }
         }
       }
@@ -5124,7 +5124,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ツールタブの持ち物リストから、この日程に保存できます"
+            "value": "右上の＋ボタンから持ち物を追加できます"
           }
         },
         "ko": {
