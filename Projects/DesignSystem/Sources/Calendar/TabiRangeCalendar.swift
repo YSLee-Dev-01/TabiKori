@@ -30,14 +30,13 @@ public struct TabiRangeCalendar: View {
     private let initialMonth: Date
     private let editingField: TabiCalendarField?
 
-    /// 요일 헤더(日 月 火 水 木 金 土)가 항상 일요일 시작으로 고정되어 있으므로,
+    /// 요일 헤더가 항상 일요일 시작으로 고정되어 있으므로,
     /// 날짜 그리드 계산도 기기 로케일의 `firstWeekday`와 무관하게 일요일 기준으로 고정한다
     private var calendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
         calendar.firstWeekday = 1
         return calendar
     }()
-    private let weekdaySymbols = ["日", "月", "火", "水", "木", "金", "土"]
 
     // MARK: - Init
 
@@ -160,6 +159,11 @@ private extension TabiRangeCalendar {
         let isKorean = Locale.current.language.languageCode == .korean
         formatter.dateFormat = isKorean ? "yyyy년 M월" : "yyyy年 M月"
         return formatter.string(from: self.displayedMonth)
+    }
+
+    var weekdaySymbols: [String] {
+        let isKorean = Locale.current.language.languageCode == .korean
+        return isKorean ? ["일", "월", "화", "수", "목", "금", "토"] : ["日", "月", "火", "水", "木", "金", "土"]
     }
 
     var daysInDisplayedMonth: [Date?] {
