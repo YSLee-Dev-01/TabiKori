@@ -31,9 +31,9 @@ struct PlanDetailSpotRow: View {
                 HStack(alignment: .center, spacing: 8) {
                     VStack(alignment: .leading, spacing: 6) {
                         TabiTag(self.spot.category.label, color: self.spot.category.color)
-                        TabiLabel(title: self.spot.title, style: .bodyMBold, color: .tabiTextPrimary)
-                        if let subtitle = self.spot.subtitle {
-                            TabiLabel(title: subtitle, style: .captionM, color: .tabiTextSecondary)
+                        TabiLabel(title: self.mainTitle, style: .bodyMBold, color: .tabiTextPrimary)
+                        if let subTitle = self.subTitle {
+                            TabiLabel(title: subTitle, style: .captionM, color: .tabiTextSecondary)
                         }
                         TabiLabel(title: self.spot.durationTitle, style: .captionM, color: .tabiTextTertiary)
                     }
@@ -49,6 +49,26 @@ struct PlanDetailSpotRow: View {
             }
             .padding(.vertical, 4)
         }
+    }
+}
+
+// MARK: - Method
+
+private extension PlanDetailSpotRow {
+    /// 지하철역 스팟(`isStation == true`)이고 로케일이 한국어이면 한국어 역명을 메인(볼드)으로 표시.
+    /// 일반 스팟은 `subtitle`이 한국어 표기가 아닌 주소일 수 있어(`AddToItineraryFeature`) 스왑 대상에서 제외
+    var mainTitle: String {
+        if self.spot.isStation, Locale.isKoreanLanguage, let subtitle = self.spot.subtitle {
+            return subtitle
+        }
+        return self.spot.title
+    }
+
+    var subTitle: String? {
+        if self.spot.isStation, Locale.isKoreanLanguage, self.spot.subtitle != nil {
+            return self.spot.title
+        }
+        return self.spot.subtitle
     }
 }
 

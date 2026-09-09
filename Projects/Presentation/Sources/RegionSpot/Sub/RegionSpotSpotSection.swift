@@ -45,8 +45,8 @@ struct RegionSpotSpotSection: View {
                     ForEach(self.spots) { spot in
                         TabiSpotRow(
                             thumbnailURL: spot.thumbnailURL,
-                            japaneseTitle: spot.japaneseTitle,
-                            koreanTitle: spot.koreanTitle,
+                            japaneseTitle: self.mainTitle(of: spot),
+                            koreanTitle: self.subTitle(of: spot),
                             tagTitle: spot.contentType.label,
                             tagColor: spot.contentType.color,
                             isCustom: spot.isCustom,
@@ -59,5 +59,24 @@ struct RegionSpotSpotSection: View {
             }
         }
         .animation(.tabiStandard, value: self.loadState)
+    }
+}
+
+// MARK: - Method
+
+private extension RegionSpotSpotSection {
+    /// 로케일이 한국어이고 한국어 표기가 존재하면 한국어를 메인(볼드)으로 표시
+    func mainTitle(of spot: TouristSpot) -> String {
+        if Locale.isKoreanLanguage, let koreanTitle = spot.koreanTitle {
+            return koreanTitle
+        }
+        return spot.japaneseTitle
+    }
+
+    func subTitle(of spot: TouristSpot) -> String? {
+        if Locale.isKoreanLanguage, spot.koreanTitle != nil {
+            return spot.japaneseTitle
+        }
+        return spot.koreanTitle
     }
 }
