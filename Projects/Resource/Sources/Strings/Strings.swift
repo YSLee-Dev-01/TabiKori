@@ -211,7 +211,7 @@ public extension Strings.Home {
     static var eventFestivalTitle: String {
         String(localized: "Home.eventFestivalTitle", defaultValue: "イベント・お祭り", table: "Localizable", bundle: .module)
     }
-    /// 위치 배너 제목
+    /// 위치 권한 없음 안내 배너 제목
     static var locationBannerTitle: String {
         String(localized: "Home.locationBannerTitle", defaultValue: "位置情報へのアクセス", table: "Localizable", bundle: .module)
     }
@@ -959,7 +959,7 @@ public extension Strings.Setting {
         String(localized: "Setting.gpsStatusUndetermined", defaultValue: "未設定", table: "Localizable", bundle: .module)
     }
 
-    /// 일정 상세 섹션 타이틀
+    /// 일정 섹션 타이틀
     static var planDetailSectionTitle: String {
         String(localized: "Setting.planDetailSectionTitle", defaultValue: "日程詳細", table: "Localizable", bundle: .module)
     }

@@ -506,7 +506,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld개 저장"
+            "value": "%lld개 저장 중"
           }
         }
       }
@@ -1356,7 +1356,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "주변 장소를 보여드리려면 위치 정보 사용을 허용해주세요"
+            "value": "주변 관광지와 여행 정보를 제공하기 위해서는 위치 권한이 필요해요"
           }
         }
       }
@@ -1373,7 +1373,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "위치 정보 접근"
+            "value": "위치 권한 없음"
           }
         }
       }
@@ -1458,7 +1458,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "주변에 관광 장소가 없어요"
+            "value": "주변에 관광지가 없어요"
           }
         }
       }
@@ -1934,7 +1934,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이 지역에서 다시 검색"
+            "value": "현 지도에서 다시 검색"
           }
         }
       }
@@ -2665,7 +2665,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "새 일정 만들기"
+            "value": "일정 생성"
           }
         }
       }
@@ -3039,7 +3039,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "내보낸 파일은 받는 사람이 타비코리의 '가져오기'에서 열면 일정이 추가돼요"
+            "value": "내보낸 파일은 タビコリ(타비코리) 앱에서 일정 > 가져오기를 통해 열면 일정이 추가돼요"
           }
         }
       }
@@ -3056,7 +3056,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "공유 방법 안내"
+            "value": "공유 방법"
           }
         }
       }
@@ -3804,7 +3804,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "일정 상세를 열면 오늘 날짜로 자동으로 이동해요"
+            "value": "일정 상세 화면을 열 때 오늘 날짜로 자동 이동해요"
           }
         }
       }
@@ -4195,7 +4195,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "위치 정보 접근"
+            "value": "위치 권한"
           }
         }
       }
@@ -4212,7 +4212,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "위치 정보 권한"
+            "value": "위치 권한"
           }
         }
       }
@@ -4314,7 +4314,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "일정 상세"
+            "value": "일정"
           }
         }
       }
