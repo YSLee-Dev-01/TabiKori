@@ -1286,6 +1286,10 @@ public extension Strings.KoreanPhrase {
     static var translationEmptyJapaneseToast: String {
         String(localized: "KoreanPhrase.translationEmptyJapaneseToast", defaultValue: "日本語を入力してから翻訳してください", table: "Localizable", bundle: .module)
     }
+    /// 목록 화면 상단 - 항목을 누르면 전체화면으로 볼 수 있다는 안내 문구
+    static var fullScreenGuideDescription: String {
+        String(localized: "KoreanPhrase.fullScreenGuideDescription", defaultValue: "項目をタップすると全画面で確認できます", table: "Localizable", bundle: .module)
+    }
 }
 
 public extension Strings.Shopping {

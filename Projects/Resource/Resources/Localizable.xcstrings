@@ -1820,6 +1820,23 @@
         }
       }
     },
+    "KoreanPhrase.fullScreenGuideDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "項目をタップすると全画面で確認できます"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "항목을 누르면 전체화면으로 볼 수 있어요"
+          }
+        }
+      }
+    },
     "KoreanPhrase.translationEmptyJapaneseToast": {
       "extractionState": "manual",
       "localizations": {
