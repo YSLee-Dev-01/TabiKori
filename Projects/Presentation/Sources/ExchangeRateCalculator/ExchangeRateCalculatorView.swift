@@ -28,7 +28,11 @@ public struct ExchangeRateCalculatorView: View {
 
     public var body: some View {
         Group {
-            if self.store.hasLoadFailed {
+            if self.store.isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 24)
+            } else if self.store.hasLoadFailed {
                 TabiRetryableEmptyState(description: Strings.RegionSpot.errorDescription) {
                     self.store.send(.retryButtonTapped)
                 }
