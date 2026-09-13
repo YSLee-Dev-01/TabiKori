@@ -483,10 +483,17 @@ public extension Strings.Plan {
     static var pastSectionTitle: String {
         String(localized: "Plan.pastSectionTitle", defaultValue: "過去の日程", table: "Localizable", bundle: .module)
     }
-    /// 기간 배지 (%1$d: 박, %2$d: 일수)
+    /// 기간 배지 (%1$d: 박, %2$d: 일수), 당일치기(1일)인 경우 전용 문구 사용
     static func durationBadge(_ days: Int) -> String {
         let nights = max(days - 1, 0)
+        if nights == 0 {
+            return dayTripBadge
+        }
         return String(localized: "Plan.durationBadge", defaultValue: "\(nights)泊\(days)日", table: "Localizable", bundle: .module)
+    }
+    /// 당일치기 배지
+    static var dayTripBadge: String {
+        String(localized: "Plan.dayTripBadge", defaultValue: "日帰り", table: "Localizable", bundle: .module)
     }
     /// 일자 칩 (%d: 일차)
     static func dayChipTitle(_ day: Int) -> String {

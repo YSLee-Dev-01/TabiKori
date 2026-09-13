@@ -2908,6 +2908,23 @@
         }
       }
     },
+    "Plan.dayTripBadge": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日帰り"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "당일치기"
+          }
+        }
+      }
+    },
     "Plan.editCancelButton": {
       "extractionState": "manual",
       "localizations": {
