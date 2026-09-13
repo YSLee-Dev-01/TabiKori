@@ -141,17 +141,15 @@ private extension BookmarkView {
                         }
                     }
                 } header: {
-                    if self.store.bookmarks.isEmpty {
-                        EmptyView()
-                    } else {
-                        VStack(alignment: .leading, spacing: 8) {
-                            BookmarkCategoryFilterBar(
-                                selectedCategory: self.store.selectedCategory,
-                                includesSubwayChip: true
-                            ) { category in
-                                self.store.send(.categoryFilterTapped(category), animation: .tabiStandard)
-                            }
+                    VStack(alignment: .leading, spacing: 8) {
+                        BookmarkCategoryFilterBar(
+                            selectedCategory: self.store.selectedCategory,
+                            includesSubwayChip: true
+                        ) { category in
+                            self.store.send(.categoryFilterTapped(category), animation: .tabiStandard)
+                        }
 
+                        if self.store.bookmarks.isEmpty == false {
                             TabiLabel(
                                 title: Strings.Bookmark.savedCountTitle(self.store.filteredBookmarks.count),
                                 style: .captionMBold,
@@ -159,11 +157,11 @@ private extension BookmarkView {
                             )
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .onGeometryChange(for: CGFloat.self) { headerProxy in
-                            headerProxy.size.height
-                        } action: { newValue in
-                            self.headerHeight = newValue
-                        }
+                    }
+                    .onGeometryChange(for: CGFloat.self) { headerProxy in
+                        headerProxy.size.height
+                    } action: { newValue in
+                        self.headerHeight = newValue
                     }
                 }
             }
