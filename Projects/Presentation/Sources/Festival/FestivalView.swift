@@ -10,6 +10,7 @@ import SwiftUI
 
 import ComposableArchitecture
 import DesignSystem
+import Domain
 import Resource
 
 public struct FestivalView: View {
@@ -107,8 +108,8 @@ private extension FestivalView {
                         ForEach(self.store.festivals) { festival in
                             TabiFestivalRow(
                                 thumbnailURL: festival.touristSpot.thumbnailURL,
-                                japaneseTitle: festival.touristSpot.japaneseTitle,
-                                koreanTitle: festival.touristSpot.koreanTitle,
+                                japaneseTitle: self.mainTitle(of: festival.touristSpot),
+                                koreanTitle: self.subTitle(of: festival.touristSpot),
                                 periodTitle: festival.periodTitle,
                                 onTap: { self.store.send(.festivalTapped(festival)) }
                             )
@@ -117,5 +118,24 @@ private extension FestivalView {
                 }
             }
         }
+    }
+}
+
+// MARK: - Method
+
+private extension FestivalView {
+    /// 로케일이 한국어이고 한국어 표기가 존재하면 한국어를 메인(볼드)으로 표시
+    func mainTitle(of spot: TouristSpot) -> String {
+        if Locale.isKoreanLanguage, let koreanTitle = spot.koreanTitle {
+            return koreanTitle
+        }
+        return spot.japaneseTitle
+    }
+
+    func subTitle(of spot: TouristSpot) -> String? {
+        if Locale.isKoreanLanguage, spot.koreanTitle != nil {
+            return spot.japaneseTitle
+        }
+        return spot.koreanTitle
     }
 }

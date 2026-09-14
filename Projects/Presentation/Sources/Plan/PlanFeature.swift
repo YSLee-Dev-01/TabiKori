@@ -42,7 +42,9 @@ public struct PlanFeature: Sendable {
 
         var ongoingPlans: [TravelPlan] { self.plans.filter { $0.section == .ongoing } }
         var upcomingPlans: [TravelPlan] { self.plans.filter { $0.section == .upcoming } }
-        var pastPlans: [TravelPlan] { self.plans.filter { $0.section == .past } }
+        var pastPlans: [TravelPlan] {
+            self.plans.filter { $0.section == .past }.sorted { $0.startDate > $1.startDate }
+        }
     }
 
     public enum Action: Equatable {

@@ -81,6 +81,15 @@ private extension KoreanPhraseListView {
 
     func list() -> some View {
         List {
+            TabiLabel(
+                title: Strings.KoreanPhrase.fullScreenGuideDescription,
+                style: .captionM,
+                color: .tabiTextSecondary
+            )
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 0, trailing: 20))
+
             if self.store.customPhrases.isEmpty == false {
                 Section {
                     ForEach(self.store.customPhrases) { phrase in

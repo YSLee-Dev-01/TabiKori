@@ -184,8 +184,8 @@ private extension PlanDetailAddSpotAddressView {
                     }
                     TabiSpotRow(
                         thumbnailURL: nil,
-                        japaneseTitle: station.displayJapaneseName,
-                        koreanTitle: station.koreanName,
+                        japaneseTitle: self.mainTitle(of: station),
+                        koreanTitle: self.subTitle(of: station),
                         address: station.lineNumbers.joined(separator: "・"),
                         tagTitle: CategoryType.subway.label,
                         tagColor: CategoryType.subway.color,
@@ -246,5 +246,14 @@ private extension PlanDetailAddSpotAddressView {
             self.onConfirmTapped()
         }
         .disabled(!self.isConfirmEnabled)
+    }
+
+    /// 로케일이 한국어이면 한국어 역명을 메인(볼드)으로 표시
+    func mainTitle(of station: SubwayStation) -> String {
+        Locale.isKoreanLanguage ? station.koreanName : station.displayJapaneseName
+    }
+
+    func subTitle(of station: SubwayStation) -> String {
+        Locale.isKoreanLanguage ? station.displayJapaneseName : station.koreanName
     }
 }

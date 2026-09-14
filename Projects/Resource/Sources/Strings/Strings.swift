@@ -211,7 +211,7 @@ public extension Strings.Home {
     static var eventFestivalTitle: String {
         String(localized: "Home.eventFestivalTitle", defaultValue: "イベント・お祭り", table: "Localizable", bundle: .module)
     }
-    /// 위치 배너 제목
+    /// 위치 권한 없음 안내 배너 제목
     static var locationBannerTitle: String {
         String(localized: "Home.locationBannerTitle", defaultValue: "位置情報へのアクセス", table: "Localizable", bundle: .module)
     }
@@ -483,9 +483,17 @@ public extension Strings.Plan {
     static var pastSectionTitle: String {
         String(localized: "Plan.pastSectionTitle", defaultValue: "過去の日程", table: "Localizable", bundle: .module)
     }
-    /// 기간 배지 (%d: 일수)
+    /// 기간 배지 (%1$d: 박, %2$d: 일수), 당일치기(1일)인 경우 전용 문구 사용
     static func durationBadge(_ days: Int) -> String {
-        String(localized: "Plan.durationBadge", defaultValue: "\(days)日間", table: "Localizable", bundle: .module)
+        let nights = max(days - 1, 0)
+        if nights == 0 {
+            return dayTripBadge
+        }
+        return String(localized: "Plan.durationBadge", defaultValue: "\(nights)泊\(days)日", table: "Localizable", bundle: .module)
+    }
+    /// 당일치기 배지
+    static var dayTripBadge: String {
+        String(localized: "Plan.dayTripBadge", defaultValue: "日帰り", table: "Localizable", bundle: .module)
     }
     /// 일자 칩 (%d: 일차)
     static func dayChipTitle(_ day: Int) -> String {
@@ -958,7 +966,7 @@ public extension Strings.Setting {
         String(localized: "Setting.gpsStatusUndetermined", defaultValue: "未設定", table: "Localizable", bundle: .module)
     }
 
-    /// 일정 상세 섹션 타이틀
+    /// 일정 섹션 타이틀
     static var planDetailSectionTitle: String {
         String(localized: "Setting.planDetailSectionTitle", defaultValue: "日程詳細", table: "Localizable", bundle: .module)
     }
@@ -1284,6 +1292,10 @@ public extension Strings.KoreanPhrase {
     /// 일본어 미입력 상태에서 번역 시도 시 안내 토스트 메시지
     static var translationEmptyJapaneseToast: String {
         String(localized: "KoreanPhrase.translationEmptyJapaneseToast", defaultValue: "日本語を入力してから翻訳してください", table: "Localizable", bundle: .module)
+    }
+    /// 목록 화면 상단 - 항목을 누르면 전체화면으로 볼 수 있다는 안내 문구
+    static var fullScreenGuideDescription: String {
+        String(localized: "KoreanPhrase.fullScreenGuideDescription", defaultValue: "項目をタップすると全画面で確認できます", table: "Localizable", bundle: .module)
     }
 }
 

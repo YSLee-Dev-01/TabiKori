@@ -149,12 +149,14 @@ private extension BookmarkView {
                             self.store.send(.categoryFilterTapped(category), animation: .tabiStandard)
                         }
 
-                        TabiLabel(
-                            title: Strings.Bookmark.savedCountTitle(self.store.filteredBookmarks.count),
-                            style: .captionMBold,
-                            color: .tabiTextSecondary
-                        )
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        if self.store.bookmarks.isEmpty == false {
+                            TabiLabel(
+                                title: Strings.Bookmark.savedCountTitle(self.store.filteredBookmarks.count),
+                                style: .captionMBold,
+                                color: .tabiTextSecondary
+                            )
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
                     .onGeometryChange(for: CGFloat.self) { headerProxy in
                         headerProxy.size.height

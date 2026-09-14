@@ -130,11 +130,26 @@ struct DetailView: View {
 // MARK: - Method
 
 private extension DetailView {
+    /// 로케일이 한국어이고 한국어 표기가 존재하면 한국어를 메인(볼드)으로 표시
+    var mainTitle: String {
+        if Locale.isKoreanLanguage, let koreanTitle = self.store.detail.koreanTitle {
+            return koreanTitle
+        }
+        return self.store.detail.japaneseTitle
+    }
+
+    var subTitle: String? {
+        if Locale.isKoreanLanguage, self.store.detail.koreanTitle != nil {
+            return self.store.detail.japaneseTitle
+        }
+        return self.store.detail.koreanTitle
+    }
+
     func contentHeaderSection() -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            TabiLabel(title: self.store.detail.japaneseTitle, style: .titleL, color: .tabiTextPrimary)
-            if let koreanTitle = self.store.detail.koreanTitle {
-                TabiLabel(title: koreanTitle, style: .bodyM, color: .tabiTextSecondary)
+            TabiLabel(title: self.mainTitle, style: .titleL, color: .tabiTextPrimary)
+            if let subTitle = self.subTitle {
+                TabiLabel(title: subTitle, style: .bodyM, color: .tabiTextSecondary)
                     .padding(.top, 4)
             }
             HStack {

@@ -25,6 +25,7 @@ public struct ExchangeRateCalculatorFeature: Sendable {
         var jpyAmountText: String = "0"
         var exchangeRateUpdatedAtTitle: String = ""
         var hasLoadFailed: Bool = false
+        var isLoading: Bool = false
         fileprivate var krwToJPYRate: Double = 0
         fileprivate var hasStartedLoading: Bool = false
 
@@ -65,16 +66,19 @@ public struct ExchangeRateCalculatorFeature: Sendable {
             case .onAppear:
                 guard state.hasStartedLoading == false else { return .none }
                 state.hasStartedLoading = true
+                state.isLoading = true
                 state.hasLoadFailed = false
                 return self.fetchExchangeRateEffect()
 
             case .retryButtonTapped:
                 guard state.hasStartedLoading == false else { return .none }
                 state.hasStartedLoading = true
+                state.isLoading = true
                 state.hasLoadFailed = false
                 return self.fetchExchangeRateEffect()
 
             case .exchangeRateResult(let krwToJPYRate):
+                state.isLoading = false
                 state.krwToJPYRate = krwToJPYRate.rate
                 state.exchangeRateUpdatedAtTitle = krwToJPYRate.updatedAt.exchangeRateUpdatedAtTitle
                 if let krw = Double(state.krwAmountText) {
@@ -83,6 +87,7 @@ public struct ExchangeRateCalculatorFeature: Sendable {
                 return .none
 
             case .exchangeRateLoadFailed:
+                state.isLoading = false
                 state.hasStartedLoading = false
                 state.hasLoadFailed = true
                 return .none

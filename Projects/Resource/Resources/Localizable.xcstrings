@@ -149,7 +149,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "장소 추가"
+            "value": "북마크 추가"
           }
         }
       }
@@ -251,7 +251,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "제목"
+            "value": "장소 이름"
           }
         }
       }
@@ -285,7 +285,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "소요 시간"
+            "value": "총 시간"
           }
         }
       }
@@ -438,7 +438,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "저장한 장소가 없어요"
+            "value": "저장된 장소가 없어요"
           }
         }
       }
@@ -500,13 +500,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld件のスポットを保存中"
+            "value": "%lld件保存済み"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld개 저장"
+            "value": "%lld개 저장 중"
           }
         }
       }
@@ -1067,7 +1067,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "종료일을 지정하면 해당 기간 안에 끝나는 이벤트만 표시돼요"
+            "value": "종료일을 설정하면 해당 기간 안에 끝나는 이벤트만 검색돼요"
           }
         }
       }
@@ -1084,7 +1084,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "조건을 바꿔서 다시 시도해주세요"
+            "value": "검색 조건을 변경해주세요"
           }
         }
       }
@@ -1101,7 +1101,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이벤트를 찾을 수 없어요"
+            "value": "조건에 맞는 이벤트가 없어요"
           }
         }
       }
@@ -1231,13 +1231,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ソウルにいますね！"
+            "value": "どんな日程を作ってみましょうか？"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "서울에 계시네요!"
+            "value": "어떤 일정을 만들어볼까요?"
           }
         }
       }
@@ -1356,7 +1356,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "주변 장소를 보여드리려면 위치 정보 사용을 허용해주세요"
+            "value": "주변 관광지와 여행 정보를 제공하기 위해서는 위치 권한이 필요해요"
           }
         }
       }
@@ -1373,7 +1373,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "위치 정보 접근"
+            "value": "위치 권한 없음"
           }
         }
       }
@@ -1458,7 +1458,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "주변에 관광 장소가 없어요"
+            "value": "주변에 관광지가 없어요"
           }
         }
       }
@@ -1820,6 +1820,23 @@
         }
       }
     },
+    "KoreanPhrase.fullScreenGuideDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "項目をタップすると全画面で確認できます"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "항목을 누르면 전체화면으로 볼 수 있어요"
+          }
+        }
+      }
+    },
     "KoreanPhrase.translationEmptyJapaneseToast": {
       "extractionState": "manual",
       "localizations": {
@@ -1900,7 +1917,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "최근 검색 기록이 없어요"
+            "value": "검색 기록이 없어요"
           }
         }
       }
@@ -1934,7 +1951,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이 지역에서 다시 검색"
+            "value": "현 지도에서 다시 검색"
           }
         }
       }
@@ -2019,7 +2036,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "다른 키워드로 검색해보세요"
+            "value": "다른 키워드로 검색해주세요"
           }
         }
       }
@@ -2223,7 +2240,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "일정에 간편하게 추가할 수 있어요"
+            "value": "원하는 일정에 바로 추가할 수 있어요"
           }
         }
       }
@@ -2240,7 +2257,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "북마크에 저장할 수 있어요"
+            "value": "관심 있는 장소는 북마크에 모아놓을 수 있어요"
           }
         }
       }
@@ -2291,7 +2308,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "카테고리로 검색을 시작해요"
+            "value": "원하는 카테고리를 눌러 바로 검색할 수 있어요"
           }
         }
       }
@@ -2342,7 +2359,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "검색 결과를 눌러서 상세정보를 확인할 수 있어요"
+            "value": "결과를 눌러 상세정보를 확인할 수 있어요"
           }
         }
       }
@@ -2387,7 +2404,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "日ごとの予定がわかります"
+            "value": "旅行ごとに日程を分けて管理できます"
           }
         },
         "ko": {
@@ -2427,7 +2444,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "전체 지도로 확인해보세요"
+            "value": "하루 일정을 전체화면으로 확인할 수 있어요"
           }
         }
       }
@@ -2529,7 +2546,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "네트워크 연결을 확인한 후 다시 시도해주세요"
+            "value": "네트워크 연결이 불안정해요"
           }
         }
       }
@@ -2546,7 +2563,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "먼저 내용을 확인해야 동의할 수 있어요"
+            "value": "먼저 개인정보처리방침을 확인해주세요"
           }
         }
       }
@@ -2631,7 +2648,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "사용 방법을 간단히 설명해드릴게요!"
+            "value": "사용법을 간단히 소개해드릴게요"
           }
         }
       }
@@ -2665,7 +2682,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "새 일정 만들기"
+            "value": "일정 생성"
           }
         }
       }
@@ -2880,13 +2897,30 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld日間"
+            "value": "%1$lld泊%2$lld日"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld일"
+            "value": "%1$lld박 %2$lld일"
+          }
+        }
+      }
+    },
+    "Plan.dayTripBadge": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日帰り"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "당일치기"
           }
         }
       }
@@ -3005,7 +3039,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "오른쪽 위 + 버튼으로 여행 일정을 추가해보세요"
+            "value": "+ 버튼으로 여행 일정을 추가할 수 있어요"
           }
         }
       }
@@ -3039,7 +3073,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "내보낸 파일은 받는 사람이 타비코리의 '가져오기'에서 열면 일정이 추가돼요"
+            "value": "내보낸 파일은 タビコリ(타비코리) 앱에서 일정 > 가져오기를 통해 열면 일정이 추가돼요"
           }
         }
       }
@@ -3056,7 +3090,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "공유 방법 안내"
+            "value": "공유 방법"
           }
         }
       }
@@ -3175,7 +3209,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "일정 목록에 추가됐어요"
+            "value": "일정 목록에서 바로 확인할 수 있어요"
           }
         }
       }
@@ -3192,7 +3226,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "가져오기가 완료됐어요"
+            "value": "일정을 성공적으로 가져왔어요"
           }
         }
       }
@@ -3311,7 +3345,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이 일정을 삭제할까요?"
+            "value": "일정을 삭제할까요?"
           }
         }
       }
@@ -3339,7 +3373,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "予定を編集"
+            "value": "日程を編集"
           }
         },
         "ko": {
@@ -3668,7 +3702,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "네트워크 연결을 확인한 후 다시 시도해주세요"
+            "value": "네트워크 연결이 불안정해요"
           }
         }
       }
@@ -3787,7 +3821,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "관광 장소"
+            "value": "모아보기"
           }
         }
       }
@@ -3804,7 +3838,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "일정 상세를 열면 오늘 날짜로 자동으로 이동해요"
+            "value": "일정 상세 화면을 열 때 오늘 날짜로 자동 이동해요"
           }
         }
       }
@@ -4195,7 +4229,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "위치 정보 접근"
+            "value": "위치 권한"
           }
         }
       }
@@ -4212,7 +4246,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "위치 정보 권한"
+            "value": "위치 권한"
           }
         }
       }
@@ -4240,7 +4274,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "拒否"
+            "value": "拒否済み"
           }
         },
         "ko": {
@@ -4280,7 +4314,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "이 앱은 다음의 라이브러리·SDK를 사용하고 있어요.\n\n・swift-composable-architecture — MIT License\n   © Point-Free, Inc.\n\n・Kingfisher — MIT License\n   © Wei Wang\n\n・lottie-ios — Apache License 2.0\n   © Airbnb, Inc.\n\n・firebase-ios-sdk — Apache License 2.0\n   © Google LLC\n\n・SPM-NMapsMap (NAVER Maps SDK) — プロプライエタリライセンス\n   © NAVER Corp. All rights reserved."
+            "value": "이 앱은 다음의 라이브러리·SDK를 사용하고 있어요.\n\n・swift-composable-architecture — MIT License\n   © Point-Free, Inc.\n\n・Kingfisher — MIT License\n   © Wei Wang\n\n・lottie-ios — Apache License 2.0\n   © Airbnb, Inc.\n\n・firebase-ios-sdk — Apache License 2.0\n   © Google LLC\n\n・SPM-NMapsMap (NAVER Maps SDK) — 독점 라이선스\n   © NAVER Corp. All rights reserved."
           }
         }
       }
@@ -4314,7 +4348,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "일정 상세"
+            "value": "일정"
           }
         }
       }
@@ -4569,7 +4603,7 @@
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "+ 버튼으로 목록을 추가할 수 있어요"
+            "value": "+ 버튼으로 쇼핑 목록을 추가할 수 있어요"
           }
         }
       }
@@ -5124,13 +5158,13 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ツールタブの持ち物リストから、この日程に保存できます"
+            "value": "右上の＋ボタンから持ち物を追加できます"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "+ 버튼으로 목록을 추가할 수 있어요"
+            "value": "+ 버튼으로 준비물을 추가할 수 있어요"
           }
         }
       }

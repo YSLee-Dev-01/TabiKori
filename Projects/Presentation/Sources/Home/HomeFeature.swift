@@ -25,6 +25,7 @@ public struct HomeFeature: Sendable {
     @Dependency(\.travelPlanUseCase) var travelPlanUseCase
     @Dependency(\.homeSheetAnnounceUseCase) var homeSheetAnnounceUseCase
     @Dependency(\.analyticsCenter) var analyticsCenter
+    @Dependency(\.toastCenter) var toastCenter
 
     private let nearbySpotRadiusMeters = TouristSpotSearchRadius.nearbyMeters
     private let festivalListLimit = 10
@@ -105,13 +106,14 @@ public struct HomeFeature: Sendable {
                     locationEffect = .send(.requestLocationPermission)
 
                 case .allowed:
-                    locationEffect = .run { [locationUseCase = self.locationUseCase] send in
+                    locationEffect = .run { [locationUseCase = self.locationUseCase, toastCenter = self.toastCenter] send in
                         try? await Task.sleep(for: .seconds(1))
                         do {
                             let region = try await locationUseCase.fetchCurrentRegion()
                             await send(.regionResult(region))
                         } catch {
                             AppLogger.view.log(.error, "현재 지역 조회 실패: \(error.localizedDescription)")
+                            toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
                         }
                     }
 
@@ -119,12 +121,16 @@ public struct HomeFeature: Sendable {
                     locationEffect = .none
                 }
 
-                let exchangeRateEffect: Effect<Action> = .run { [exchangeRateUseCase = self.exchangeRateUseCase] send in
+                let exchangeRateEffect: Effect<Action> = .run { [
+                    exchangeRateUseCase = self.exchangeRateUseCase,
+                    toastCenter = self.toastCenter
+                ] send in
                     do {
                         let krwToJPYRate = try await exchangeRateUseCase.fetchKRWToJPYRate()
                         await send(.exchangeRateResult(krwToJPYRate))
                     } catch {
                         AppLogger.view.log(.error, "환율 조회 실패: \(error.localizedDescription)")
+                        toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
                     }
                 }
 
@@ -176,12 +182,13 @@ public struct HomeFeature: Sendable {
                 state.locationStatus = status
                 guard status == .allowed else { return .none }
 
-                return .run { [locationUseCase = self.locationUseCase] send in
+                return .run { [locationUseCase = self.locationUseCase, toastCenter = self.toastCenter] send in
                     do {
                         let region = try await locationUseCase.fetchCurrentRegion()
                         await send(.regionResult(region))
                     } catch {
                         AppLogger.view.log(.error, "현재 지역 조회 실패: \(error.localizedDescription)")
+                        toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
                     }
                 }
 
@@ -263,7 +270,7 @@ public struct HomeFeature: Sendable {
 
             case .categoryTapped(let category):
                 self.analyticsCenter.log(.homeCategorySelected(category: category.rawValue))
-                return .run { [locationUseCase = self.locationUseCase] send in
+                return .run { [locationUseCase = self.locationUseCase, toastCenter = self.toastCenter] send in
                     do {
                         let coordinate = try await locationUseCase.fetchCurrentCoordinate()
                         await send(.categoryCoordinateResolved(category, coordinate))
@@ -273,6 +280,7 @@ public struct HomeFeature: Sendable {
                             return
                         }
                         AppLogger.view.log(.error, "카테고리 검색 좌표 조회 실패: \(error.localizedDescription)")
+                        toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
                         await send(.categoryCoordinateResolved(category, .seoulCityHall))
                     }
                 }
@@ -337,12 +345,13 @@ private enum CancelID {
 
 private extension HomeFeature {
     func fetchRegionEffect() -> Effect<Action> {
-        .run { [locationUseCase = self.locationUseCase] send in
+        .run { [locationUseCase = self.locationUseCase, toastCenter = self.toastCenter] send in
             do {
                 let region = try await locationUseCase.fetchCurrentRegion()
                 await send(.regionResult(region))
             } catch {
                 AppLogger.view.log(.error, "현재 지역 조회 실패: \(error.localizedDescription)")
+                toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
             }
         }
     }
@@ -360,7 +369,7 @@ private extension HomeFeature {
     /// 그래서 액션 우회로는 취소 전파를 막을 수 없고, `HomeView`가 `.finish()`를 호출하지 않도록 하는 쪽으로
     /// 해결했다 — 자세한 내용은 `HomeView.swift`의 `.refreshable` 주석 참고
     func fetchNearbySpotsEffect() -> Effect<Action> {
-        .run { [locationUseCase = self.locationUseCase] send in
+        .run { [locationUseCase = self.locationUseCase, toastCenter = self.toastCenter] send in
             do {
                 let coordinate = try await locationUseCase.fetchCurrentCoordinate()
                 await send(.nearbyCoordinateResolved(coordinate))
@@ -372,6 +381,7 @@ private extension HomeFeature {
                 await send(.nearbyTouristSpotsResult([]))
                 await send(.nearbyRestaurantsResult([]))
                 AppLogger.view.log(.error, "주변 관광정보 좌표 조회 실패: \(error.localizedDescription)")
+                toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
             }
         }
         .cancellable(id: CancelID.nearbySpotsCoordinate, cancelInFlight: true)
@@ -380,7 +390,8 @@ private extension HomeFeature {
     func fetchNearbyTouristSpotsEffect(coordinate: Coordinate) -> Effect<Action> {
         .run { [
             touristSpotUseCase = self.touristSpotUseCase,
-            radius = self.nearbySpotRadiusMeters
+            radius = self.nearbySpotRadiusMeters,
+            toastCenter = self.toastCenter
         ] send in
             do {
                 let spots = try await touristSpotUseCase.fetchNearbySpots(
@@ -397,6 +408,7 @@ private extension HomeFeature {
                 }
                 await send(.nearbyTouristSpotsResult([]))
                 AppLogger.view.log(.error, "주변 관광지 조회 실패: \(error.localizedDescription)")
+                toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
             }
         }
         .cancellable(id: CancelID.nearbyTouristSpots, cancelInFlight: true)
@@ -405,7 +417,8 @@ private extension HomeFeature {
     func fetchNearbyRestaurantsEffect(coordinate: Coordinate) -> Effect<Action> {
         .run { [
             touristSpotUseCase = self.touristSpotUseCase,
-            radius = self.nearbySpotRadiusMeters
+            radius = self.nearbySpotRadiusMeters,
+            toastCenter = self.toastCenter
         ] send in
             do {
                 let spots = try await touristSpotUseCase.fetchNearbySpots(
@@ -422,13 +435,18 @@ private extension HomeFeature {
                 }
                 await send(.nearbyRestaurantsResult([]))
                 AppLogger.view.log(.error, "주변 음식점 조회 실패: \(error.localizedDescription)")
+                toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
             }
         }
         .cancellable(id: CancelID.nearbyRestaurants, cancelInFlight: true)
     }
 
     func fetchFestivalsEffect() -> Effect<Action> {
-        .run { [festivalUseCase = self.festivalUseCase, limit = self.festivalListLimit] send in
+        .run { [
+            festivalUseCase = self.festivalUseCase,
+            limit = self.festivalListLimit,
+            toastCenter = self.toastCenter
+        ] send in
             do {
                 let festivals = try await festivalUseCase.fetchFestivals(
                     startDate: Date(),
@@ -445,12 +463,13 @@ private extension HomeFeature {
                 }
                 await send(.festivalsFailed)
                 AppLogger.view.log(.error, "축제 조회 실패: \(error.localizedDescription)")
+                toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
             }
         }
     }
 
     func fetchTravelPlansEffect() -> Effect<Action> {
-        .run { [travelPlanUseCase = self.travelPlanUseCase] send in
+        .run { [travelPlanUseCase = self.travelPlanUseCase, toastCenter = self.toastCenter] send in
             do {
                 let plans = try await travelPlanUseCase.fetch()
                 await send(.travelPlansResult(plans))
@@ -461,12 +480,13 @@ private extension HomeFeature {
                 }
                 await send(.travelPlansResult([]))
                 AppLogger.view.log(.error, "여행 플랜 조회 실패: \(error.localizedDescription)")
+                toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
             }
         }
     }
 
     func fetchHomeSheetAnnounceEffect() -> Effect<Action> {
-        .run { [homeSheetAnnounceUseCase = self.homeSheetAnnounceUseCase] send in
+        .run { [homeSheetAnnounceUseCase = self.homeSheetAnnounceUseCase, toastCenter = self.toastCenter] send in
             do {
                 let announcement = try await homeSheetAnnounceUseCase.fetchActiveAnnouncement()
                 await send(.homeSheetAnnounceResult(announcement))
@@ -477,6 +497,7 @@ private extension HomeFeature {
                 }
                 await send(.homeSheetAnnounceResult(nil))
                 AppLogger.view.log(.error, "홈 시트 공지 조회 실패: \(error.localizedDescription)")
+                toastCenter.show(ToastItem(message: error.localizedDescription, type: .error))
             }
         }
     }
