@@ -42,7 +42,7 @@ public enum DependencyInformation: String, CaseIterable, Sendable {
     static let externalDependencyInfo: [DependencyInformation: [DependencyInformation]] = [
         .presentation: [.tca, .lottie, .kingfisher],
         .domain: [.tca],
-        .app: [.tca, .firebaseDatabase, .firebaseAnalytics],
+        .app: [.tca, .firebaseDatabase, .firebaseAnalytics, .kingfisher],
         .data: [.firebaseDatabase],
         .designSystem: [.naverMap, .kingfisher],
         .core: [.firebaseCrashlytics]
