@@ -20,6 +20,7 @@ public struct SettingFeature: Sendable {
 
     @Dependency(\.locationUseCase) var locationUseCase
     @Dependency(\.dataResetUseCase) var dataResetUseCase
+    @Dependency(\.imageCacheUseCase) var imageCacheUseCase
     @Dependency(\.autoScrollToTodayUseCase) var autoScrollToTodayUseCase
     @Dependency(\.autoTranslateSearchUseCase) var autoTranslateSearchUseCase
     @Dependency(\.toastCenter) var toastCenter
@@ -29,6 +30,7 @@ public struct SettingFeature: Sendable {
     public struct State: Equatable {
         var locationStatus: LocationAuthorizationStatus = .denied
         var isResetting: Bool = false
+        var isClearingImageCache: Bool = false
         var isAutoScrollToTodayEnabled: Bool = false
         var isAutoTranslateSearchEnabled: Bool = false
         var isMailComposePresented: Bool = false
@@ -46,6 +48,7 @@ public struct SettingFeature: Sendable {
         case scenePhaseBecameActive
         case gpsRowTapped
         case resetRowTapped
+        case clearImageCacheRowTapped
         case autoScrollToTodayToggled(Bool)
         case autoTranslateSearchToggled(Bool)
         case etcRowTapped(SettingEtcItem)
@@ -55,12 +58,14 @@ public struct SettingFeature: Sendable {
         case privacyPolicyRetryTapped
         case resetResult(Bool)
         case resetCompleted
+        case clearImageCacheCompleted
         case info(PresentationAction<SettingInfoFeature.Action>)
         case alert(PresentationAction<Alert>)
         case delegate(Delegate)
 
         public enum Alert: Equatable {
             case resetConfirmed
+            case clearImageCacheConfirmed
         }
 
         public enum Delegate: Equatable {
@@ -122,6 +127,26 @@ public struct SettingFeature: Sendable {
                 state.isResetting = true
                 self.analyticsCenter.log(.dataResetConfirmed)
                 return self.resetAllEffect()
+
+            case .clearImageCacheRowTapped:
+                guard state.isClearingImageCache == false else { return .none }
+                state.alert = AlertState {
+                    TextState(Strings.Setting.cacheClearAlertTitle)
+                } actions: {
+                    ButtonState(role: .cancel) {
+                        TextState(Strings.Map.searchCancel)
+                    }
+                    ButtonState(role: .destructive, action: .clearImageCacheConfirmed) {
+                        TextState(Strings.Setting.cacheClearAlertConfirmButton)
+                    }
+                } message: {
+                    TextState(Strings.Setting.cacheClearAlertMessage)
+                }
+                return .none
+
+            case .alert(.presented(.clearImageCacheConfirmed)):
+                state.isClearingImageCache = true
+                return self.clearImageCacheEffect()
 
             case .alert:
                 return .none
@@ -206,6 +231,17 @@ public struct SettingFeature: Sendable {
             case .resetCompleted:
                 return .send(.delegate(.resetCompleted))
 
+            case .clearImageCacheCompleted:
+                state.isClearingImageCache = false
+                state.alert = AlertState {
+                    TextState(Strings.Setting.cacheClearSuccessAlertTitle)
+                } actions: {
+                    ButtonState {
+                        TextState(Strings.Plan.alertConfirm)
+                    }
+                }
+                return .none
+
             case .delegate:
                 return .none
 
@@ -224,6 +260,7 @@ public struct SettingFeature: Sendable {
 
 private enum CancelID {
     case reset
+    case clearImageCache
 }
 
 // MARK: - Method
@@ -240,5 +277,13 @@ private extension SettingFeature {
             }
         }
         .cancellable(id: CancelID.reset)
+    }
+
+    func clearImageCacheEffect() -> Effect<Action> {
+        .run { [imageCacheUseCase = self.imageCacheUseCase] send in
+            await imageCacheUseCase.clearCache()
+            await send(.clearImageCacheCompleted)
+        }
+        .cancellable(id: CancelID.clearImageCache)
     }
 }

@@ -85,6 +85,11 @@ extension DependencyValues {
         get {self[DataResetUseCaseDependencyKey.self]}
         set {self[DataResetUseCaseDependencyKey.self] = newValue}
     }
+
+    public var imageCacheUseCase: ImageCacheUseCaseProtocol {
+        get {self[ImageCacheUseCaseDependencyKey.self]}
+        set {self[ImageCacheUseCaseDependencyKey.self] = newValue}
+    }
     
     public var subwayStationUseCase: SubwayStationUseCaseProtocol {
         get {self[SubwayStationUseCaseDependencyKey.self]}

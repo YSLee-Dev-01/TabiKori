@@ -3894,6 +3894,91 @@
         }
       }
     },
+    "Setting.cacheClearAlertConfirmButton": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "削除する"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "삭제하기"
+          }
+        }
+      }
+    },
+    "Setting.cacheClearAlertMessage": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像の読み込みに時間がかかる場合があります"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이미지를 가져올 때 시간이 더 걸릴 수 있어요"
+          }
+        }
+      }
+    },
+    "Setting.cacheClearAlertTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像キャッシュを削除しますか？"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이미지 캐시를 삭제할까요?"
+          }
+        }
+      }
+    },
+    "Setting.cacheClearRowTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画像キャッシュを削除"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이미지 캐시 삭제"
+          }
+        }
+      }
+    },
+    "Setting.cacheClearSuccessAlertTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キャッシュを削除しました"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "캐시를 삭제했어요"
+          }
+        }
+      }
+    },
     "Setting.dataResetAlertConfirmButton": {
       "extractionState": "manual",
       "localizations": {

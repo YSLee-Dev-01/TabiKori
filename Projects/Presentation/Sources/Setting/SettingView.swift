@@ -138,6 +138,16 @@ private extension SettingView {
             ) {
                 self.store.send(.resetRowTapped)
             }
+
+            Divider()
+                .padding(.leading, 16)
+
+            SettingRow(
+                title: Strings.Setting.cacheClearRowTitle,
+                isDisabled: self.store.isClearingImageCache
+            ) {
+                self.store.send(.clearImageCacheRowTapped)
+            }
         }
     }
 

@@ -992,6 +992,27 @@ public extension Strings.Setting {
         String(localized: "Setting.autoTranslateSearchRowDescription", defaultValue: "日本語で検索して結果が見つからないとき、韓国語に翻訳して再検索するボタンを表示します", table: "Localizable", bundle: .module)
     }
 
+    /// 이미지 캐시 삭제 확인 Alert 삭제(확정) 버튼
+    static var cacheClearAlertConfirmButton: String {
+        String(localized: "Setting.cacheClearAlertConfirmButton", defaultValue: "削除する", table: "Localizable", bundle: .module)
+    }
+    /// 이미지 캐시 삭제 확인 Alert 메시지
+    static var cacheClearAlertMessage: String {
+        String(localized: "Setting.cacheClearAlertMessage", defaultValue: "画像の読み込みに時間がかかる場合があります", table: "Localizable", bundle: .module)
+    }
+    /// 이미지 캐시 삭제 확인 Alert 타이틀
+    static var cacheClearAlertTitle: String {
+        String(localized: "Setting.cacheClearAlertTitle", defaultValue: "画像キャッシュを削除しますか？", table: "Localizable", bundle: .module)
+    }
+    /// 이미지 캐시 삭제 행 타이틀
+    static var cacheClearRowTitle: String {
+        String(localized: "Setting.cacheClearRowTitle", defaultValue: "画像キャッシュを削除", table: "Localizable", bundle: .module)
+    }
+    /// 이미지 캐시 삭제 완료 Alert 타이틀
+    static var cacheClearSuccessAlertTitle: String {
+        String(localized: "Setting.cacheClearSuccessAlertTitle", defaultValue: "キャッシュを削除しました", table: "Localizable", bundle: .module)
+    }
+
     /// 데이터 초기화 섹션 타이틀
     static var dataResetSectionTitle: String {
         String(localized: "Setting.dataResetSectionTitle", defaultValue: "データの初期化", table: "Localizable", bundle: .module)
