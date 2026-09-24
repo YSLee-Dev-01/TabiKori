@@ -1,5 +1,7 @@
 <img src="https://github.com/user-attachments/assets/632cc5ca-b7a2-4b45-9112-24e6775c8690" height="150"/>
 
+**한국어** | [日本語](README.ja.md)
+
 # タビコリ (타비코리)
 
 ### 한국 여행을, 더욱 나답게
